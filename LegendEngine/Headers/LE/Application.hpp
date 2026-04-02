@@ -65,7 +65,7 @@ namespace le
         size_t GetCurrentFrame() const;
 
         // Must be called on the main thread
-        void RenderFrame(float delta = 1.0f);
+        void AdvanceFrame(float delta = 1.0f);
 
         static void Run();
         static void Destroy();

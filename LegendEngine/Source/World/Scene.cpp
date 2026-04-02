@@ -126,4 +126,75 @@ namespace le
     {
         return *m_uniforms;
     }
+
+    void Scene::EnqueueEntityCreation(EntityCreator&& creator)
+    {
+        std::scoped_lock lock(m_creationMutex);
+        m_queuedCreations.push_back(std::move(creator));
+    }
+
+    void Scene::EnqueueEntityDeletion(const Entity& entity)
+    {
+        EnqueueEntityDeletion(entity.uid);
+    }
+
+    void Scene::EnqueueEntityDeletion(const UID entity)
+    {
+        std::scoped_lock lock(m_deletionMutex);
+        m_deletions.push_back(entity);
+    }
+
+    void Scene::ProcessEntityChanges()
+    {
+        ProcessDeletions();
+        ProcessCreations();
+    }
+
+    void Scene::ProcessCreations()
+    {
+        std::scoped_lock lock(m_creationMutex);
+
+        for (const EntityCreator& creator : m_queuedCreations)
+        {
+            UID entityID = creator.GetUID();
+
+            std::vector<size_t> sortedIDs;
+            sortedIDs.reserve(creator.GetComponents().size());
+            for (size_t id : creator.GetComponents() | std::views::keys)
+                sortedIDs.push_back(id);
+
+            std::ranges::sort(sortedIDs);
+
+            // Find an archetype with the component IDs
+            const size_t archetypeID = ECS::HashIDs(sortedIDs);
+            Archetype& archetype = m_archetypes[archetypeID];
+
+            ECS::EntityRecord record;
+            record.row = archetype.entityIDs.size();
+            record.archetypeID = archetypeID;
+
+            archetype.entityIDs.push_back(entityID);
+            archetype.componentIDs = sortedIDs;
+
+            for (auto& [componentID, data] : creator.GetComponents())
+            {
+                archetype.componentData.try_emplace(componentID, ComponentStorage(data.GetElementSize()));
+                memcpy(archetype.componentData.at(componentID).Allocate(), data.GetData(0), data.GetElementSize());
+            }
+
+            m_entities.emplace(entityID, record);
+        }
+
+        m_queuedCreations.clear();
+    }
+
+    void Scene::ProcessDeletions()
+    {
+        std::scoped_lock lock(m_deletionMutex);
+
+        for (const UID entity : m_deletions)
+            DeleteEntity(entity);
+
+        m_deletions.clear();
+    }
 }

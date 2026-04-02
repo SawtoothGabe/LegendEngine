@@ -135,6 +135,6 @@ namespace le
 
 	std::string Logger::GetFormattedSource(const std::source_location& location)
 	{
-		return std::format(" {}:{} ({}) ", location.file_name(), location.line(), location.function_name());
+		return std::format(" ({}) ", location.function_name());
 	}
 }

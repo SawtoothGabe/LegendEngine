@@ -11,6 +11,7 @@
 
 #include <LE/Graphics/API/Buffer.hpp>
 #include <LE/Graphics/API/DynamicUniforms.hpp>
+#include <LE/World/EntityCreator.hpp>
 
 namespace le
 {
@@ -32,6 +33,9 @@ namespace le
         LE_NO_COPY(Scene);
 
         Entity CreateEntity();
+        void EnqueueEntityCreation(EntityCreator&& creator);
+        void EnqueueEntityDeletion(const Entity& entity);
+        void EnqueueEntityDeletion(UID entity);
 
         // These just call the functions with UID
         bool HasEntity(const Entity& entity) const;
@@ -226,6 +230,8 @@ namespace le
 
         void UpdateUniforms();
         DynamicUniforms& GetUniforms() const;
+
+        void ProcessEntityChanges();
     private:
         struct Storage
         {
@@ -288,6 +294,8 @@ namespace le
             return cachedResult.first->second;
         }
 
+        void ProcessCreations();
+        void ProcessDeletions();
         void ClearCachedArchetypeLookups();
 
 #ifndef LE_HEADLESS
@@ -297,6 +305,12 @@ namespace le
         std::unordered_map<UID, ECS::EntityRecord> m_entities;
         std::unordered_map<size_t, std::vector<size_t>> m_findArchetypeResults;
         std::unordered_map<size_t, Archetype> m_archetypes;
+
+        std::mutex m_creationMutex;
+        std::vector<EntityCreator> m_queuedCreations;
+
+        std::mutex m_deletionMutex;
+        std::vector<UID> m_deletions;
 
         Scope<Buffer> m_buffer;
         Scope<DynamicUniforms> m_uniforms;

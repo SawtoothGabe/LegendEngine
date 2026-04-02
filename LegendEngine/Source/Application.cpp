@@ -85,11 +85,11 @@ namespace le
             const float delta = deltaTimer.GetElapsedMillis() / 1000.0f;
             deltaTimer.Set();
 
-            RenderFrame(delta);
+            AdvanceFrame(delta);
         }
     }
 
-    void Application::RenderFrame(const float delta)
+    void Application::AdvanceFrame(const float delta)
     {
         Update(delta);
         Render(delta);
@@ -218,8 +218,12 @@ namespace le
         m_resourceManager.ProcessDeletedResources();
 
         RecalculateTransforms(m_GlobalScene);
+        m_GlobalScene.ProcessEntityChanges();
         if (m_pActiveScene)
+        {
             RecalculateTransforms(*m_pActiveScene);
+            m_pActiveScene->ProcessEntityChanges();
+        }
 
         m_EventBus.DispatchEvent<UpdateEvent>(UpdateEvent(delta));
     }

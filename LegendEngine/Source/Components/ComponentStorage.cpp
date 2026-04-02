@@ -73,4 +73,10 @@ namespace le
     {
         return m_componentSize;
     }
+
+    const void* ComponentStorage::GetData(const size_t index) const
+    {
+        LE_ASSERT(index < m_count, "Index out of range");
+        return m_componentData.data() + m_componentSize * index;
+    }
 }
