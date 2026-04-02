@@ -1,0 +1,36 @@
+name: Build and test (Linux)
+
+permissions:
+  contents: read
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y ninja-build libvulkan-dev vulkan-validationlayers vulkan-tools mesa-vulkan-drivers glslc g++-14
+
+      - name: Configure
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release -DLE_BUILD_TESTS=ON -DTETHER_HEADLESS=ON -DLE_HEADLESS=ON
+
+      - name: Build
+        run: |
+          cmake --build build --target NormalTests
+
+      - name: Run tests
+        run: |
+          ./build/LegendEngine/Tests/NormalTests
