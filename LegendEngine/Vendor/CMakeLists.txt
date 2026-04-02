@@ -9,6 +9,7 @@ function(DeclareGitRepo libName gitRepo)
     FetchContent_Declare(
         ${libName}
         GIT_REPOSITORY ${gitRepo}
+        GIT_TAG main
         SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/${libName}
         BINARY_DIR ${CMAKE_BINARY_DIR}/Vendor/${libName}-build
         SUBBUILD_DIR ${CMAKE_BINARY_DIR}/Vendor/${libName}-subbuild
