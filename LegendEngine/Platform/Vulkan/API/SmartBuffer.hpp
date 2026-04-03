@@ -45,10 +45,6 @@ namespace le::vk
         std::atomic<BufferDesc*> m_updatedBuffer = nullptr;
         size_t m_framesSinceDeletion = 0;
 
-#ifndef NDEBUG
-        std::atomic_bool m_updated = false;
-#endif
-
         EventBusSubscriber m_sub;
     };
 }

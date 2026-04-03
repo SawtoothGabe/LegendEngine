@@ -106,10 +106,7 @@ namespace le::vk
         const BufferDesc* pDesc = m_currentBuffer.load();
 
         if (!pDesc)
-        {
-            LE_ASSERT(!m_updated, "m_currentBuffer was nullptr after update");
             return { nullptr, 0 };
-        }
 
         const Desc desc {
             pDesc->buffer,
@@ -175,7 +172,6 @@ namespace le::vk
 
             LE_ASSERT(m_updatedBuffer.load(), "Updated buffer is nullptr");
             m_updatedBuffer = m_currentBuffer.exchange(m_updatedBuffer.load());
-            m_updated = true;
         }
 
         // Check to make sure no frames are using the current buffer
