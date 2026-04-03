@@ -39,12 +39,32 @@ namespace le::vk
         // It's possible that another update happens here and then this locks
         std::scoped_lock lock(m_updateMutex);
 
+        buffer = m_updatedBuffer.load();
+
         VkBuffer vkBuffer = nullptr;
         if (buffer) // An update is in progress
         {
-            // Even though the other wait exists, a wait must be here too,
-            // since another update might have happened between them
-            m_stager.Wait();
+            if (m_stager.HasStagingBuffer())
+            {
+                // Even though the other wait exists, a wait must be here too,
+                // since another update might have happened between them
+                m_stager.Wait();
+            }
+            else
+            {
+                // If the update buffer is non-null and the stager is deleted, that means
+                // the main thread deleted the stager and is about to delete the updated
+                // buffer. If both the stager deletion and this update are on the main thread,
+                // we cannot wait for the deletion of the previously updated buffer, since
+                // that would result in a deadlock. The only option is to finish its job
+                // once no frames are using it, then create a new buffer as usual.
+
+                // This should be sufficient for now. It could be converted to wait for
+                // the in-flight fences for all the renderers using this buffer later
+                // if it creates too many stutters, but this exact scenario should be
+                // rare enough that it doesn't matter.
+                vkQueueWaitIdle(m_context.GetQueue());
+            }
 
             vkBuffer = buffer->buffer;
 
@@ -68,6 +88,7 @@ namespace le::vk
 
         m_stager.CreateStagingBuffer(vkBuffer, size);
         m_stager.Upload(data, size);
+        m_framesSinceDeletion = 0;
     }
 
     void SmartBuffer::Resize(const size_t newSize)
@@ -127,17 +148,26 @@ namespace le::vk
 
         vmaDestroyBuffer(m_context.GetAllocator(), buffer.buffer, buffer.allocation);
 
-        // This shows the buffer has been destroyed.
-        // AcquireUnusedBuffer uses the vertex buffer to check if it's okay to
-        // create a new one since it is atomic. Once this happens, a new buffer
-        // may be created at any instant.
+        // Signal to this function that the buffer is deleted
         buffer.buffer = nullptr;
+    }
+
+    void SmartBuffer::DeleteStagingBuffer()
+    {
+        // If the staging buffer exists, an update has occurred, and it could
+        // be still uploading or not. There should never be a case where the
+        // staging buffer exists but no update happened.
+        if (!m_stager.HasStagingBuffer() || !m_stager.IsFenceSignaled())
+            return;
+
+        m_stager.DeleteStagingBuffer();
+        m_currentBuffer.exchange(m_updatedBuffer.load());
     }
 
     void SmartBuffer::DeleteUnusedBuffers()
     {
-        // This should only be the case if no buffer has been created yet
-        if (!m_currentBuffer.load())
+        // If no update has happened
+        if (!m_updatedBuffer.load())
             return;
 
         std::scoped_lock lock(m_updateMutex);
@@ -145,24 +175,28 @@ namespace le::vk
         // If the staging buffer exists, an update has occurred, and it could
         // be still uploading or not. There should never be a case where the
         // staging buffer exists but no update happened.
-        if (!m_stager.HasStagingBuffer() || !m_stager.IsFenceSignaled())
-            return;
+        if (m_stager.HasStagingBuffer())
+        {
+            if (!m_stager.IsFenceSignaled())
+                return;
+
+            m_stager.DeleteStagingBuffer();
+            m_updatedBuffer = m_currentBuffer.exchange(m_updatedBuffer.load());
+        }
 
         // Check to make sure no frames are using the current buffer
-        if (m_framesSinceDeletion < Application::FRAMES_IN_FLIGHT)
+        if (m_framesSinceDeletion <= Application::FRAMES_IN_FLIGHT)
         {
             m_framesSinceDeletion++;
             return;
         }
 
-        m_stager.DeleteStagingBuffer();
-
         // At this point, the new buffer has been created by Update (possibly
         // on another thread) and the old one isn't in use by frames in flight,
         // so it can be deleted.
 
-        BufferDesc* oldBuffer = m_currentBuffer.exchange(m_updatedBuffer.load());
-        DestroyBuffer(*oldBuffer);
+        if (m_updatedBuffer.load())
+            DestroyBuffer(*m_updatedBuffer.load());
 
         // Signal that nothing has been updated again
         m_updatedBuffer = nullptr;
