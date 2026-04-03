@@ -30,7 +30,6 @@ namespace le::vk
 
         VkBuffer CreateBuffer(BufferDesc* target, size_t size) const;
         void DestroyBuffer(BufferDesc& buffer) const;
-        void DeleteStagingBuffer();
         void DeleteUnusedBuffers();
 
         TetherVulkan::GraphicsContext& m_context;
@@ -45,6 +44,10 @@ namespace le::vk
         std::atomic<BufferDesc*> m_currentBuffer = nullptr;
         std::atomic<BufferDesc*> m_updatedBuffer = nullptr;
         size_t m_framesSinceDeletion = 0;
+
+#ifndef NDEBUG
+        std::atomic_bool m_updated = false;
+#endif
 
         EventBusSubscriber m_sub;
     };

@@ -47,7 +47,7 @@ namespace le
         {
             std::shared_lock lock(m_resourcesMutex);
 
-            LE_ASSERT(HasResource<T>(id), "Tried to access resource (id = {}) which doesn't exist", id.Get());
+            LE_ASSERT(m_resources.contains(id.Get()), "Tried to access resource (id = {}) which doesn't exist", id.Get());
 
             Ref<T> resource = std::static_pointer_cast<T>(m_resources.at(id.Get()));
             LE_ASSERT(!resource->m_deleted, "Tried to access deleted resource {}", id.Get());

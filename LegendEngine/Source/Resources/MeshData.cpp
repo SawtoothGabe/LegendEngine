@@ -67,7 +67,7 @@ namespace le
     void MeshData::Update(const std::span<Vertex3> vertices, const std::span<uint32_t> indices)
     {
         m_vertexBuffer->Update(vertices.size() * sizeof(Vertex3), 0, vertices.data());
-        m_indexBuffer->Update(indices.size() * sizeof(uint32_t), 0, vertices.data());
+        m_indexBuffer->Update(indices.size() * sizeof(uint32_t), 0, indices.data());
 
         m_vertexCount = vertices.size();
         m_indexCount = indices.size();

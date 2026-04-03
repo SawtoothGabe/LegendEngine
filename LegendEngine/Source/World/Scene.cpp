@@ -185,6 +185,9 @@ namespace le
             m_entities.emplace(entityID, record);
         }
 
+        if (!m_queuedCreations.empty())
+            ClearCachedArchetypeLookups();
+
         m_queuedCreations.clear();
     }
 
