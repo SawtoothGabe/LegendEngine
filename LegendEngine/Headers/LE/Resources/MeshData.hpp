@@ -38,6 +38,8 @@ namespace le
 
         ID<MeshData> id = ID<MeshData>(m_uid);
     private:
+        void CreateBuffer(size_t vertexSize, size_t indexSize, UpdateFrequency frequency, GraphicsContext& context);
+
         Scope<Buffer> m_vertexBuffer;
         Scope<Buffer> m_indexBuffer;
 

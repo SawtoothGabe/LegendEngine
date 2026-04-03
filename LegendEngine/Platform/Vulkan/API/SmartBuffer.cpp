@@ -84,6 +84,9 @@ namespace le::vk
     {
         const BufferDesc* pDesc = m_currentBuffer.load();
 
+        if (!pDesc)
+            return { nullptr, 0 };
+
         const Desc desc {
             pDesc->buffer,
             pDesc->size,
