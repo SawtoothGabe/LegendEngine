@@ -8,7 +8,7 @@ namespace le
 {
     struct Mesh : Component
     {
-        Resource::ID<MeshData> data;
-        Resource::ID<Material> material;
+        Ref<MeshData> data;
+        Ref<Material> material;
     };
 }

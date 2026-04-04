@@ -9,7 +9,6 @@
 #include <LE/Graphics/GraphicsResources.hpp>
 #include <LE/Graphics/Renderer.hpp>
 #include <LE/IO/Logger.hpp>
-#include <LE/Resources/ResourceManager.hpp>
 
 namespace le
 {
@@ -103,7 +102,6 @@ namespace le
         Scope<GraphicsContext> m_ManagedGraphicsContext = nullptr;
 #endif
         std::optional<GraphicsResources> m_GraphicsResources;
-        ResourceManager m_resourceManager;
 
         Scene m_GlobalScene;
         Scene* m_pActiveScene = nullptr;

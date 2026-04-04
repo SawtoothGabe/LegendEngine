@@ -203,19 +203,12 @@ namespace le
         return *m_Instance;
     }
 
-    ResourceManager & Application::GetResourceManager()
-    {
-        return m_resourceManager;
-    }
-
     void Application::Update(const float delta, const bool updateWindow)
     {
 #ifndef LE_HEADLESS
         if (updateWindow)
             Tether::Application::Get().PollEvents();
 #endif
-
-        m_resourceManager.ProcessDeletedResources();
 
         RecalculateTransforms(m_GlobalScene);
         m_GlobalScene.ProcessEntityChanges();
@@ -252,6 +245,5 @@ namespace le
     void Application::CreateResources()
     {
         m_GraphicsContext.RegisterShaders(m_GraphicsResources->GetShaderManager());
-        m_GraphicsResources->CreateResources(m_resourceManager);
     }
 }
