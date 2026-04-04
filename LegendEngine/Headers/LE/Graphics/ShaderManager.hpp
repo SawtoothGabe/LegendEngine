@@ -14,11 +14,10 @@ namespace le
         ~ShaderManager();
         LE_NO_COPY(ShaderManager);
 
-        Resource::ID<Shader> GetByID(std::string_view shaderID) const;
+        Ref<Shader> GetByID(std::string_view shaderID) const;
 
-        // The shader object MUST exist for the life of the base class
-        void RegisterShader(std::string_view id, Resource::ID<Shader> shader);
+        void RegisterShader(std::string_view id, Ref<Shader> shader);
     private:
-        std::unordered_map<std::string, Resource::ID<Shader>> m_shaders;
+        std::unordered_map<std::string, Ref<Shader>> m_shaders;
     };
 }

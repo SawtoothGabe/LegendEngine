@@ -1,9 +1,26 @@
 #pragma once
 
 #include <cstdint>
+#include <functional>
 
 namespace le
 {
+    struct Handle
+    {
+        Handle(const uint64_t id, const std::function<void(uint64_t)>& free)
+            : id(id), m_free(free)
+        {}
+
+        ~Handle()
+        {
+            m_free(id);
+        }
+
+        uint64_t id = 0;
+    private:
+        std::function<void(uint64_t)> m_free = nullptr;
+    };
+
     struct Offset3D
     {
         int32_t x;
