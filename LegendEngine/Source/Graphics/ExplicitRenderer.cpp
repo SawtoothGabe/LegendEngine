@@ -48,34 +48,64 @@ namespace le
         LE_INFO("Destroyed ExplicitRenderer");
     }
 
-    Ref<Material> ExplicitRenderer::CreateMaterial()
+    MaterialID ExplicitRenderer::CreateMaterial()
     {
-        return std::make_shared<ExplicitMaterial>(*this);
+        return MaterialID(new ExplicitMaterial(*this));
     }
 
-    Ref<MeshData> ExplicitRenderer::CreateMeshData()
+    MeshID ExplicitRenderer::CreateMesh()
     {
-        return std::make_shared<ExplicitMeshData>();
+        return MeshID(new ExplicitMeshData());
     }
 
-    Ref<Shader> ExplicitRenderer::CreateShader()
+    ShaderID ExplicitRenderer::CreateShader()
     {
-        return std::make_shared<ExplicitShader>();
+        return ShaderID(m_driver.CreatePipeline().id);
     }
 
-    Ref<Texture2D> ExplicitRenderer::CreateTexture2D()
+    Texture2DID ExplicitRenderer::CreateTexture2D()
     {
-        return std::make_shared<ExplicitTexture2D>();
+        return Texture2DID(new ExplicitTexture2D());
     }
 
-    Ref<Texture2DArray> ExplicitRenderer::CreateTexture2DArray()
+    Texture2DArrayID ExplicitRenderer::CreateTexture2DArray()
     {
-        return std::make_shared<ExplicitTexture2DArray>();
+        return Texture2DArrayID(new ExplicitTexture2DArray());
     }
 
-    Ref<RenderTarget> ExplicitRenderer::CreateRenderTarget()
+    RenderTargetID ExplicitRenderer::CreateRenderTarget()
     {
-        return std::make_shared<ExplicitRenderTarget>(m_driver);
+        return RenderTargetID(new ExplicitRenderTarget(m_driver));
+    }
+
+    void ExplicitRenderer::DestroyMaterial(MaterialID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitMaterial*>(id.id); });
+    }
+
+    void ExplicitRenderer::DestroyMesh(MeshID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitMeshData*>(id.id); });
+    }
+
+    void ExplicitRenderer::DestroyShader(ShaderID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitShader*>(id.id); });
+    }
+
+    void ExplicitRenderer::DestroyTexture2D(Texture2DID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2D*>(id.id); });
+    }
+
+    void ExplicitRenderer::DestroyTexture2DArray(Texture2DArrayID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2D*>(id.id); });
+    }
+
+    void ExplicitRenderer::DestroyRenderTarget(RenderTargetID id)
+    {
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitRenderTarget*>(id.id); });
     }
 
     void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
