@@ -14,10 +14,60 @@ namespace le
     public:
         virtual ~GraphicsDriver() = default;
 
-        virtual Scope<GraphicsBackend> CreateBackend() = 0;
+        virtual Scope<Renderer> CreateBackend() = 0;
 
-        virtual Handle CreatePipeline() = 0;
-        virtual Handle CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
+        virtual uint64_t AllocateCommandBuffers(uint64_t pool) = 0;
+        virtual uint64_t AllocateDescriptorSets() = 0;
+        virtual uint64_t CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
+        virtual uint64_t CreateCommandPool() = 0;
+        virtual uint64_t CreateFence() = 0;
+        virtual uint64_t CreateImage() = 0;
+        virtual uint64_t CreateImageView() = 0;
+        virtual uint64_t CreatePipeline() = 0;
+        virtual uint64_t CreateSemaphore() = 0;
+        virtual uint64_t CreateSwapchain() = 0;
+        virtual uint64_t CreateSurface() = 0;
+        virtual uint64_t CreateShaderModule() = 0;
+        virtual uint64_t CreateDescriptorSetLayout() = 0;
+        virtual uint64_t CreateSampler() = 0;
+
+        virtual void FreeCommandBuffers() = 0;
+        virtual void FreeDescriptorSets() = 0;
+        virtual void DestroyBuffer(uint64_t resource) = 0;
+        virtual void DestroyCommandBuffer(uint64_t resource) = 0;
+        virtual void DestroyCommandPool(uint64_t resource) = 0;
+        virtual void DestroyFence(uint64_t resource) = 0;
+        virtual void DestroyImage(uint64_t resource) = 0;
+        virtual void DestroyImageView(uint64_t resource) = 0;
+        virtual void DestroyPipeline(uint64_t resource) = 0;
+        virtual void DestroySemaphore(uint64_t resource) = 0;
+        virtual void DestroySwapchain(uint64_t resource) = 0;
+        virtual void DestroySurface(uint64_t resource) = 0;
+        virtual void DestroyShaderModule(uint64_t resource) = 0;
+
+        virtual void WaitForFences(size_t count, uint64_t* fences) = 0;
+        virtual void WaitIdle() = 0;
+        virtual void ResetFences(size_t count, uint64_t* fences) = 0;
+        virtual void QueueSubmit() = 0;
+        virtual void QueuePresent() = 0;
+        virtual void ResetCommandBuffer(uint64_t buffer) = 0;
+        virtual void BeginCommandBuffer(uint64_t buffer) = 0;
+        virtual void EndCommandBuffer(uint64_t buffer) = 0;
+
+        virtual void CmdCopyBuffer(uint64_t buffer) = 0;
+        virtual void CmdCopyBufferToImage(uint64_t buffer) = 0;
+        virtual void CmdPipelineBarrier(uint64_t buffer) = 0;
+        virtual void CmdBeginRendering(uint64_t buffer) = 0;
+        virtual void CmdSetViewport(uint64_t buffer) = 0;
+        virtual void CmdSetScissor(uint64_t buffer) = 0;
+        virtual void CmdBindPipeline(uint64_t buffer) = 0;
+        virtual void CmdSetCullMode(uint64_t buffer) = 0;
+        virtual void CmdPushConstants(uint64_t buffer) = 0;
+        virtual void CmdBindDescriptorSets(uint64_t buffer) = 0;
+        virtual void CmdBindVertexBuffers(uint64_t buffer) = 0;
+        virtual void CmdBindIndexBuffer(uint64_t buffer) = 0;
+        virtual void CmdDrawIndexed(uint64_t buffer) = 0;
+        virtual void CmdEndRendering(uint64_t buffer) = 0;
 
         static Scope<GraphicsDriver> Create(GraphicsAPI api,
             std::string_view applicationName);

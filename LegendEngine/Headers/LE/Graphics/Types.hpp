@@ -21,6 +21,13 @@ namespace le
         std::function<void(uint64_t)> m_free = nullptr;
     };
 
+    struct MaterialHandle : Handle {};
+    struct MeshHandle : Handle {};
+    struct ShaderHandle : Handle {};
+    struct Texture2DHandle : Handle {};
+    struct Texture2DArrayHandle : Handle {};
+    struct RenderTargetHandle : Handle {};
+
     struct Offset3D
     {
         int32_t x;

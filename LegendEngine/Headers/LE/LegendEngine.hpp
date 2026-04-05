@@ -23,7 +23,7 @@
 
 #include <LE/Graphics/GraphicsContext.hpp>
 #include <LE/Graphics/Renderer.hpp>
-#include <LE/Graphics/RenderTarget.hpp>
+#include <Graphics/API/RenderTarget.hpp>
 #include <LE/Graphics/ShaderManager.hpp>
 #include <LE/Graphics/API/Buffer.hpp>
 #include <LE/Graphics/API/CommandBuffer.hpp>

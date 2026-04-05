@@ -2,7 +2,7 @@
 
 #include <LE/Common/Defs.hpp>
 #include <LE/Common/Types.hpp>
-#include <LE/Graphics/GraphicsBackend.hpp>
+#include <LE/Graphics/Renderer.hpp>
 #include <LE/Graphics/GraphicsDriver.hpp>
 
 namespace le
@@ -15,9 +15,9 @@ namespace le
         LE_NO_COPY(GraphicsContext);
 
         GraphicsDriver& GetDriver();
-        GraphicsBackend& GetBackend();
+        Renderer& GetBackend();
     private:
         Scope<GraphicsDriver> m_driver;
-        Scope<GraphicsBackend> m_backend;
+        Scope<Renderer> m_backend;
     };
 }
