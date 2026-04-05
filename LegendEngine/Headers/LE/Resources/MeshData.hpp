@@ -26,14 +26,12 @@ namespace le
         MeshData(size_t initialVertexCount, size_t initialIndexCount,
             UpdateFrequency frequency);
 
-        void Update(std::span<Vertex3> vertices, std::span<uint32_t> indices);
-        void Resize(size_t vertexCount, size_t indexCount);
-
         size_t GetVertexCount() const;
         size_t GetIndexCount() const;
-    private:
-        void CreateBuffer(size_t vertexSize, size_t indexSize, UpdateFrequency frequency, GraphicsContext& context);
 
+        static Ref<MeshData> Create(std::span<Vertex3> vertices, std::span<uint32_t> indices,
+            UpdateFrequency frequency);
+    private:
         size_t m_vertexCount;
         size_t m_indexCount;
     };

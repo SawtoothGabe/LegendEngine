@@ -18,6 +18,8 @@ namespace le
 		[[nodiscard]] uint64_t GetWidth() const;
 		[[nodiscard]] uint64_t GetHeight() const;
 		[[nodiscard]] uint8_t GetChannels() const;
+
+		static Ref<Texture2D> Create(const TextureData& loader);
 	private:
 		uint64_t m_Width;
 		uint64_t m_Height;

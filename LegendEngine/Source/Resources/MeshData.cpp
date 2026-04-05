@@ -15,13 +15,7 @@ namespace le
         m_vertexCount(initialVertexCount),
         m_indexCount(initialIndexCount)
     {
-        GraphicsContext& context = Application::Get().GetGraphicsContext();
-        const size_t vertexSize = m_vertexCount * sizeof(Vertex3);
-        const size_t indexSize = m_indexCount * sizeof(uint32_t);
-
         LE_ASSERT(frequency != UpdateFrequency::UPDATES_ONCE, "MeshData made with UpdateFrequency::UPDATES_ONCE must specify vertex data");
-
-        CreateBuffer(vertexSize, indexSize, frequency, context);
     }
 
     size_t MeshData::GetVertexCount() const

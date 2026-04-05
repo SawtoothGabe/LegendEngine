@@ -24,6 +24,8 @@ namespace le
 		[[nodiscard]] Ref<Texture> GetTexture() const;
 	    [[nodiscard]] Ref<Shader> GetShader() const;
 		[[nodiscard]] Color GetColor() const;
+
+		static Ref<Material> Create();
 	private:
 	    const ShaderManager& m_ShaderManager;
 
