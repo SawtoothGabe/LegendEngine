@@ -10,7 +10,7 @@ using namespace std::literals::chrono_literals;
 class EntityManager
 {
 public:
-	explicit EntityManager(Scene* pScene, const Resource::ID<MeshData> mesh)
+	explicit EntityManager(Scene* pScene, const Ref<MeshData>& mesh)
 		:
 		m_entity(pScene->CreateEntity())
 	{
@@ -184,7 +184,6 @@ public:
 	explicit Legendary(Application& app)
 		:
 		m_App(app),
-		m_ResourceManager(app.GetResourceManager()),
 		m_Sub(m_App.GetEventBus()),
 		m_mesh(CreateMesh()),
 		camera(&testScene),
@@ -192,8 +191,7 @@ public:
 		cube2(&testScene, m_mesh),
 		floor(&testScene, m_mesh)
 	{
-		const Resource::ID<Shader> shaderID = app.GetGraphicsResources().GetShaderManager().GetByID("textured");
-		const Ref<Shader> shader = m_ResourceManager.GetResource<Shader>(shaderID);
+		const Ref<Shader> shader = app.GetGraphicsContext().GetShaderManager().GetByID("textured");
 		shader->SetCullMode(Shader::CullMode::NONE);
 
 		CreateMaterials();
@@ -276,7 +274,7 @@ public:
 		m_mouseButton = static_cast<uint32_t>(info.GetClickType()) * info.IsPressed() + info.IsPressed();
 	}
 private:
-	Resource::ID<MeshData> CreateMesh()
+	Ref<MeshData> CreateMesh()
 	{
 		MeshData::Vertex3 testVertices[] =
 		{
@@ -292,26 +290,24 @@ private:
 			1, 2, 3
 		};
 
-		const Ref<MeshData> mesh = m_ResourceManager.CreateResource<MeshData>(
+		return MeshData::Create(
 			std::span<MeshData::Vertex3>(testVertices),
 			std::span<uint32_t>(indices), MeshData::UpdateFrequency::UPDATES_ONCE);
-
-		return mesh->id;
 	}
 
 	void CreateMaterials()
 	{
-		material = m_ResourceManager.CreateResource<Material>();
-		material2 = m_ResourceManager.CreateResource<Material>();
+		material = Material::Create();
+		material2 = Material::Create();
 
 		std::future<TextureData> planksLoader = TextureData::FromFile("Assets/planks.png");
 		std::future<TextureData> tilesLoader = TextureData::FromFile("Assets/tiles.png");
 
-		texture = m_ResourceManager.CreateResource<Texture2D>(planksLoader.get());
-		texture2 = m_ResourceManager.CreateResource<Texture2D>(tilesLoader.get());
+		texture = Texture2D::Create(planksLoader.get());
+		texture2 = Texture2D::Create(tilesLoader.get());
 
-		material->SetTexture(texture->id);
-		material2->SetTexture(texture2->id);
+		material->SetTexture(texture);
+		material2->SetTexture(texture2);
 	}
 
 	void CreateObjects()
@@ -319,20 +315,20 @@ private:
 		cube1.m_entity.QueryComponents<Transform, Mesh>([&](Transform& transform, Mesh& mesh)
 		{
 			transform.SetPosition(Vector3f(0.0f, 0.5f, 0.0f));
-			mesh.material = material->id;
+			mesh.material = material;
 		});
 
 		cube2.m_entity.QueryComponents<Transform, Mesh>([&](Transform& transform, Mesh& mesh)
 		{
 			transform.SetPosition(Vector3f(3.0f, 0.5f, 0.0f));
-			mesh.material = material->id;
+			mesh.material = material;
 		});
 
 		floor.m_entity.QueryComponents<Transform, Mesh>([&](Transform& transform, Mesh& mesh)
 		{
 			transform.SetScale(Vector3f(10));
 			transform.SetRotation(Math::AngleAxis(Math::Radians(90.0f), Vector3f(1, 0, 0)));
-			mesh.material = material2->id;
+			mesh.material = material2;
 		});
 
 		std::mt19937 g(1);
@@ -353,7 +349,6 @@ private:
 	}
 
 	Application& m_App;
-	ResourceManager& m_ResourceManager;
 	EventBusSubscriber m_Sub;
 
 	Stopwatch timer;
@@ -361,7 +356,7 @@ private:
 
 	Scene testScene;
 
-	Resource::ID<MeshData> m_mesh;
+	Ref<MeshData> m_mesh;
 
 	CameraManager camera;
 	EntityManager cube1;

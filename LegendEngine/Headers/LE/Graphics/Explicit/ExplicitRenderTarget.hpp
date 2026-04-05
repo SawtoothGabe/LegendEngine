@@ -1,6 +1,7 @@
 #pragma once
 
 #include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/RenderTarget.hpp>
 #include <LE/Graphics/Types.hpp>
 
 namespace le

@@ -40,35 +40,24 @@ namespace le
     }
 
     Application::Application(
-        Scope<GraphicsContext> graphicsContext,
+        Scope<GraphicsDriver> driver,
         const std::string_view applicationName,
         const int width, const int height)
         :
         m_ResizeHandler(*this),
-        m_ManagedGraphicsContext(std::move(graphicsContext)),
-        m_GraphicsResources(*m_ManagedGraphicsContext),
-        m_GlobalScene(*m_ManagedGraphicsContext, m_GraphicsResources.value()),
-        m_GraphicsContext(*m_ManagedGraphicsContext),
-        m_RenderTarget(CreateRenderTarget(width, height, applicationName)),
-        m_Renderer(CreateRenderer())
+        m_graphicsContext(std::move(driver))
     {
+        LE_INFO("Creating application");
+
+        m_renderTarget = m_graphicsContext.GetRenderer().CreateRenderTarget();
+
         LE_INFO("Application created");
-    }
-
-    Renderer& Application::GetRenderer() const
-    {
-        return m_Renderer;
-    }
-
-    RenderTarget& Application::GetRenderTarget() const
-    {
-        return m_RenderTarget;
     }
 
     void Application::Render(const float delta)
     {
         Scene* scenes[] = { &m_GlobalScene, m_pActiveScene };
-        m_Renderer.RenderFrame(scenes);
+        m_graphicsContext.GetRenderer().RenderFrame(m_renderTarget, scenes);
 
         m_EventBus.DispatchEvent<RenderEvent>(RenderEvent(delta));
 
@@ -93,28 +82,6 @@ namespace le
     {
         Update(delta);
         Render(delta);
-    }
-
-    RenderTarget& Application::CreateRenderTarget(const int width, const int height,
-        const std::string_view applicationName)
-    {
-        std::wstring title(applicationName.size(), L' ');
-        std::mbstowcs(title.data(), applicationName.data(),
-                      applicationName.size());
-
-        LE_INFO("Creating window");
-        m_Window = Tether::Window::Create(width, height,
-                                          title, false);
-        m_Window->AddEventHandler(m_ResizeHandler, Tether::Events::EventType::WINDOW_RESIZE);
-
-        LE_INFO("Creating render target");
-        return *(m_WindowRenderTarget = m_GraphicsContext.CreateWindowRenderTarget(*m_Window));
-    }
-
-    Renderer& Application::CreateRenderer()
-    {
-        LE_INFO("Creating renderer");
-        return *(m_ManagedRenderer = m_ManagedGraphicsContext->CreateRenderer(m_RenderTarget, *m_GraphicsResources));
     }
 
     Tether::Window& Application::GetWindow() const
@@ -147,14 +114,9 @@ namespace le
         m_pActiveScene = nullptr;
     }
 
-    GraphicsContext& Application::GetGraphicsContext() const
+    GraphicsContext& Application::GetGraphicsContext()
     {
-        return m_GraphicsContext;
-    }
-
-    GraphicsResources& Application::GetGraphicsResources()
-    {
-        return *m_GraphicsResources;
+        return m_graphicsContext;
     }
 
     EventBus& Application::GetEventBus()
@@ -240,10 +202,5 @@ namespace le
     size_t Application::GetCurrentFrame() const
     {
         return m_currentFrame;
-    }
-
-    void Application::CreateResources()
-    {
-        m_GraphicsContext.RegisterShaders(m_GraphicsResources->GetShaderManager());
     }
 }

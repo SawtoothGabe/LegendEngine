@@ -3,14 +3,11 @@
 #include <unordered_map>
 #include <vector>
 #include <LE/Common/Defs.hpp>
-#include <LE/Common/Types.hpp>
 #include <LE/Common/UID.hpp>
 #include <LE/Math/Math.hpp>
 #include <LE/World/Archetype.hpp>
 #include <LE/World/ECS.hpp>
 
-#include <LE/Graphics/API/Buffer.hpp>
-#include <LE/Graphics/API/DynamicUniforms.hpp>
 #include <LE/World/EntityCreator.hpp>
 
 namespace le
@@ -23,13 +20,8 @@ namespace le
     {
         friend Entity;
     public:
-#ifndef LE_HEADLESS
         Scene();
-        explicit Scene(GraphicsContext& context, const GraphicsResources& resources);
         ~Scene();
-#else
-        Scene() = default;
-#endif
         LE_NO_COPY(Scene);
 
         Entity CreateEntity();
@@ -228,9 +220,6 @@ namespace le
         void SetAmbientLight(float level);
         void Clear();
 
-        void UpdateUniforms();
-        DynamicUniforms& GetUniforms() const;
-
         void ProcessEntityChanges();
     private:
         struct Storage
@@ -298,10 +287,6 @@ namespace le
         void ProcessDeletions();
         void ClearCachedArchetypeLookups();
 
-#ifndef LE_HEADLESS
-        GraphicsContext& m_context;
-#endif
-
         std::unordered_map<UID, ECS::EntityRecord> m_entities;
         std::unordered_map<size_t, std::vector<size_t>> m_findArchetypeResults;
         std::unordered_map<size_t, Archetype> m_archetypes;
@@ -312,8 +297,6 @@ namespace le
         std::mutex m_deletionMutex;
         std::vector<UID> m_deletions;
 
-        Scope<Buffer> m_buffer;
-        Scope<DynamicUniforms> m_uniforms;
         Storage m_storage;
         std::vector<LightData> m_lightData;
     };

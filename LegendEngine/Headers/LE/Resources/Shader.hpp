@@ -2,7 +2,6 @@
 
 #include <span>
 #include <LE/Common/Types.hpp>
-#include <LE/Graphics/API/Pipeline.hpp>
 #include <LE/Resources/Resource.hpp>
 
 namespace le
@@ -28,13 +27,7 @@ namespace le
 
         void SetCullMode(CullMode cullMode);
         [[nodiscard]] CullMode GetCullMode() const;
-
-        [[nodiscard]] Pipeline& GetPipeline() const;
-
-        ID<Shader> id = ID<Shader>(m_uid);
     protected:
         CullMode m_CullMode = CullMode::BACK;
-
-        Scope<Pipeline> m_pipeline;
     };
 }

@@ -23,15 +23,6 @@
 
 #include <LE/Graphics/GraphicsContext.hpp>
 #include <LE/Graphics/Renderer.hpp>
-#include <Graphics/API/RenderTarget.hpp>
-#include <LE/Graphics/ShaderManager.hpp>
-#include <LE/Graphics/API/Buffer.hpp>
-#include <LE/Graphics/API/CommandBuffer.hpp>
-#include <LE/Graphics/API/DynamicUniforms.hpp>
-#include <LE/Graphics/API/Image.hpp>
-#include <LE/Graphics/API/Pipeline.hpp>
-#include <LE/Graphics/API/Sampler.hpp>
-#include <LE/Graphics/API/Types.hpp>
 
 #include <LE/IO/Logger.hpp>
 #include <LE/IO/LoggerSinks.hpp>
@@ -40,7 +31,6 @@
 #include <LE/Math/Math.hpp>
 
 #include <LE/Resources/Material.hpp>
-#include <LE/Resources/ResourceManager.hpp>
 #include <LE/Resources/Shader.hpp>
 #include <LE/Resources/Texture2D.hpp>
 #include <LE/Resources/Texture2DArray.hpp>

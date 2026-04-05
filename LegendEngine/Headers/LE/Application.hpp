@@ -6,7 +6,6 @@
 #include <LE/Common/Defs.hpp>
 #include <LE/Events/EventBus.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
-#include <LE/Graphics/GraphicsResources.hpp>
 #include <LE/Graphics/Renderer.hpp>
 #include <LE/IO/Logger.hpp>
 
@@ -22,20 +21,18 @@ namespace le
 #ifndef LE_HEADLESS
         // Creates the Application with a WindowRenderTarget
         Application(
-            Scope<GraphicsContext> graphicsContext,
+            Scope<GraphicsDriver> driver,
             std::string_view applicationName,
             int width, int height);
 
-        [[nodiscard]] Renderer& GetRenderer() const;
         Tether::Window& GetWindow() const;
 
         template<typename... Args>
         static void Create(GraphicsAPI api, std::string_view applicationName, Args&&... args)
         {
             LE_ASSERT(!m_Instance, "Application already exists");
-            m_Instance = std::make_unique<Application>(GraphicsContext::Create(api, applicationName),
+            m_Instance = std::make_unique<Application>(GraphicsDriver::Create(api, applicationName),
                 applicationName, args...);
-            m_Instance->CreateResources();
         }
 #else
         Application(GraphicsContext& ctx); // Headless application constructor
@@ -54,11 +51,8 @@ namespace le
         void SetActiveScene(Scene& scene);
         void ClearActiveScene();
 
-        GraphicsContext& GetGraphicsContext() const;
-        GraphicsResources& GetGraphicsResources();
-        RenderTarget& GetRenderTarget() const;
+        GraphicsContext& GetGraphicsContext();
         EventBus& GetEventBus();
-        ResourceManager& GetResourceManager();
         Scene& GetGlobalScene();
         Scene* GetActiveScene() const;
         size_t GetCurrentFrame() const;
@@ -72,8 +66,6 @@ namespace le
         static bool HasConstructed();
         static Application& Get();
     private:
-        void CreateResources();
-
         void RunInstance();
 
         void Update(float delta, bool updateWindow = true);
@@ -94,28 +86,14 @@ namespace le
             Application& m_Application;
         };
         ResizeHandler m_ResizeHandler;
-
-        RenderTarget& CreateRenderTarget(int width, int height,
-            std::string_view applicationName);
-        Renderer& CreateRenderer();
-
-        Scope<GraphicsContext> m_ManagedGraphicsContext = nullptr;
+        Scope<Window> m_Window = nullptr;
 #endif
-        std::optional<GraphicsResources> m_GraphicsResources;
+
+        GraphicsContext m_graphicsContext;
+        RenderTargetID m_renderTarget;
 
         Scene m_GlobalScene;
         Scene* m_pActiveScene = nullptr;
-#ifndef LE_HEADLESS
-        Scope<RenderTarget> m_WindowRenderTarget = nullptr;
-        Scope<Renderer> m_ManagedRenderer = nullptr;
-
-        Scope<Window> m_Window = nullptr;
-#endif
-        GraphicsContext& m_GraphicsContext;
-#ifndef LE_HEADLESS
-        RenderTarget& m_RenderTarget;
-        Renderer& m_Renderer;
-#endif
 
         bool m_Headless = false;
 

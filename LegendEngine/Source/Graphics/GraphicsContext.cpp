@@ -24,4 +24,9 @@ namespace le
     {
         return *m_renderer;
     }
+
+    ShaderManager& GraphicsContext::GetShaderManager()
+    {
+        return m_shaderManager;
+    }
 }

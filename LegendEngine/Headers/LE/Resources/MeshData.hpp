@@ -1,7 +1,6 @@
 #pragma once
 
 #include <LE/Common/Types.hpp>
-#include <LE/Graphics/API/Buffer.hpp>
 #include <LE/Resources/Resource.hpp>
 
 namespace le
@@ -32,14 +31,8 @@ namespace le
 
         size_t GetVertexCount() const;
         size_t GetIndexCount() const;
-
-        Buffer& GetVertexBuffer() const;
-        Buffer& GetIndexBuffer() const;
     private:
         void CreateBuffer(size_t vertexSize, size_t indexSize, UpdateFrequency frequency, GraphicsContext& context);
-
-        Scope<Buffer> m_vertexBuffer;
-        Scope<Buffer> m_indexBuffer;
 
         size_t m_vertexCount;
         size_t m_indexCount;
