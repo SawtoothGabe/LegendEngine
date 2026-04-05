@@ -10,14 +10,14 @@ namespace le
     class GraphicsContext
     {
     public:
-        GraphicsContext();
+        explicit GraphicsContext(Scope<GraphicsDriver> driver);
         ~GraphicsContext();
         LE_NO_COPY(GraphicsContext);
 
-        GraphicsDriver& GetDriver();
-        Renderer& GetBackend();
+        [[nodiscard]] GraphicsDriver& GetDriver() const;
+        [[nodiscard]] Renderer& GetRenderer() const;
     private:
         Scope<GraphicsDriver> m_driver;
-        Scope<Renderer> m_backend;
+        Scope<Renderer> m_renderer;
     };
 }

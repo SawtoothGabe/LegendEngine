@@ -28,6 +28,49 @@ namespace le
     struct Texture2DArrayHandle : Handle {};
     struct RenderTargetHandle : Handle {};
 
+#define LE_GRAPHICS_RESOURCE_ID(name) \
+    struct name##ID \
+    { \
+        uint64_t id = 0; \
+        name##ID() = default; \
+        explicit name##ID(uint64_t id) : id(id) {} \
+        explicit name##ID(void* ptr) : id(reinterpret_cast<uint64_t>(ptr)) {} \
+        name##ID(const name##ID& other) : id(other.id) {} \
+        explicit operator bool() const \
+        { \
+            return id != 0; \
+        } \
+        name##ID& operator=(const name##ID& other) \
+        { \
+            id = other.id; \
+            return *this; \
+        } \
+        bool operator==(const name##ID& other) \
+        { \
+            return id == other.id; \
+        }\
+        bool operator!=(const name##ID& other) \
+        { \
+            return id != other.id; \
+        } \
+        \
+    }
+
+    LE_GRAPHICS_RESOURCE_ID(Buffer);
+    LE_GRAPHICS_RESOURCE_ID(CommandBuffer);
+    LE_GRAPHICS_RESOURCE_ID(DescriptorSet);
+    LE_GRAPHICS_RESOURCE_ID(CommandPool);
+    LE_GRAPHICS_RESOURCE_ID(Fence);
+    LE_GRAPHICS_RESOURCE_ID(Image);
+    LE_GRAPHICS_RESOURCE_ID(ImageView);
+    LE_GRAPHICS_RESOURCE_ID(Pipeline);
+    LE_GRAPHICS_RESOURCE_ID(Semaphore);
+    LE_GRAPHICS_RESOURCE_ID(Swapchain);
+    LE_GRAPHICS_RESOURCE_ID(Surface);
+    LE_GRAPHICS_RESOURCE_ID(ShaderModule);
+    LE_GRAPHICS_RESOURCE_ID(DescriptorSetLayout);
+    LE_GRAPHICS_RESOURCE_ID(Sampler);
+
     struct Offset3D
     {
         int32_t x;
