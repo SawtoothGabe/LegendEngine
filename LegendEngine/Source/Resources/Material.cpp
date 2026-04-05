@@ -44,4 +44,9 @@ namespace le
     {
         return m_uniformData.color;
     }
+
+    Ref<Material> Material::Create()
+    {
+        return std::make_shared<Material>();
+    }
 }

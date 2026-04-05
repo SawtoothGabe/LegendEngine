@@ -27,4 +27,9 @@ namespace le
     {
         return m_indexCount;
     }
+
+    Ref<MeshData> MeshData::Create(std::span<Vertex3> vertices, std::span<uint32_t> indices, UpdateFrequency frequency)
+    {
+        return std::make_shared<MeshData>(vertices, indices, frequency);
+    }
 }

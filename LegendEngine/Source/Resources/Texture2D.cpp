@@ -28,4 +28,9 @@ namespace le
     {
         return m_Channels;
     }
+
+    Ref<Texture2D> Texture2D::Create(const TextureData& loader)
+    {
+        return std::make_shared<Texture2D>(loader);
+    }
 }
