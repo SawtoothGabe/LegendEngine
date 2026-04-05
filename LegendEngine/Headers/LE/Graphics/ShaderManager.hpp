@@ -16,7 +16,7 @@ namespace le
 
         Ref<Shader> GetByID(std::string_view shaderID) const;
 
-        void RegisterShader(std::string_view id, Ref<Shader> shader);
+        void RegisterShader(std::string_view id, const Ref<Shader>& shader);
     private:
         std::unordered_map<std::string, Ref<Shader>> m_shaders;
     };
