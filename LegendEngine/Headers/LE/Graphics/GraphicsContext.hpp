@@ -19,5 +19,7 @@ namespace le
     private:
         Scope<GraphicsDriver> m_driver;
         Scope<Renderer> m_renderer;
+
+        CommandPoolID m_gfxPool;
     };
 }

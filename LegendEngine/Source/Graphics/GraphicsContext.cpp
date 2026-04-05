@@ -6,12 +6,13 @@ namespace le
         :
         m_driver(std::move(driver))
     {
-        m_renderer = m_driver->CreateRenderer();
+        m_gfxPool = m_driver->CreateCommandPool();
+        m_renderer = m_driver->CreateRenderer(m_gfxPool);
     }
 
     GraphicsContext::~GraphicsContext()
     {
-
+        m_driver->DestroyCommandPool(m_gfxPool);
     }
 
     GraphicsDriver& GraphicsContext::GetDriver() const

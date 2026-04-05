@@ -14,7 +14,7 @@ namespace le
     public:
         virtual ~GraphicsDriver() = default;
 
-        virtual Scope<Renderer> CreateRenderer() = 0;
+        virtual Scope<Renderer> CreateRenderer(CommandPoolID pool) = 0;
 
         virtual void AllocateCommandBuffers(CommandPoolID pool) = 0;
         virtual void AllocateDescriptorSets() = 0;

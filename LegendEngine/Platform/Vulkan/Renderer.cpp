@@ -89,40 +89,6 @@ namespace le::vk
         m_ShouldRecreateSwapchain = true;
     }
 
-    bool Renderer::StartFrame()
-    {
-        if (m_ShouldRecreateSwapchain)
-            RecreateSwapchain();
-
-        m_CurrentFrame = Application::Get().GetCurrentFrame();
-
-        // in flight frame = a frame that is being rendered while still rendering
-        // more frames
-
-        // If this frame is still in flight, wait for it to finish rendering before
-        // rendering another frame.
-        vkWaitForFences(m_Device, 1, &m_InFlightFences[m_CurrentFrame], true, UINT64_MAX);
-
-        // The swapchain has one more than the minimum images, so the index
-        // might not be the same as m_CurrentFrame
-        const VkResult acquireResult = vkAcquireNextImageKHR(
-            m_Device, m_Swapchain->Get(),
-            UINT64_MAX,
-            m_ImageAvailableSemaphores[m_CurrentFrame],
-            VK_NULL_HANDLE,
-            &m_CurrentImageIndex
-        );
-        if (acquireResult != VK_SUCCESS)
-        {
-            m_ShouldRecreateSwapchain = true;
-            return false;
-        }
-
-        BeginCommandBuffer();
-
-        return true;
-    }
-
     void Renderer::BeginCommandBuffer()
     {
         const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
@@ -206,88 +172,6 @@ namespace le::vk
         m_currentShaderID = 0;
     }
 
-    void Renderer::BeginScene(Scene& scene)
-    {
-        const auto& vkUniforms = static_cast<DynamicUniforms&>(scene.GetUniforms());
-        m_Sets[1] = vkUniforms.GetDescriptorSet();
-    }
-
-    void Renderer::UseMaterial(const Material& material, const Ref<Shader> shader)
-    {
-        const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
-        const le::DynamicUniforms& dynamicUniforms = material.GetUniforms();
-        const auto& vkUniforms = static_cast<const DynamicUniforms&>(
-            dynamicUniforms);
-
-        m_Sets[2] = vkUniforms.GetDescriptorSet();
-        m_HaveSetsChanged = true;
-
-        if (material.GetShader() == m_currentShaderID)
-            return;
-
-        const le::Pipeline& pipeline = shader->GetPipeline();
-        const auto& vkPipeline = static_cast<const Pipeline&>(pipeline);
-
-        VkCullModeFlags cullMode;
-        switch (shader->GetCullMode())
-        {
-            case Shader::CullMode::BACK: cullMode = VK_CULL_MODE_BACK_BIT; break;
-            case Shader::CullMode::FRONT: cullMode = VK_CULL_MODE_FRONT_BIT; break;
-            default: cullMode = VK_CULL_MODE_NONE;
-        }
-
-        vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-            vkPipeline.Get());
-        vkCmdSetCullMode(buffer, cullMode);
-
-        m_currentPipelineLayout = vkPipeline.GetPipelineLayout();
-        m_currentShaderID = material.GetShader();
-    }
-
-    void Renderer::DrawMesh(const Mesh& mesh, const Transform& transform, const Ref<MeshData> meshData)
-    {
-        auto& vertexBuffer = static_cast<Buffer&>(meshData->GetVertexBuffer());
-        auto& indexBuffer  = static_cast<Buffer&>(meshData->GetIndexBuffer());
-
-        if (!vertexBuffer.GetDesc().buffer || !indexBuffer.GetDesc().buffer)
-            return;
-
-        const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
-
-        Pipeline::ObjectTransform objectTransform;
-        objectTransform.transform = transform.transformMat;
-
-        vkCmdPushConstants(buffer, m_currentPipelineLayout,
-            VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(objectTransform),
-            &objectTransform);
-
-        if (m_HaveSetsChanged)
-        {
-            vkCmdBindDescriptorSets(
-                buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                m_currentPipelineLayout,
-                0, std::size(m_Sets),
-                m_Sets,
-                0, nullptr
-            );
-            m_HaveSetsChanged = false;
-        }
-
-        const VkBuffer vBuffers[] = { vertexBuffer.GetDesc().buffer };
-        constexpr VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(buffer, 0, 1, vBuffers, offsets);
-
-        vkCmdBindIndexBuffer(
-            buffer,
-            indexBuffer.GetDesc().buffer,
-            0,
-            VK_INDEX_TYPE_UINT32
-        );
-
-        vkCmdDrawIndexed(buffer, meshData->GetIndexCount(),
-            1, 0, 0, 0);
-    }
-
     void Renderer::EndCommandBuffer() const
     {
         const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
@@ -364,17 +248,6 @@ namespace le::vk
         m_GraphicsQueueMutex.lock();
         vkQueuePresentKHR(m_TetherCtx.GetQueue(), &presentInfo);
         m_GraphicsQueueMutex.unlock();
-    }
-
-    void Renderer::CreateSwapchain(const TetherVulkan::SwapchainDetails& details)
-    {
-        m_Swapchain.emplace(m_TetherCtx, details, m_SurfaceFormat,
-            m_Surface, m_RenderTarget.GetWidth(), m_RenderTarget.GetHeight(),
-            m_VSync);
-
-        m_SwapchainImages = m_Swapchain->GetImages();
-        m_SwapchainImageViews = m_Swapchain->CreateImageViews();
-        m_SwapchainImageCount = m_Swapchain->GetImageCount();
     }
 
     void Renderer::CreateDepthImages()

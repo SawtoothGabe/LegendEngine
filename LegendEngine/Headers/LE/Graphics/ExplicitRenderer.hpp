@@ -9,7 +9,7 @@ namespace le
     class ExplicitRenderer final : public Renderer
     {
     public:
-        ExplicitRenderer(GraphicsDriver& driver);
+        ExplicitRenderer(GraphicsDriver& driver, CommandPoolID gfxPool);
         ~ExplicitRenderer();
 
         MaterialHandle CreateMaterial() override;
@@ -23,6 +23,9 @@ namespace le
         void RenderFrame(RenderTarget& target, std::span<Scene*> scenes) override;
         void EndFrame() override;
     private:
+        void CreateCommandBuffers();
+        void CreateSyncObjects();
+
         void ProcessDeletionQueue();
 
         void BeginScene();
@@ -30,6 +33,7 @@ namespace le
         void DrawMesh();
 
         GraphicsDriver& m_driver;
+        CommandPoolID m_gfxPool;
 
         std::vector<CommandBufferID> m_commandBuffers;
         std::vector<FenceID> m_inFlightFences;
@@ -37,8 +41,8 @@ namespace le
 
         std::vector<std::vector<std::function<void()>>> m_deletionQueues;
 
-        DescriptorSetID m_Sets[3] = {};
-        bool m_HaveSetsChanged = true;
+        DescriptorSetID m_sets[3] = {};
+        bool m_haveSetsChanged = true;
         Ref<Shader> m_currentShader = nullptr;
 
         size_t m_currentFrame = 0;
