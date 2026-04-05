@@ -5,29 +5,6 @@
 
 namespace le
 {
-    struct Handle
-    {
-        Handle(const uint64_t id, const std::function<void(uint64_t)>& free)
-            : id(id), m_free(free)
-        {}
-
-        ~Handle()
-        {
-            m_free(id);
-        }
-
-        uint64_t id = 0;
-    private:
-        std::function<void(uint64_t)> m_free = nullptr;
-    };
-
-    struct MaterialHandle : Handle {};
-    struct MeshHandle : Handle {};
-    struct ShaderHandle : Handle {};
-    struct Texture2DHandle : Handle {};
-    struct Texture2DArrayHandle : Handle {};
-    struct RenderTargetHandle : Handle {};
-
 #define LE_GRAPHICS_RESOURCE_ID(name) \
     struct name##ID \
     { \
@@ -56,6 +33,15 @@ namespace le
         \
     }
 
+    // Graphics Resources
+    LE_GRAPHICS_RESOURCE_ID(Material);
+    LE_GRAPHICS_RESOURCE_ID(Mesh);
+    LE_GRAPHICS_RESOURCE_ID(Shader);
+    LE_GRAPHICS_RESOURCE_ID(Texture2D);
+    LE_GRAPHICS_RESOURCE_ID(Texture2DArray);
+    LE_GRAPHICS_RESOURCE_ID(RenderTarget);
+
+    // GPU primitives
     LE_GRAPHICS_RESOURCE_ID(Buffer);
     LE_GRAPHICS_RESOURCE_ID(CommandBuffer);
     LE_GRAPHICS_RESOURCE_ID(DescriptorSet);

@@ -10,18 +10,27 @@ namespace le
     {
     public:
         ExplicitRenderer(GraphicsDriver& driver, CommandPoolID gfxPool);
-        ~ExplicitRenderer();
+        ~ExplicitRenderer() override;
 
-        MaterialHandle CreateMaterial() override;
-        MeshHandle CreateMesh() override;
-        ShaderHandle CreateShader() override;
-        Texture2DHandle CreateTexture2D() override;
-        Texture2DArrayHandle CreateTexture2DArray() override;
-        RenderTargetHandle CreateRenderTarget() override;
+        MaterialID CreateMaterial() override;
+        MeshID CreateMesh() override;
+        ShaderID CreateShader() override;
+        Texture2DID CreateTexture2D() override;
+        Texture2DArrayID CreateTexture2DArray() override;
+        RenderTargetID CreateRenderTarget() override;
+
+        void DestroyMaterial(MaterialID id) override;
+        void DestroyMesh(MeshID id) override;
+        void DestroyShader(ShaderID id) override;
+        void DestroyTexture2D(Texture2DID id) override;
+        void DestroyTexture2DArray(Texture2DArrayID id) override;
+        void DestroyRenderTarget(RenderTargetID id) override;
 
         void StartFrame() override;
-        void RenderFrame(RenderTarget& target, std::span<Scene*> scenes) override;
+        void RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) override;
         void EndFrame() override;
+
+        void EnqueueDeletionFunc(std::function<void()> func);
     private:
         void CreateCommandBuffers();
         void CreateSyncObjects();

@@ -1,5 +1,6 @@
 #include <LE/Application.hpp>
-#include <LE/Graphics/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitMaterial.hpp>
+#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 
 namespace le
 {
@@ -27,6 +28,10 @@ namespace le
 
         m_driver.WaitIdle();
 
+        for (auto& queue : m_deletionQueues)
+            for (auto& deletionFunc : queue)
+                deletionFunc();
+
         m_driver.FreeCommandBuffers();
 
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
@@ -38,12 +43,27 @@ namespace le
         LE_INFO("Destroyed ExplicitRenderer");
     }
 
-    MaterialHandle ExplicitRenderer::CreateMaterial() {}
-    MeshHandle ExplicitRenderer::CreateMesh() {}
-    ShaderHandle ExplicitRenderer::CreateShader() {}
-    Texture2DHandle ExplicitRenderer::CreateTexture2D() {}
-    Texture2DArrayHandle ExplicitRenderer::CreateTexture2DArray() {}
-    RenderTargetHandle ExplicitRenderer::CreateRenderTarget() {}
+    MaterialID ExplicitRenderer::CreateMaterial()
+    {
+        return MaterialID(new ExplicitMaterial);
+    }
+
+    MeshID ExplicitRenderer::CreateMesh() {}
+    ShaderID ExplicitRenderer::CreateShader() {}
+    Texture2DID ExplicitRenderer::CreateTexture2D() {}
+    Texture2DArrayID ExplicitRenderer::CreateTexture2DArray() {}
+    RenderTargetID ExplicitRenderer::CreateRenderTarget() {}
+
+    void ExplicitRenderer::DestroyMaterial(MaterialID id)
+    {
+        
+    }
+
+    void ExplicitRenderer::DestroyMesh(MeshID id) {}
+    void ExplicitRenderer::DestroyShader(ShaderID id) {}
+    void ExplicitRenderer::DestroyTexture2D(Texture2DID id) {}
+    void ExplicitRenderer::DestroyTexture2DArray(Texture2DArrayID id) {}
+    void ExplicitRenderer::DestroyRenderTarget(RenderTargetID id) {}
 
     void ExplicitRenderer::StartFrame()
     {

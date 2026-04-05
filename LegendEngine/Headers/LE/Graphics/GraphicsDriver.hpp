@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 
 #include <LE/Common/Assert.hpp>
 #include <LE/Common/Types.hpp>
@@ -9,6 +8,7 @@
 
 namespace le
 {
+    class Renderer;
     class GraphicsDriver
     {
     public:
