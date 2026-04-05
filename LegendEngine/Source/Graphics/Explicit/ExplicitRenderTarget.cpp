@@ -1,4 +1,4 @@
-#include <../LE/Graphics/Explicit/RenderTarget.hpp>
+#include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
 
 namespace le
 {
@@ -328,14 +328,14 @@ namespace le
 //         m_Swapchain.reset();
 //     }
 
-    RenderTarget::RenderTarget(GraphicsDriver& driver)
+    ExplicitRenderTarget::ExplicitRenderTarget(GraphicsDriver& driver)
         :
         m_driver(driver)
     {
         m_surface = m_driver.CreateSurface();
     }
 
-    RenderTarget::~RenderTarget()
+    ExplicitRenderTarget::~ExplicitRenderTarget()
     {
         m_driver.DestroySurface(m_surface);
     }
