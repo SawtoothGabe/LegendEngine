@@ -50,7 +50,7 @@ namespace le
 
     Ref<Material> ExplicitRenderer::CreateMaterial()
     {
-        return std::make_shared<ExplicitMaterial>();
+        return std::make_shared<ExplicitMaterial>(*this);
     }
 
     Ref<MeshData> ExplicitRenderer::CreateMeshData()
@@ -81,6 +81,11 @@ namespace le
     void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
     {
         m_deletionQueues[m_currentFrame].push_back(func);
+    }
+
+    GraphicsDriver& ExplicitRenderer::GetDriver() const
+    {
+        return m_driver;
     }
 
     void ExplicitRenderer::StartFrame()

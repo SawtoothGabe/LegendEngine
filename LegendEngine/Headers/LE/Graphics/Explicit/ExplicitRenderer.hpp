@@ -24,6 +24,8 @@ namespace le
         void EndFrame() override;
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
+
+        GraphicsDriver& GetDriver() const;
     private:
         void CreateCommandBuffers() const;
         void CreateSyncObjects();
