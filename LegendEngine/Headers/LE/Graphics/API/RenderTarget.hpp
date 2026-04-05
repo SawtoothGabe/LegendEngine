@@ -1,15 +1,18 @@
 #pragma once
 
-#include <cstdint>
+#include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/Types.hpp>
 
 namespace le
 {
-    class RenderTarget
+    class RenderTarget final
     {
     public:
-        virtual ~RenderTarget() = default;
+        explicit RenderTarget(GraphicsDriver& driver);
+        ~RenderTarget();
+    private:
+        GraphicsDriver& m_driver;
 
-        [[nodiscard]] virtual uint32_t GetWidth() const;
-        [[nodiscard]] virtual uint32_t GetHeight() const;
+        SurfaceID m_surface;
     };
 }

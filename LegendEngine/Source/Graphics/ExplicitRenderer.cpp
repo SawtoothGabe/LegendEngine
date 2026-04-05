@@ -8,6 +8,8 @@ namespace le
         m_driver(driver),
         m_gfxPool(gfxPool)
     {
+        LE_INFO("Creating ExplicitRenderer");
+
         m_commandBuffers.resize(Application::FRAMES_IN_FLIGHT);
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
@@ -15,11 +17,25 @@ namespace le
 
         CreateCommandBuffers();
         CreateSyncObjects();
+
+        LE_INFO("Created ExplicitRenderer");
     }
 
     ExplicitRenderer::~ExplicitRenderer()
     {
+        LE_INFO("Destroying ExplicitRenderer");
 
+        m_driver.WaitIdle();
+
+        m_driver.FreeCommandBuffers();
+
+        for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
+        {
+            m_driver.DestroyFence(m_inFlightFences[i]);
+            m_driver.DestroySemaphore(m_renderFinishedSemaphores[i]);
+        }
+
+        LE_INFO("Destroyed ExplicitRenderer");
     }
 
     MaterialHandle ExplicitRenderer::CreateMaterial() {}

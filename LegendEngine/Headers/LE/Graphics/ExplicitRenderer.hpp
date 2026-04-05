@@ -35,6 +35,8 @@ namespace le
         GraphicsDriver& m_driver;
         CommandPoolID m_gfxPool;
 
+        bool m_vsync = false;
+
         std::vector<CommandBufferID> m_commandBuffers;
         std::vector<FenceID> m_inFlightFences;
         std::vector<SemaphoreID> m_renderFinishedSemaphores;
