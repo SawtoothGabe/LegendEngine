@@ -1,10 +1,14 @@
 #include <LE/Application.hpp>
 #include <LE/Graphics/Explicit/ExplicitMaterial.hpp>
+#include <LE/Graphics/Explicit/ExplicitMeshData.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
+#include <LE/Graphics/Explicit/ExplicitShader.hpp>
+#include <LE/Graphics/Explicit/ExplicitTexture2D.hpp>
 
 namespace le
 {
-    ExplicitRenderer::ExplicitRenderer(GraphicsDriver& driver, CommandPoolID gfxPool)
+    ExplicitRenderer::ExplicitRenderer(GraphicsDriver& driver, const CommandPoolID& gfxPool)
         :
         m_driver(driver),
         m_gfxPool(gfxPool)
@@ -43,27 +47,40 @@ namespace le
         LE_INFO("Destroyed ExplicitRenderer");
     }
 
-    MaterialID ExplicitRenderer::CreateMaterial()
+    Ref<Material> ExplicitRenderer::CreateMaterial()
     {
-        return MaterialID(new ExplicitMaterial);
+        return std::make_shared<ExplicitMaterial>();
     }
 
-    MeshID ExplicitRenderer::CreateMesh() {}
-    ShaderID ExplicitRenderer::CreateShader() {}
-    Texture2DID ExplicitRenderer::CreateTexture2D() {}
-    Texture2DArrayID ExplicitRenderer::CreateTexture2DArray() {}
-    RenderTargetID ExplicitRenderer::CreateRenderTarget() {}
-
-    void ExplicitRenderer::DestroyMaterial(MaterialID id)
+    Ref<MeshData> ExplicitRenderer::CreateMeshData()
     {
-        
+        return std::make_shared<ExplicitMeshData>();
     }
 
-    void ExplicitRenderer::DestroyMesh(MeshID id) {}
-    void ExplicitRenderer::DestroyShader(ShaderID id) {}
-    void ExplicitRenderer::DestroyTexture2D(Texture2DID id) {}
-    void ExplicitRenderer::DestroyTexture2DArray(Texture2DArrayID id) {}
-    void ExplicitRenderer::DestroyRenderTarget(RenderTargetID id) {}
+    Ref<Shader> ExplicitRenderer::CreateShader()
+    {
+        return std::make_shared<ExplicitShader>();
+    }
+
+    Ref<Texture2D> ExplicitRenderer::CreateTexture2D()
+    {
+        return std::make_shared<ExplicitTexture2D>();
+    }
+
+    Ref<Texture2DArray> ExplicitRenderer::CreateTexture2DArray()
+    {
+        return std::make_shared<ExplicitTexture2DArray>();
+    }
+
+    Ref<RenderTarget> ExplicitRenderer::CreateRenderTarget()
+    {
+        return std::make_shared<ExplicitRenderTarget>(m_driver);
+    }
+
+    void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
+    {
+        m_deletionQueues[m_currentFrame].push_back(func);
+    }
 
     void ExplicitRenderer::StartFrame()
     {
@@ -81,7 +98,7 @@ namespace le
         // TODO: camera uniforms
     }
 
-    void ExplicitRenderer::RenderFrame(RenderTarget& target, std::span<Scene*> scenes)
+    void ExplicitRenderer::RenderFrame(RenderTargetID& target, std::span<Scene*> scenes)
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
@@ -224,7 +241,7 @@ namespace le
         m_driver.CmdDrawIndexed(buffer);
     }
 
-    void ExplicitRenderer::CreateCommandBuffers()
+    void ExplicitRenderer::CreateCommandBuffers() const
     {
         m_driver.AllocateCommandBuffers(m_gfxPool);
     }

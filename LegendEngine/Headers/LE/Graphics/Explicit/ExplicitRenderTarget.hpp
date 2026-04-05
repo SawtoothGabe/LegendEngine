@@ -5,11 +5,11 @@
 
 namespace le
 {
-    class RenderTarget final
+    class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit RenderTarget(GraphicsDriver& driver);
-        ~RenderTarget();
+        explicit ExplicitRenderTarget(GraphicsDriver& driver);
+        ~ExplicitRenderTarget();
     private:
         GraphicsDriver& m_driver;
 

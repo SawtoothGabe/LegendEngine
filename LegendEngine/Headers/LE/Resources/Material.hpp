@@ -10,7 +10,7 @@
 namespace le
 {
 	class GraphicsContext;
-	class Material final : public Resource
+	class Material : public Resource
 	{
 	public:
 		struct Uniforms

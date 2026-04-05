@@ -7,7 +7,7 @@
 
 namespace le
 {
-    class Shader final : public Resource
+    class Shader : public Resource
     {
     public:
         enum class CullMode
