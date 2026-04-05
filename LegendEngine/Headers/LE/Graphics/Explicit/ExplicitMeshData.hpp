@@ -6,6 +6,6 @@ namespace le
     class ExplicitMeshData : public MeshData
     {
     public:
-
+        ExplicitMeshData();
     };
 }

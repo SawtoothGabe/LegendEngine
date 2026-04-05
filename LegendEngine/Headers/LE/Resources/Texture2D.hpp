@@ -8,7 +8,7 @@
 namespace le
 {
 	class TextureData;
-	class Texture2D final : public Texture
+	class Texture2D : public Texture
 	{
 	public:
 		explicit Texture2D(const TextureData& loader);

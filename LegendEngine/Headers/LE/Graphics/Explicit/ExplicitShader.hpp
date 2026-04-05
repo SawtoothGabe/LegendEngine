@@ -6,6 +6,6 @@ namespace le
     class ExplicitShader : public Shader
     {
     public:
-
+        ExplicitShader();
     };
 }

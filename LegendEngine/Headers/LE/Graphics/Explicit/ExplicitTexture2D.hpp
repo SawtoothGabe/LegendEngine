@@ -7,6 +7,6 @@ namespace le
     class ExplicitTexture2D : public Texture2D
     {
     public:
-
+        ExplicitTexture2D();
     };
 }

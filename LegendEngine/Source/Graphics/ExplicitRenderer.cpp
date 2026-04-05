@@ -5,6 +5,7 @@
 #include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
 #include <LE/Graphics/Explicit/ExplicitShader.hpp>
 #include <LE/Graphics/Explicit/ExplicitTexture2D.hpp>
+#include <LE/Graphics/Explicit/ExplicitTexture2DArray.hpp>
 
 namespace le
 {
