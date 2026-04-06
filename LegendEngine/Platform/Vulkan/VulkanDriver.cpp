@@ -207,10 +207,60 @@ namespace le
     		});
     	}
 
-    	for ()
+    	for (auto [location, binding, offset, format] : info.vertexAttributes)
+    	{
+    		attributes.push_back({
+    			static_cast<uint32_t>(location),
+    			static_cast<uint32_t>(binding),
+    			VulkanTypes::GetVkFormat(format),
+    			static_cast<uint32_t>(offset)
+    		});
+    	}
 
     	const vk::PipelineVertexInputStateCreateInfo vertexInput(
+			{},
+			bindings.size(), bindings.data(),
+			attributes.size(), attributes.data()
+    	);
 
+	    constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssembly(
+    		{}, vk::PrimitiveTopology::eTriangleList, false
+    	);
+
+    	constexpr vk::Viewport viewport;
+    	constexpr vk::Rect2D scissor;
+
+    	const vk::PipelineViewportStateCreateInfo viewportState(
+    		{}, 1, &viewport, 1, &scissor
+    	);
+
+	    constexpr vk::PipelineRasterizationStateCreateInfo rasterizerState;
+    	constexpr vk::PipelineMultisampleStateCreateInfo multisampleState;
+
+    	const vk::PipelineDepthStencilStateCreateInfo depthStencilState(
+    		{}, true, true, vk::CompareOp::eLess
+    	);
+
+	    constexpr vk::PipelineColorBlendAttachmentState attachment(
+    		false, vk::BlendFactor::eZero,
+    		vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+    		vk::BlendFactor::eZero, vk::BlendFactor::eZero,
+    		vk::BlendOp::eAdd,
+    		vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
+    			| vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+    	);
+
+    	const vk::PipelineColorBlendStateCreateInfo colorBlendState(
+    		{}, false, vk::LogicOp::eCopy, 1, &attachment
+    	);
+
+    	vk::DynamicState dynamicStates[] = {
+    		vk::DynamicState::eViewport,
+    		vk::DynamicState::eCullMode
+    	};
+
+    	const vk::PipelineDynamicStateCreateInfo dynamicState(
+    		{}, std::size(dynamicStates), dynamicStates
     	);
 
     	const vk::PipelineRenderingCreateInfo rendering(
@@ -221,7 +271,11 @@ namespace le
     	);
 
     	const vk::GraphicsPipelineCreateInfo createInfo(
-    		0, stages.size(), stages.data(),
+    		{}, stages.size(), stages.data(), &vertexInput, &inputAssembly,
+    		nullptr, &viewportState, &rasterizerState, &multisampleState,
+    		&depthStencilState, &colorBlendState, &dynamicState,
+    		VULKAN_CAST(PipelineLayout, info.layout), nullptr, 0,
+    		nullptr, 0, &rendering
     	);
 
 		return PipelineID(m_device.createGraphicsPipeline({}, createInfo).value);
