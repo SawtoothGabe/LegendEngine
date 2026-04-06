@@ -1,11 +1,16 @@
 #pragma once
-#include <LE/Graphics/GraphicsDriver.hpp>
 
-namespace le::vk
+#include <LE/Graphics/GraphicsDriver.hpp>
+#include <vulkan/vulkan.hpp>
+
+namespace le
 {
     class VulkanGraphicsDriver : public GraphicsDriver
     {
     public:
+        VulkanGraphicsDriver(const std::string_view applicationName);
+        ~VulkanGraphicsDriver();
+
         Scope<Renderer> CreateRenderer(CommandPoolID pool) override;
 
         void AllocateCommandBuffers(CommandPoolID pool) override;
@@ -61,5 +66,23 @@ namespace le::vk
         void CmdBindIndexBuffer(CommandBufferID buffer) override;
         void CmdDrawIndexed(CommandBufferID buffer) override;
         void CmdEndRendering(CommandBufferID buffer) override;
+    private:
+        void CreateInstance(std::string_view applicationName);
+        void CreateDevice();
+
+        vk::PhysicalDevice PickDevice();
+
+        void FindQueueFamilies(vk::PhysicalDevice device);
+        bool IsDeviceSuitable(vk::PhysicalDevice device);
+        static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device,
+            const char* const* deviceExtensions, uint64_t extensionCount);
+        static bool IsValidationSupported();
+
+        vk::Instance m_instance;
+        vk::DebugUtilsMessengerEXT m_messenger;
+        vk::PhysicalDevice m_physicalDevice;
+        vk::Device m_device;
+
+        QueueFamilyIndices m_indices;
     };
 }
