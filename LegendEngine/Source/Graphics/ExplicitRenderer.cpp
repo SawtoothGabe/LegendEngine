@@ -16,7 +16,6 @@ namespace le
     {
         LE_INFO("Creating ExplicitRenderer");
 
-        m_commandBuffers.resize(Application::FRAMES_IN_FLIGHT);
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
         m_deletionQueues.resize(Application::FRAMES_IN_FLIGHT);
@@ -277,9 +276,9 @@ namespace le
         m_driver.CmdDrawIndexed(buffer);
     }
 
-    void ExplicitRenderer::CreateCommandBuffers() const
+    void ExplicitRenderer::CreateCommandBuffers()
     {
-        m_driver.AllocateCommandBuffers(m_gfxPool);
+        m_commandBuffers = m_driver.AllocateCommandBuffers(m_gfxPool, Application::FRAMES_IN_FLIGHT);
     }
 
     void ExplicitRenderer::CreateSyncObjects()

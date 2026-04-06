@@ -1,9 +1,9 @@
 #pragma once
 
+#include "VkDefs.hpp"
+
 #include <vk_mem_alloc.h>
 #include <LE/Graphics/GraphicsDriver.hpp>
-
-#include "VkDefs.hpp"
 
 namespace le
 {
@@ -15,7 +15,7 @@ namespace le
 
         Scope<Renderer> CreateRenderer(CommandPoolID pool) override;
 
-        std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool) override;
+        std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets() override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
@@ -23,6 +23,8 @@ namespace le
         ImageID CreateImage(const ImageInfo& info) override;
         ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) override;
         PipelineID CreatePipeline() override;
+        PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
+            std::span<DescriptorSetLayoutID> layouts) override;
         SemaphoreID CreateSemaphore() override;
         SwapchainID CreateSwapchain() override;
         SurfaceID CreateSurface() override;

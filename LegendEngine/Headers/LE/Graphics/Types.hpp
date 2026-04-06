@@ -50,6 +50,7 @@ namespace le
     LE_GRAPHICS_RESOURCE_ID(Image);
     LE_GRAPHICS_RESOURCE_ID(ImageView);
     LE_GRAPHICS_RESOURCE_ID(Pipeline);
+    LE_GRAPHICS_RESOURCE_ID(PipelineLayout);
     LE_GRAPHICS_RESOURCE_ID(Semaphore);
     LE_GRAPHICS_RESOURCE_ID(Swapchain);
     LE_GRAPHICS_RESOURCE_ID(Surface);
@@ -135,5 +136,12 @@ namespace le
         std::size_t height = 0;
         std::size_t arrayLayers = 1;
         Format format = Format::R8G8B8A8;
+    };
+
+    struct PushConstantRange
+    {
+        std::size_t size = 0;
+        std::size_t offset = 0;
+        ShaderStageFlags stage = ShaderStageFlags::VERTEX;
     };
 }

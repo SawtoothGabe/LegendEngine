@@ -34,7 +34,7 @@ namespace le
 
         GraphicsDriver& GetDriver() const;
     private:
-        void CreateCommandBuffers() const;
+        void CreateCommandBuffers();
         void CreateSyncObjects();
 
         void ProcessDeletionQueue();

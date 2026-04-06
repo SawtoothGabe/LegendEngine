@@ -6,7 +6,9 @@
 #include <VulkanImage.hpp>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
-#include "InstanceUtils.hpp"
+#include "PlatformUtils.hpp"
+
+#include "VkDefs.hpp"
 
 namespace le
 {
@@ -71,11 +73,11 @@ namespace le
 	    return std::make_unique<ExplicitRenderer>(*this, pool);
     }
 
-    std::vector<CommandBufferID> VulkanGraphicsDriver::AllocateCommandBuffers(const CommandPoolID pool)
+    std::vector<CommandBufferID> VulkanGraphicsDriver::AllocateCommandBuffers(const CommandPoolID pool, const size_t count)
     {
 	    std::vector<CommandBufferID> ids;
 	    const std::vector<vk::CommandBuffer> buffers
-			    = m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool)});
+			    = m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool), {}, static_cast<uint32_t>(count)});
 
 	    ids.reserve(buffers.size());
 	    for (vk::CommandBuffer buffer : buffers)
@@ -190,6 +192,17 @@ namespace le
 
     }
 
+    PipelineLayoutID VulkanGraphicsDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
+    	std::span<DescriptorSetLayoutID> layouts)
+    {
+    	std::vector<vk::PushConstantRange> vkRanges;
+    	std::vector<vk::DescriptorSetLayout> vkLayouts;
+
+    	vk::PipelineLayoutCreateInfo createInfo;
+
+		return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
+    }
+
     SemaphoreID VulkanGraphicsDriver::CreateSemaphore()
     {
 	    return SemaphoreID(m_device.createSemaphore({}));
@@ -260,6 +273,7 @@ namespace le
     void VulkanGraphicsDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
     void VulkanGraphicsDriver::CmdDrawIndexed(CommandBufferID buffer) {}
     void VulkanGraphicsDriver::CmdEndRendering(CommandBufferID buffer) {}
+
     void VulkanGraphicsDriver::CreateInstance(const std::string_view applicationName)
     {
 	    const vk::ApplicationInfo appInfo(
@@ -272,7 +286,7 @@ namespace le
 
 	    LE_ASSERT(IsValidationSupported(), "Validation layers not supported");
 
-	    const std::vector<const char*> extensions = InstanceUtils::GetRequiredExtensions();
+	    const std::vector<const char*> extensions = PlatformUtils::GetRequiredExtensions();
 
 	    const vk::InstanceCreateInfo instanceCreateInfo(
 		    {}, &appInfo,
@@ -300,6 +314,7 @@ namespace le
 
 	    m_messenger = m_instance.createDebugUtilsMessengerEXT(messengerInfo);
     }
+
     void VulkanGraphicsDriver::CreateDevice()
     {
 	    m_physicalDevice = PickDevice();
@@ -320,6 +335,7 @@ namespace le
 	                                          queueInfos.size(), queueInfos.data());
 	    m_device = m_physicalDevice.createDevice(deviceInfo);
     }
+
     void VulkanGraphicsDriver::CreateAllocator()
     {
 	    VmaVulkanFunctions functions{};

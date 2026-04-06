@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace le::InstanceUtils
+namespace le::PlatformUtils
 {
     std::vector<const char*> GetRequiredExtensions();
 }
