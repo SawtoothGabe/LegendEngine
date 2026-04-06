@@ -22,7 +22,7 @@ namespace le
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         virtual FenceID CreateFence(bool signaled = true) = 0;
         virtual ImageID CreateImage(const ImageInfo& info) = 0;
-        virtual ImageViewID CreateImageView() = 0;
+        virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
         virtual PipelineID CreatePipeline() = 0;
         virtual SemaphoreID CreateSemaphore() = 0;
         virtual SwapchainID CreateSwapchain() = 0;

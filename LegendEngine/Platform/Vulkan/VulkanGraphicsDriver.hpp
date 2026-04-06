@@ -21,7 +21,7 @@ namespace le
         CommandPoolID CreateCommandPool(QueueFamily family) override;
         FenceID CreateFence(bool signaled) override;
         ImageID CreateImage(const ImageInfo& info) override;
-        ImageViewID CreateImageView() override;
+        ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) override;
         PipelineID CreatePipeline() override;
         SemaphoreID CreateSemaphore() override;
         SwapchainID CreateSwapchain() override;

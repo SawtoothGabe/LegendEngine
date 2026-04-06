@@ -123,7 +123,7 @@ namespace le
         TRANSFER,
     };
 
-    enum class ImageType
+    enum class ImageViewType
     {
         TYPE_2D,
         TYPE_2D_ARRAY,
@@ -135,6 +135,5 @@ namespace le
         std::size_t height = 0;
         std::size_t arrayLayers = 1;
         Format format = Format::R8G8B8A8;
-        ImageType type = ImageType::TYPE_2D;
     };
 }
