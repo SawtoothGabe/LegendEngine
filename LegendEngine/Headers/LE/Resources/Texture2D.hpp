@@ -4,6 +4,7 @@
 #include <LE/Common/Defs.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
 #include <LE/Resources/Texture.hpp>
+#include <LE/IO/TextureData.hpp>
 
 namespace le
 {
@@ -11,7 +12,7 @@ namespace le
 	class Texture2D : public Texture
 	{
 	public:
-		explicit Texture2D(const TextureData& loader);
+		 Texture2D();
 	    ~Texture2D() override = default;
 		LE_NO_COPY(Texture2D);
 
@@ -24,7 +25,5 @@ namespace le
 		uint64_t m_Width;
 		uint64_t m_Height;
 		uint8_t m_Channels;
-
-		GraphicsContext& m_context;
 	};
 }

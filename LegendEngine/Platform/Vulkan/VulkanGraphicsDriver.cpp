@@ -1,20 +1,29 @@
 #include "VulkanGraphicsDriver.hpp"
 
 #include <set>
+#include <vk_mem_alloc.h>
+#include <VulkanBuffer.hpp>
 
+#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include "InstanceUtils.hpp"
-#include <VkDefs.hpp>
 
 namespace le
 {
+#define VULKAN_CAST(type, identifier) vk::type(reinterpret_cast<Vk##type>(identifier.id))
+
     Scope<GraphicsDriver> CreateVulkanGraphicsDriver(std::string_view applicationName)
     {
         return std::make_unique<VulkanGraphicsDriver>(applicationName);
     }
 
-    const std::vector VALIDATION_LAYERS = {
+    static const std::vector VALIDATION_LAYERS = {
         "VK_LAYER_KHRONOS_validation"
     };
+
+	static const std::vector DEVICE_EXTENSIONS =
+	{
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL OnValidationMessage(
         vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -42,12 +51,16 @@ namespace le
 
     VulkanGraphicsDriver::VulkanGraphicsDriver(const std::string_view applicationName)
     {
+    	VULKAN_HPP_DEFAULT_DISPATCHER.init();
+
         CreateInstance(applicationName);
         CreateDevice();
+    	CreateAllocator();
     }
 
     VulkanGraphicsDriver::~VulkanGraphicsDriver()
     {
+    	vmaDestroyAllocator(m_allocator);
         m_device.destroy();
         m_instance.destroy();
     }
@@ -68,10 +81,15 @@ namespace le
 
         const vk::InstanceCreateInfo instanceCreateInfo(
             {}, &appInfo,
-            1, VALIDATION_LAYERS.data(),
+#ifndef NDEBUG
+            VALIDATION_LAYERS.size(), VALIDATION_LAYERS.data(),
+#else
+            0, nullptr,
+#endif
             extensions.size(), extensions.data()
         );
         m_instance = vk::createInstance(instanceCreateInfo);
+    	VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance);
 
         constexpr vk::DebugUtilsMessengerCreateInfoEXT messengerInfo(
             {},
@@ -90,19 +108,113 @@ namespace le
 
     void VulkanGraphicsDriver::CreateDevice()
     {
+		m_physicalDevice = PickDevice();
 
+    	float priority = 1.0f;
+    	std::vector<vk::DeviceQueueCreateInfo> queueInfos;
+
+    	LE_ASSERT(m_indices.hasGraphicsFamily, "No graphics family found");
+
+    	queueInfos.push_back(vk::DeviceQueueCreateInfo({}, m_indices.graphicsFamilyIndex,
+    		1, &priority));
+
+    	if (m_indices.hasTransferFamily)
+    		queueInfos.push_back(vk::DeviceQueueCreateInfo({}, m_indices.transferFamilyIndex,
+				1, &priority));
+
+    	const vk::DeviceCreateInfo deviceInfo({},
+    		queueInfos.size(), queueInfos.data());
+    	m_device = m_physicalDevice.createDevice(deviceInfo);
     }
 
-    Scope<Renderer> VulkanGraphicsDriver::CreateRenderer(CommandPoolID pool) {}
-    void VulkanGraphicsDriver::AllocateCommandBuffers(CommandPoolID pool) {}
-    void VulkanGraphicsDriver::AllocateDescriptorSets() {}
-    BufferID VulkanGraphicsDriver::CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) {}
-    CommandPoolID VulkanGraphicsDriver::CreateCommandPool()
+    void VulkanGraphicsDriver::CreateAllocator()
     {
-        return CommandPoolID();
+    	VmaVulkanFunctions functions{};
+    	functions.vkGetInstanceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr;
+    	functions.vkGetDeviceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetDeviceProcAddr;
+
+    	VmaAllocatorCreateInfo allocatorInfo{};
+    	allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_3;
+    	allocatorInfo.pVulkanFunctions = &functions;
+    	allocatorInfo.device = m_device;
+    	allocatorInfo.instance = m_instance;
+    	allocatorInfo.physicalDevice = m_physicalDevice;
+
+    	LE_CHECK_VK(vmaCreateAllocator(&allocatorInfo, &m_allocator));
     }
 
-    FenceID VulkanGraphicsDriver::CreateFence() {}
+    Scope<Renderer> VulkanGraphicsDriver::CreateRenderer(CommandPoolID pool)
+    {
+		return std::make_unique<ExplicitRenderer>(*this, pool);
+    }
+
+    std::vector<CommandBufferID> VulkanGraphicsDriver::AllocateCommandBuffers(const CommandPoolID pool)
+    {
+    	std::vector<CommandBufferID> ids;
+    	const std::vector<vk::CommandBuffer> buffers
+    		= m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool)});
+
+    	ids.reserve(buffers.size());
+    	for (vk::CommandBuffer buffer : buffers)
+    		ids.push_back(CommandBufferID(buffer));
+
+    	return ids;
+    }
+
+    std::vector<DescriptorSetID> VulkanGraphicsDriver::AllocateDescriptorSets()
+    {
+    	// TODO: pools
+
+    	std::vector<DescriptorSetID> ids;
+    	const std::vector<vk::DescriptorSet> sets
+			= m_device.allocateDescriptorSets({});
+
+    	ids.reserve(sets.size());
+    	for (vk::DescriptorSet set : sets)
+    		ids.push_back(DescriptorSetID(set));
+
+    	return ids;
+    }
+
+    BufferID VulkanGraphicsDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
+    {
+    	VkBufferCreateInfo bufferInfo{};
+    	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    	bufferInfo.size = size;
+    	bufferInfo.usage = static_cast<uint32_t>(flags);
+
+    	VmaAllocationCreateInfo allocInfo{};
+    	allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+    	allocInfo.flags = VulkanBuffer::ToVmaFlags(flags, createMapped);
+
+    	const auto buffer = new VulkanBuffer;
+
+    	LE_CHECK_VK(vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo,
+    		&buffer->buffer, &buffer->allocation, &buffer->allocationInfo));
+	    return BufferID(buffer);
+    }
+
+    CommandPoolID VulkanGraphicsDriver::CreateCommandPool(const QueueFamily family)
+    {
+    	uint32_t index = 0;
+    	switch (family)
+    	{
+		    case QueueFamily::GRAPHICS: index = m_indices.graphicsFamilyIndex; break;
+		    case QueueFamily::COMPUTE: index = m_indices.computeFamilyIndex; break;
+		    case QueueFamily::TRANSFER: index = m_indices.transferFamilyIndex; break;
+	    }
+
+    	const vk::CommandPoolCreateInfo info({}, index);
+    	const vk::CommandPool pool = m_device.createCommandPool(info, nullptr);
+        return CommandPoolID(pool);
+    }
+
+    FenceID VulkanGraphicsDriver::CreateFence(const bool signaled)
+    {
+    	vk::FenceCreateFlags flags = signaled ? vk::FenceCreateFlagBits::eSignaled : vk::FenceCreateFlags();
+		return FenceID(m_device.createFence({flags}));
+    }
+
     ImageID VulkanGraphicsDriver::CreateImage() {}
     ImageViewID VulkanGraphicsDriver::CreateImageView() {}
     PipelineID VulkanGraphicsDriver::CreatePipeline() {}
@@ -116,7 +228,12 @@ namespace le
     void VulkanGraphicsDriver::FreeCommandBuffers() {}
     void VulkanGraphicsDriver::FreeDescriptorSets() {}
     void VulkanGraphicsDriver::DestroyBuffer(BufferID buffer) {}
-    void VulkanGraphicsDriver::DestroyCommandPool(CommandPoolID pool) {}
+
+    void VulkanGraphicsDriver::DestroyCommandPool(CommandPoolID pool)
+    {
+
+    }
+
     void VulkanGraphicsDriver::DestroyFence(FenceID fence) {}
     void VulkanGraphicsDriver::DestroyImage(ImageID image) {}
     void VulkanGraphicsDriver::DestroyImageView(ImageViewID view) {}
@@ -128,7 +245,14 @@ namespace le
     void VulkanGraphicsDriver::DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) {}
     void VulkanGraphicsDriver::DestroySampler(SamplerID sampler) {}
 
-    void VulkanGraphicsDriver::WaitForFences(size_t count, FenceID* fences) {}
+    void VulkanGraphicsDriver::WaitForFences(const size_t count, FenceID* fences)
+    {
+	    for (size_t i = 0; i < count; i++)
+	    {
+		    const auto fence = VULKAN_CAST(Fence, fences[i]);
+	    	LE_CHECK_RESULT(m_device.waitForFences(1, &fence, true, UINT64_MAX));
+	    }
+    }
 
     void VulkanGraphicsDriver::WaitIdle()
     {
@@ -192,7 +316,7 @@ namespace le
         std::vector<vk::PhysicalDevice> devices(deviceCount);
         LE_CHECK_RESULT(m_instance.enumeratePhysicalDevices(&deviceCount, devices.data()));
 
-        for (VkPhysicalDevice device : devices)
+        for (const VkPhysicalDevice device : devices)
             if (IsDeviceSuitable(device))
                 return device;
 
@@ -200,15 +324,15 @@ namespace le
         return {};
     }
 
-    bool VulkanGraphicsDriver::IsDeviceSuitable(vk::PhysicalDevice device)
+    bool VulkanGraphicsDriver::IsDeviceSuitable(const vk::PhysicalDevice device)
     {
         vk::PhysicalDeviceProperties deviceProperties;
         vk::PhysicalDeviceFeatures deviceFeatures;
         device.getProperties(&deviceProperties);
         device.getFeatures(&deviceFeatures);
 
-        bool extensionsSupported = CheckDeviceExtensionSupport(device,
-            deviceExtensions.data(), deviceExtensions.size());
+        const bool extensionsSupported = CheckDeviceExtensionSupport(device,
+            DEVICE_EXTENSIONS.data(), DEVICE_EXTENSIONS.size());
 
         // kinda hacky. if this physical device isn't chosen, this function will
         // run again and overwrite m_indices, so it will still choose the
@@ -224,7 +348,7 @@ namespace le
 
     bool VulkanGraphicsDriver::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
 		const char* const* deviceExtensions, const uint64_t extensionCount)
-	{
+    {
 		// The device requires some extensions (such as the swap chain)
 		// We need to check for those here before we can use the device.
 
@@ -242,8 +366,8 @@ namespace le
 		std::set requiredExtensionSet(requiredExtensions.begin(),
 			requiredExtensions.end());
 
-		for (size_t i = 0; i < availableExtensions.size(); i++)
-			requiredExtensionSet.erase(availableExtensions[i].extensionName);
+		for (auto& availableExtension : availableExtensions)
+			requiredExtensionSet.erase(availableExtension.extensionName);
 
 		return requiredExtensionSet.empty();
 	}
@@ -260,23 +384,23 @@ namespace le
 
 		for (size_t i = 0; i < families.size(); i++)
 		{
-			const VkQueueFamilyProperties& queueFamily = families[i];
+			const vk::QueueFamilyProperties& queueFamily = families[i];
 
-			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT
+			if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics
 				&& !m_indices.hasGraphicsFamily)
 			{
 				m_indices.hasGraphicsFamily = true;
 				m_indices.graphicsFamilyIndex = static_cast<uint32_t>(i);
 			}
 
-			if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT
+			if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer
 				&& !m_indices.hasTransferFamily)
 			{
 				m_indices.hasTransferFamily = true;
 				m_indices.transferFamilyIndex = static_cast<uint32_t>(i);
 			}
 
-			if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT
+			if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute
 				&& !m_indices.hasComputeFamily)
 			{
 				m_indices.hasComputeFamily = true;
@@ -287,7 +411,7 @@ namespace le
 		// Try to find a dedicated transfer queue
 		for (size_t i = 0; i < families.size(); i++)
 		{
-			if (!(families[i].queueFlags & VK_QUEUE_TRANSFER_BIT))
+			if (!(families[i].queueFlags & vk::QueueFlagBits::eTransfer))
 				continue;
 
 			if (m_indices.hasGraphicsFamily && m_indices.graphicsFamilyIndex == i)

@@ -5,12 +5,7 @@
 
 namespace le
 {
-	Texture2DArray::Texture2DArray(const size_t width, const size_t height, const uint8_t channels,
-		const std::span<TextureData*>& textureData)
-		:
-		m_Width(width),
-		m_Height(height),
-		m_Channels(channels)
+	Texture2DArray::Texture2DArray()
 	{
 	}
 

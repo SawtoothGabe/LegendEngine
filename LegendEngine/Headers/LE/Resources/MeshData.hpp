@@ -21,10 +21,7 @@ namespace le
             float texcoord[3];
         };
 
-        MeshData(std::span<Vertex3> vertices, std::span<uint32_t> indices,
-            UpdateFrequency frequency);
-        MeshData(size_t initialVertexCount, size_t initialIndexCount,
-            UpdateFrequency frequency);
+        MeshData();
 
         size_t GetVertexCount() const;
         size_t GetIndexCount() const;

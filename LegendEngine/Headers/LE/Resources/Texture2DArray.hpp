@@ -2,24 +2,19 @@
 
 #include <cstdint>
 #include <LE/Resources/Texture.hpp>
+#include <LE/IO/TextureData.hpp>
 
 namespace le
 {
 	class Texture2DArray : public Texture
 	{
 	public:
-		Texture2DArray(size_t width, size_t height, uint8_t channels,
-			const std::span<TextureData*>& textureData);
+		Texture2DArray();
 
 		[[nodiscard]] size_t GetWidth() const;
 		[[nodiscard]] size_t GetHeight() const;
 		[[nodiscard]] uint8_t GetChannels() const;
 	private:
-		void Upload(GraphicsContext& context, size_t size,
-			const std::span<TextureData*>& textureData) const;
-		static void CopyImagesToBuffer(uint8_t* data, size_t size,
-			const std::span<TextureData*>& textureData);
-
 		size_t m_Width;
 		size_t m_Height;
 		uint8_t m_Channels;

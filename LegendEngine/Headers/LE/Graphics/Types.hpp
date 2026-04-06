@@ -107,4 +107,11 @@ namespace le
         INDEX_BUFFER   = 0x00000040,
         VERTEX_BUFFER  = 0x00000080,
     };
+
+    enum class QueueFamily
+    {
+        GRAPHICS,
+        COMPUTE,
+        TRANSFER,
+    };
 }

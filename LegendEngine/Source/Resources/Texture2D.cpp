@@ -4,12 +4,7 @@
 
 namespace le
 {
-    Texture2D::Texture2D(const TextureData& loader)
-        :
-        m_Width(loader.GetWidth()),
-        m_Height(loader.GetHeight()),
-        m_Channels(loader.GetChannels()),
-        m_context(Application::Get().GetGraphicsContext())
+    Texture2D::Texture2D()
     {
 
     }
@@ -31,6 +26,6 @@ namespace le
 
     Ref<Texture2D> Texture2D::Create(const TextureData& loader)
     {
-        return std::make_shared<Texture2D>(loader);
+        return std::make_shared<Texture2D>();
     }
 }

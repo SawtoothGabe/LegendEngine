@@ -34,5 +34,5 @@ if (LE_VULKAN_API)
 
     target_include_directories(LEVulkan PUBLIC "Vulkan" ${Vulkan_INCLUDE_DIR} PRIVATE ${compiled_shader_headers})
     target_compile_definitions(LEVulkan PUBLIC LE_VULKAN_API)
-    target_link_libraries(LEVulkan PUBLIC LegendEngine ${Vulkan_LIBRARIES})
+    target_link_libraries(LEVulkan PUBLIC LegendEngine)
 endif()

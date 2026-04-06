@@ -6,7 +6,7 @@ namespace le
         :
         m_driver(std::move(driver))
     {
-        m_gfxPool = m_driver->CreateCommandPool();
+        m_gfxPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
         m_renderer = m_driver->CreateRenderer(m_gfxPool);
     }
 

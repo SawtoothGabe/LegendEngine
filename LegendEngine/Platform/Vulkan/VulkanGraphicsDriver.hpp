@@ -1,7 +1,9 @@
 #pragma once
 
+#include <vk_mem_alloc.h>
 #include <LE/Graphics/GraphicsDriver.hpp>
-#include <vulkan/vulkan.hpp>
+
+#include "VkDefs.hpp"
 
 namespace le
 {
@@ -13,11 +15,11 @@ namespace le
 
         Scope<Renderer> CreateRenderer(CommandPoolID pool) override;
 
-        void AllocateCommandBuffers(CommandPoolID pool) override;
-        void AllocateDescriptorSets() override;
+        std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool) override;
+        std::vector<DescriptorSetID> AllocateDescriptorSets() override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
-        CommandPoolID CreateCommandPool() override;
-        FenceID CreateFence() override;
+        CommandPoolID CreateCommandPool(QueueFamily family) override;
+        FenceID CreateFence(bool signaled) override;
         ImageID CreateImage() override;
         ImageViewID CreateImageView() override;
         PipelineID CreatePipeline() override;
@@ -67,13 +69,25 @@ namespace le
         void CmdDrawIndexed(CommandBufferID buffer) override;
         void CmdEndRendering(CommandBufferID buffer) override;
     private:
+        struct QueueFamilyIndices
+        {
+            bool hasGraphicsFamily = false;
+            bool hasComputeFamily = false;
+            bool hasTransferFamily = false;
+            uint32_t graphicsFamilyIndex = 0;
+            uint32_t computeFamilyIndex = 0;
+            uint32_t transferFamilyIndex = 0;
+        };
+
         void CreateInstance(std::string_view applicationName);
         void CreateDevice();
+        void CreateAllocator();
 
         vk::PhysicalDevice PickDevice();
 
         void FindQueueFamilies(vk::PhysicalDevice device);
         bool IsDeviceSuitable(vk::PhysicalDevice device);
+
         static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device,
             const char* const* deviceExtensions, uint64_t extensionCount);
         static bool IsValidationSupported();
@@ -82,6 +96,8 @@ namespace le
         vk::DebugUtilsMessengerEXT m_messenger;
         vk::PhysicalDevice m_physicalDevice;
         vk::Device m_device;
+
+        VmaAllocator m_allocator = nullptr;
 
         QueueFamilyIndices m_indices;
     };

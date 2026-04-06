@@ -16,11 +16,11 @@ namespace le
 
         virtual Scope<Renderer> CreateRenderer(CommandPoolID pool) = 0;
 
-        virtual void AllocateCommandBuffers(CommandPoolID pool) = 0;
-        virtual void AllocateDescriptorSets() = 0;
+        virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool) = 0;
+        virtual std::vector<DescriptorSetID> AllocateDescriptorSets() = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
-        virtual CommandPoolID CreateCommandPool() = 0;
-        virtual FenceID CreateFence() = 0;
+        virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
+        virtual FenceID CreateFence(bool signaled = true) = 0;
         virtual ImageID CreateImage() = 0;
         virtual ImageViewID CreateImageView() = 0;
         virtual PipelineID CreatePipeline() = 0;

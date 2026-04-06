@@ -3,19 +3,12 @@
 
 namespace le
 {
-    MeshData::MeshData(const std::span<Vertex3> vertices, const std::span<uint32_t> indices, UpdateFrequency frequency)
+    MeshData::MeshData()
         :
-        m_vertexCount(vertices.size()),
-        m_indexCount(indices.size())
+        m_vertexCount(0),
+        m_indexCount(0)
     {
-    }
 
-    MeshData::MeshData(const size_t initialVertexCount, const size_t initialIndexCount, const UpdateFrequency frequency)
-        :
-        m_vertexCount(initialVertexCount),
-        m_indexCount(initialIndexCount)
-    {
-        LE_ASSERT(frequency != UpdateFrequency::UPDATES_ONCE, "MeshData made with UpdateFrequency::UPDATES_ONCE must specify vertex data");
     }
 
     size_t MeshData::GetVertexCount() const
@@ -30,6 +23,6 @@ namespace le
 
     Ref<MeshData> MeshData::Create(std::span<Vertex3> vertices, std::span<uint32_t> indices, UpdateFrequency frequency)
     {
-        return std::make_shared<MeshData>(vertices, indices, frequency);
+        return std::make_shared<MeshData>();
     }
 }
