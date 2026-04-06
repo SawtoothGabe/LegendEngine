@@ -13,4 +13,7 @@ namespace le::VulkanTypes
     static vk::ShaderStageFlagBits GetShaderStageFlags(ShaderStageFlags stage);
     static vk::VertexInputRate GetVertexInputRate(InputRate inputRate);
     static vk::DescriptorType GetDescriptorType(DescriptorType type);
+    static vk::Filter GetFilter(Filter filter);
+    static vk::SamplerAddressMode GetSamplerAddressMode(AddressMode addressMode);
+    static vk::BorderColor GetBorderColor(BorderColor borderColor);
 }

@@ -214,4 +214,32 @@ namespace le
         DescriptorType descriptorType = DescriptorType::UNIFORM_BUFFER;
         ShaderStageFlags stageFlags = ShaderStageFlags::ALL;
     };
+
+    enum class Filter
+    {
+        NEAREST,
+        LINEAR,
+    };
+
+    enum class AddressMode
+    {
+        REPEAT,
+        MIRRORED_REPEAT,
+        CLAMP_TO_EDGE,
+        CLAMP_TO_BORDER,
+    };
+
+    enum class BorderColor
+    {
+        TRANSPARENT_BLACK,
+        OPAQUE_BLACK,
+        OPAQUE_WHITE,
+    };
+
+    struct SamplerInfo
+    {
+        Filter filter = Filter::NEAREST;
+        AddressMode addressMode = AddressMode::CLAMP_TO_EDGE;
+        BorderColor borderColor = BorderColor::OPAQUE_BLACK;
+    };
 }

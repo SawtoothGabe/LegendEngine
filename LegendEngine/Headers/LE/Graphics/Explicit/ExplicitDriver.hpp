@@ -31,7 +31,7 @@ namespace le
         virtual SurfaceID CreateSurface(Window& window) = 0;
         virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
         virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
-        virtual SamplerID CreateSampler() = 0;
+        virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
 
         virtual void FreeCommandBuffers() = 0;
         virtual void FreeDescriptorSets() = 0;

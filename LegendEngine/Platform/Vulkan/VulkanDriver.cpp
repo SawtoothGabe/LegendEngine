@@ -370,7 +370,25 @@ namespace le
     	return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
     }
 
-    SamplerID VulkanDriver::CreateSampler() {}
+    SamplerID VulkanDriver::CreateSampler(const SamplerInfo& info)
+    {
+    	vk::PhysicalDeviceProperties properties;
+    	m_physicalDevice.getProperties(&properties);
+
+    	const vk::Filter filter = VulkanTypes::GetFilter(info.filter);
+    	const vk::SamplerAddressMode addressMode = VulkanTypes::GetSamplerAddressMode(info.addressMode);
+    	const vk::BorderColor borderColor = VulkanTypes::GetBorderColor(info.borderColor);
+
+    	vk::SamplerCreateInfo createInfo(
+    		{}, filter, filter, vk::SamplerMipmapMode::eNearest,
+    		addressMode, addressMode, addressMode,
+    		0.0f, false, properties.limits.maxSamplerAnisotropy,
+    		false, vk::CompareOp::eAlways, 0.0f, 1.0f,
+    		borderColor
+    	);
+
+		return SamplerID(m_device.createSampler(createInfo));
+    }
 
     void VulkanDriver::FreeCommandBuffers() {}
     void VulkanDriver::FreeDescriptorSets() {}

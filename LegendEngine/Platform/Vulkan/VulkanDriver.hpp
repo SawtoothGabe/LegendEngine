@@ -29,7 +29,7 @@ namespace le
         SurfaceID CreateSurface(Window& window) override;
         ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) override;
         DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) override;
-        SamplerID CreateSampler() override;
+        SamplerID CreateSampler(const SamplerInfo& info) override;
 
         void FreeCommandBuffers() override;
         void FreeDescriptorSets() override;
