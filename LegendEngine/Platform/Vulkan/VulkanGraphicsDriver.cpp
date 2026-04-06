@@ -185,9 +185,15 @@ namespace le
 	    return ImageViewID(view);
     }
 
-    PipelineID VulkanGraphicsDriver::CreatePipeline() {}
+    PipelineID VulkanGraphicsDriver::CreatePipeline()
+    {
 
-    SemaphoreID VulkanGraphicsDriver::CreateSemaphore() {}
+    }
+
+    SemaphoreID VulkanGraphicsDriver::CreateSemaphore()
+    {
+	    return SemaphoreID(m_device.createSemaphore({}));
+    }
 
     SwapchainID VulkanGraphicsDriver::CreateSwapchain() {}
 
@@ -203,7 +209,7 @@ namespace le
     {
 
     }
-	
+
     void VulkanGraphicsDriver::DestroyFence(FenceID fence) {}
     void VulkanGraphicsDriver::DestroyImage(ImageID image) {}
 
