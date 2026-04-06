@@ -69,11 +69,6 @@ namespace le
 	    m_instance.destroy();
     }
 
-    Scope<Renderer> VulkanDriver::CreateRenderer(CommandPoolID pool)
-    {
-	    return std::make_unique<ExplicitRenderer>(*this, pool);
-    }
-
     std::vector<CommandBufferID> VulkanDriver::AllocateCommandBuffers(const CommandPoolID pool, const size_t count)
     {
 	    std::vector<CommandBufferID> ids;

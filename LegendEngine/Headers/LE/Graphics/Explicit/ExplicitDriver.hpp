@@ -16,8 +16,6 @@ namespace le
     public:
         virtual ~ExplicitDriver() = default;
 
-        virtual Scope<Renderer> CreateRenderer(CommandPoolID pool) = 0;
-
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
         virtual std::vector<DescriptorSetID> AllocateDescriptorSets() = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;

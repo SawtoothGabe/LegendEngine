@@ -14,8 +14,6 @@ namespace le
         VulkanDriver(std::string_view applicationName);
         ~VulkanDriver();
 
-        Scope<Renderer> CreateRenderer(CommandPoolID pool) override;
-
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets() override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;

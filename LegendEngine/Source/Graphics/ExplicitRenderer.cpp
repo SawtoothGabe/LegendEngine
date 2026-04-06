@@ -9,12 +9,13 @@
 
 namespace le
 {
-    ExplicitRenderer::ExplicitRenderer(Scope<ExplicitDriver> driver, const CommandPoolID& gfxPool)
+    ExplicitRenderer::ExplicitRenderer(Scope<ExplicitDriver> driver)
         :
-        m_driver(std::move(driver)),
-        m_gfxPool(gfxPool)
+        m_driver(std::move(driver))
     {
         LE_INFO("Creating ExplicitRenderer");
+
+        m_gfxPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
 
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
@@ -43,6 +44,8 @@ namespace le
             m_driver->DestroyFence(m_inFlightFences[i]);
             m_driver->DestroySemaphore(m_renderFinishedSemaphores[i]);
         }
+
+        m_driver->DestroyCommandPool(m_gfxPool);
 
         LE_INFO("Destroyed ExplicitRenderer");
     }
@@ -74,7 +77,7 @@ namespace le
 
     RenderTargetID ExplicitRenderer::CreateRenderTarget(Window& window)
     {
-        return RenderTargetID(new ExplicitRenderTarget(m_driver, window));
+        return RenderTargetID(new ExplicitRenderTarget(*m_driver, window));
     }
 
     void ExplicitRenderer::DestroyMaterial(MaterialID id)
@@ -114,7 +117,7 @@ namespace le
 
     ExplicitDriver& ExplicitRenderer::GetDriver() const
     {
-        return m_driver;
+        return *m_driver;
     }
 
     void ExplicitRenderer::StartFrame()

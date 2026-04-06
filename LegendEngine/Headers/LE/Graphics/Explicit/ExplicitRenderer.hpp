@@ -9,7 +9,7 @@ namespace le
     class ExplicitRenderer final : public Renderer
     {
     public:
-        ExplicitRenderer(Scope<ExplicitDriver> driver, const CommandPoolID& gfxPool);
+        ExplicitRenderer(Scope<ExplicitDriver> driver);
         ~ExplicitRenderer() override;
 
         MaterialID CreateMaterial() override;
