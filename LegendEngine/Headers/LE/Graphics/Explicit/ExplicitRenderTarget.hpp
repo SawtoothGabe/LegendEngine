@@ -1,6 +1,6 @@
 #pragma once
 
-#include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 #include <LE/Graphics/RenderTarget.hpp>
 #include <LE/Graphics/Types.hpp>
 
@@ -9,10 +9,10 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(GraphicsDriver& driver, Window& window);
+        explicit ExplicitRenderTarget(ExplicitDriver& driver, Window& window);
         ~ExplicitRenderTarget();
     private:
-        GraphicsDriver& m_driver;
+        ExplicitDriver& m_driver;
 
         SurfaceID m_surface;
     };

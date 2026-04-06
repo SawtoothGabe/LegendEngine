@@ -78,6 +78,7 @@ namespace le
         R8G8,
         R8G8B8,
         R8G8B8A8,
+        R32G32B32_FLOAT
     };
 
     enum class PipelineStage
@@ -145,8 +146,41 @@ namespace le
         ShaderStageFlags stage = ShaderStageFlags::VERTEX;
     };
 
+    struct StageInfo
+    {
+        std::string name;
+        ShaderModuleID module;
+        ShaderStageFlags stage;
+    };
+
+    enum class InputRate
+    {
+        VERTEX,
+        INSTANCE,
+    };
+
+    struct VertexBinding
+    {
+        size_t binding = 0;
+        size_t stride = 0;
+        InputRate inputRate;
+    };
+
+    struct VertexAttribute
+    {
+        size_t location = 0;
+        size_t binding = 0;
+        size_t offset = 0;
+        Format format = Format::R32G32B32_FLOAT;
+    };
+
     struct PipelineInfo
     {
         PipelineLayoutID layout;
+        std::span<Format> colorAttachmentFormats;
+        Format depthFormat;
+        std::span<StageInfo> stages;
+        std::span<VertexBinding> vertexBindings;
+        std::span<VertexAttribute> vertexAttributes;
     };
 }

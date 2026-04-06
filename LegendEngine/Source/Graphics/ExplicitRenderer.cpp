@@ -9,9 +9,9 @@
 
 namespace le
 {
-    ExplicitRenderer::ExplicitRenderer(GraphicsDriver& driver, const CommandPoolID& gfxPool)
+    ExplicitRenderer::ExplicitRenderer(Scope<ExplicitDriver> driver, const CommandPoolID& gfxPool)
         :
-        m_driver(driver),
+        m_driver(std::move(driver)),
         m_gfxPool(gfxPool)
     {
         LE_INFO("Creating ExplicitRenderer");
@@ -30,18 +30,18 @@ namespace le
     {
         LE_INFO("Destroying ExplicitRenderer");
 
-        m_driver.WaitIdle();
+        m_driver->WaitIdle();
 
         for (auto& queue : m_deletionQueues)
             for (auto& deletionFunc : queue)
                 deletionFunc();
 
-        m_driver.FreeCommandBuffers();
+        m_driver->FreeCommandBuffers();
 
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
-            m_driver.DestroyFence(m_inFlightFences[i]);
-            m_driver.DestroySemaphore(m_renderFinishedSemaphores[i]);
+            m_driver->DestroyFence(m_inFlightFences[i]);
+            m_driver->DestroySemaphore(m_renderFinishedSemaphores[i]);
         }
 
         LE_INFO("Destroyed ExplicitRenderer");
@@ -59,7 +59,7 @@ namespace le
 
     ShaderID ExplicitRenderer::CreateShader()
     {
-        return ShaderID(m_driver.CreatePipeline().id);
+        return ShaderID(m_driver->CreatePipeline().id);
     }
 
     Texture2DID ExplicitRenderer::CreateTexture2D()
@@ -112,7 +112,7 @@ namespace le
         m_deletionQueues[m_currentFrame].push_back(func);
     }
 
-    GraphicsDriver& ExplicitRenderer::GetDriver() const
+    ExplicitDriver& ExplicitRenderer::GetDriver() const
     {
         return m_driver;
     }
@@ -121,14 +121,14 @@ namespace le
     {
         m_currentFrame = Application::Get().GetCurrentFrame();
 
-        m_driver.WaitForFences(1, &m_inFlightFences[m_currentFrame]);
+        m_driver->WaitForFences(1, &m_inFlightFences[m_currentFrame]);
 
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
-        m_driver.ResetCommandBuffer(buffer);
-        m_driver.BeginCommandBuffer(buffer);
+        m_driver->ResetCommandBuffer(buffer);
+        m_driver->BeginCommandBuffer(buffer);
 
-        m_driver.CmdBeginRendering(buffer);
+        m_driver->CmdBeginRendering(buffer);
 
         // TODO: camera uniforms
     }
@@ -155,8 +155,8 @@ namespace le
         //     return false;
         // }
 
-        m_driver.CmdSetViewport(buffer);
-        m_driver.CmdSetScissor(buffer);
+        m_driver->CmdSetViewport(buffer);
+        m_driver->CmdSetScissor(buffer);
     }
 
     void ExplicitRenderer::EndFrame()
@@ -213,8 +213,8 @@ namespace le
 
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
-        m_driver.CmdBindPipeline(buffer);
-        m_driver.CmdSetCullMode(buffer);
+        m_driver->CmdBindPipeline(buffer);
+        m_driver->CmdSetCullMode(buffer);
     }
 
     void ExplicitRenderer::DrawMesh()
@@ -262,31 +262,31 @@ namespace le
 
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
-        m_driver.CmdPushConstants(buffer);
+        m_driver->CmdPushConstants(buffer);
 
         if (m_haveSetsChanged)
         {
-            m_driver.CmdBindDescriptorSets(buffer);
+            m_driver->CmdBindDescriptorSets(buffer);
             m_haveSetsChanged = false;
         }
 
-        m_driver.CmdBindVertexBuffers(buffer);
-        m_driver.CmdBindIndexBuffer(buffer);
+        m_driver->CmdBindVertexBuffers(buffer);
+        m_driver->CmdBindIndexBuffer(buffer);
 
-        m_driver.CmdDrawIndexed(buffer);
+        m_driver->CmdDrawIndexed(buffer);
     }
 
     void ExplicitRenderer::CreateCommandBuffers()
     {
-        m_commandBuffers = m_driver.AllocateCommandBuffers(m_gfxPool, Application::FRAMES_IN_FLIGHT);
+        m_commandBuffers = m_driver->AllocateCommandBuffers(m_gfxPool, Application::FRAMES_IN_FLIGHT);
     }
 
     void ExplicitRenderer::CreateSyncObjects()
     {
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
-            m_inFlightFences[i] = m_driver.CreateFence();
-            m_renderFinishedSemaphores[i] = m_driver.CreateSemaphore();
+            m_inFlightFences[i] = m_driver->CreateFence();
+            m_renderFinishedSemaphores[i] = m_driver->CreateSemaphore();
         }
     }
 }

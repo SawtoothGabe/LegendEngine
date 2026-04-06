@@ -12,7 +12,7 @@ namespace le
         ~ExplicitMaterial() override;
     private:
         ExplicitRenderer& m_renderer;
-        GraphicsDriver& m_driver;
+        ExplicitDriver& m_driver;
 
         std::vector<BufferID> m_uniformBuffers;
         std::vector<DescriptorSetID> m_sets;

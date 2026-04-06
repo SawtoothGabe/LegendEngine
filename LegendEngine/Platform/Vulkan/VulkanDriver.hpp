@@ -4,15 +4,15 @@
 
 #include <vk_mem_alloc.h>
 #include <LE/TetherBindings.hpp>
-#include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 
 namespace le
 {
-    class VulkanGraphicsDriver : public GraphicsDriver
+    class VulkanDriver : public ExplicitDriver
     {
     public:
-        VulkanGraphicsDriver(const std::string_view applicationName);
-        ~VulkanGraphicsDriver();
+        VulkanDriver(std::string_view applicationName);
+        ~VulkanDriver();
 
         Scope<Renderer> CreateRenderer(CommandPoolID pool) override;
 

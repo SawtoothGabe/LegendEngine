@@ -1,7 +1,7 @@
 #pragma once
 
-#include <LE/Graphics/GraphicsDriver.hpp>
 #include <LE/Graphics/Renderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 #include <LE/Resources/Shader.hpp>
 
 namespace le
@@ -9,7 +9,7 @@ namespace le
     class ExplicitRenderer final : public Renderer
     {
     public:
-        ExplicitRenderer(GraphicsDriver& driver, const CommandPoolID& gfxPool);
+        ExplicitRenderer(Scope<ExplicitDriver> driver, const CommandPoolID& gfxPool);
         ~ExplicitRenderer() override;
 
         MaterialID CreateMaterial() override;
@@ -32,7 +32,7 @@ namespace le
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
 
-        GraphicsDriver& GetDriver() const;
+        ExplicitDriver& GetDriver() const;
     private:
         void CreateCommandBuffers();
         void CreateSyncObjects();
@@ -43,7 +43,7 @@ namespace le
         void UseMaterial();
         void DrawMesh();
 
-        GraphicsDriver& m_driver;
+        Scope<ExplicitDriver> m_driver;
         CommandPoolID m_gfxPool;
 
         bool m_vsync = false;

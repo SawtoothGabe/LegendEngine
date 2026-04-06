@@ -40,12 +40,12 @@ namespace le
     }
 
     Application::Application(
-        Scope<GraphicsDriver> driver,
+        Scope<Renderer> renderer,
         const std::string_view applicationName,
         const int width, const int height)
         :
         m_ResizeHandler(*this),
-        m_graphicsContext(std::move(driver))
+        m_graphicsContext(std::move(renderer))
     {
         std::wstring title(applicationName.size(), L' ');
         std::mbstowcs(title.data(), applicationName.data(),

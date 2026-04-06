@@ -2,22 +2,15 @@
 
 namespace le
 {
-    GraphicsContext::GraphicsContext(Scope<GraphicsDriver> driver)
+    GraphicsContext::GraphicsContext(Scope<Renderer> renderer)
         :
-        m_driver(std::move(driver))
+        m_renderer(std::move(renderer))
     {
-        m_gfxPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
-        m_renderer = m_driver->CreateRenderer(m_gfxPool);
     }
 
     GraphicsContext::~GraphicsContext()
     {
-        m_driver->DestroyCommandPool(m_gfxPool);
-    }
 
-    GraphicsDriver& GraphicsContext::GetDriver() const
-    {
-        return *m_driver;
     }
 
     Renderer& GraphicsContext::GetRenderer() const

@@ -328,7 +328,7 @@ namespace le
 //         m_Swapchain.reset();
 //     }
 
-    ExplicitRenderTarget::ExplicitRenderTarget(GraphicsDriver& driver, Window& window)
+    ExplicitRenderTarget::ExplicitRenderTarget(ExplicitDriver& driver, Window& window)
         :
         m_driver(driver)
     {

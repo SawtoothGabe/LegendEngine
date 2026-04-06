@@ -1,9 +1,10 @@
-#include "VulkanGraphicsDriver.hpp"
+#include "VulkanDriver.hpp"
 
 #include <set>
 #include <vk_mem_alloc.h>
 #include <VulkanBuffer.hpp>
 #include <VulkanImage.hpp>
+#include <VulkanTypes.hpp>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include "PlatformUtils.hpp"
@@ -14,9 +15,9 @@ namespace le
 {
 #define VULKAN_CAST(type, identifier) vk::type(reinterpret_cast<Vk##type>(identifier.id))
 
-    Scope<GraphicsDriver> CreateVulkanGraphicsDriver(std::string_view applicationName)
+    Scope<Renderer> CreateVulkanRenderer(std::string_view applicationName)
     {
-        return std::make_unique<VulkanGraphicsDriver>(applicationName);
+        return std::make_unique<ExplicitRenderer>(std::make_unique<VulkanDriver>(applicationName));
     }
 
     static const std::vector VALIDATION_LAYERS = {
@@ -52,7 +53,7 @@ namespace le
         return vk::False;
     }
 
-    VulkanGraphicsDriver::VulkanGraphicsDriver(const std::string_view applicationName)
+    VulkanDriver::VulkanDriver(const std::string_view applicationName)
     {
 	    VULKAN_HPP_DEFAULT_DISPATCHER.init();
 
@@ -61,19 +62,19 @@ namespace le
 	    CreateAllocator();
     }
 
-    VulkanGraphicsDriver::~VulkanGraphicsDriver()
+    VulkanDriver::~VulkanDriver()
     {
 	    vmaDestroyAllocator(m_allocator);
 	    m_device.destroy();
 	    m_instance.destroy();
     }
 
-    Scope<Renderer> VulkanGraphicsDriver::CreateRenderer(CommandPoolID pool)
+    Scope<Renderer> VulkanDriver::CreateRenderer(CommandPoolID pool)
     {
 	    return std::make_unique<ExplicitRenderer>(*this, pool);
     }
 
-    std::vector<CommandBufferID> VulkanGraphicsDriver::AllocateCommandBuffers(const CommandPoolID pool, const size_t count)
+    std::vector<CommandBufferID> VulkanDriver::AllocateCommandBuffers(const CommandPoolID pool, const size_t count)
     {
 	    std::vector<CommandBufferID> ids;
 	    const std::vector<vk::CommandBuffer> buffers
@@ -86,7 +87,7 @@ namespace le
 	    return ids;
     }
 
-    std::vector<DescriptorSetID> VulkanGraphicsDriver::AllocateDescriptorSets()
+    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets()
     {
 	    // TODO: pools
 
@@ -101,7 +102,7 @@ namespace le
 	    return ids;
     }
 
-    BufferID VulkanGraphicsDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
+    BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
     {
 	    VkBufferCreateInfo bufferInfo{};
 	    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -110,7 +111,7 @@ namespace le
 
 	    VmaAllocationCreateInfo allocInfo{};
 	    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
-	    allocInfo.flags = VulkanBuffer::ToVmaFlags(flags, createMapped);
+	    allocInfo.flags = VulkanTypes::GetVmaFlags(flags, createMapped);
 
 	    const auto buffer = new VulkanBuffer;
 
@@ -119,7 +120,7 @@ namespace le
 	    return BufferID(buffer);
     }
 
-    CommandPoolID VulkanGraphicsDriver::CreateCommandPool(const QueueFamily family)
+    CommandPoolID VulkanDriver::CreateCommandPool(const QueueFamily family)
     {
 	    uint32_t index = 0;
 	    switch (family)
@@ -134,13 +135,13 @@ namespace le
 	    return CommandPoolID(pool);
     }
 
-    FenceID VulkanGraphicsDriver::CreateFence(const bool signaled)
+    FenceID VulkanDriver::CreateFence(const bool signaled)
     {
 	    vk::FenceCreateFlags flags = signaled ? vk::FenceCreateFlagBits::eSignaled : vk::FenceCreateFlags();
 	    return FenceID(m_device.createFence({flags}));
     }
 
-    ImageID VulkanGraphicsDriver::CreateImage(const ImageInfo& info)
+    ImageID VulkanDriver::CreateImage(const ImageInfo& info)
     {
 	    VkImageCreateInfo imageInfo{};
 	    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -155,7 +156,7 @@ namespace le
 	    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 	    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	    imageInfo.format = VulkanImage::GetFormat(info.format);
+	    imageInfo.format = VulkanTypes::GetFormat(info.format);
 
 	    VmaAllocationCreateInfo allocInfo{};
 	    allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
@@ -168,7 +169,7 @@ namespace le
 	    return ImageID(image);
     }
 
-    ImageViewID VulkanGraphicsDriver::CreateImageView(const ImageID image, const Format format, const ImageViewType type)
+    ImageViewID VulkanDriver::CreateImageView(const ImageID image, const Format format, const ImageViewType type)
     {
 	    vk::ImageViewType viewType = {};
 	    switch (type)
@@ -179,20 +180,59 @@ namespace le
 		    default: LE_ASSERT(false, "Unknown image view type");
 	    }
 
-	    const auto vkFormat =
-			    static_cast<vk::Format>(VulkanImage::GetFormat(format));
-
 	    const vk::ImageView view = m_device.createImageView(
-		    {{}, VULKAN_CAST(Image, image), viewType, vkFormat});
+		    {{}, VULKAN_CAST(Image, image), viewType, VulkanTypes::GetVkFormat(format)});
 	    return ImageViewID(view);
     }
 
-    PipelineID VulkanGraphicsDriver::CreatePipeline(const PipelineInfo& info)
+    PipelineID VulkanDriver::CreatePipeline(const PipelineInfo& info)
     {
+    	std::vector<vk::Format> formats;
+    	std::vector<vk::PipelineShaderStageCreateInfo> stages;
+    	std::vector<vk::VertexInputBindingDescription> bindings;
+    	std::vector<vk::VertexInputAttributeDescription> attributes;
+    	formats.reserve(info.colorAttachmentFormats.size());
+    	stages.reserve(info.stages.size());
+    	bindings.reserve(info.vertexBindings.size());
+    	attributes.reserve(info.vertexAttributes.size());
 
+    	for (const Format format : info.colorAttachmentFormats)
+    		formats.push_back(VulkanTypes::GetVkFormat(format));
+
+    	for (const auto [name, module, stage] : info.stages)
+    		stages.push_back({{}, VulkanTypes::GetShaderStageFlag(stage),
+    			VULKAN_CAST(ShaderModule, module), name.c_str()});
+
+    	for (auto [binding, stride, inputRate] : info.vertexBindings)
+    	{
+    		bindings.push_back({
+    			static_cast<uint32_t>(binding),
+    			static_cast<uint32_t>(stride),
+    			VulkanTypes::GetVertexInputRate(inputRate)
+    		});
+    	}
+
+    	for ()
+
+    	const vk::PipelineVertexInputStateCreateInfo vertexInput(
+
+    	);
+
+    	const vk::PipelineRenderingCreateInfo rendering(
+    		0,
+    		static_cast<uint32_t>(formats.size()),
+    		formats.data(),
+    		VulkanTypes::GetVkFormat(info.depthFormat)
+    	);
+
+    	const vk::GraphicsPipelineCreateInfo createInfo(
+    		0, stages.size(), stages.data(),
+    	);
+
+		return PipelineID(m_device.createGraphicsPipeline({}, createInfo).value);
     }
 
-    PipelineLayoutID VulkanGraphicsDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
+    PipelineLayoutID VulkanDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
     	const std::span<DescriptorSetLayoutID> layouts)
     {
     	std::vector<vk::PushConstantRange> vkRanges;
@@ -229,43 +269,43 @@ namespace le
 		return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
     }
 
-    SemaphoreID VulkanGraphicsDriver::CreateSemaphore()
+    SemaphoreID VulkanDriver::CreateSemaphore()
     {
 	    return SemaphoreID(m_device.createSemaphore({}));
     }
 
-    SwapchainID VulkanGraphicsDriver::CreateSwapchain() {}
+    SwapchainID VulkanDriver::CreateSwapchain() {}
 
-    SurfaceID VulkanGraphicsDriver::CreateSurface(Window& window)
+    SurfaceID VulkanDriver::CreateSurface(Window& window)
     {
 		return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
     }
 
-    ShaderModuleID VulkanGraphicsDriver::CreateShaderModule() {}
-    DescriptorSetLayoutID VulkanGraphicsDriver::CreateDescriptorSetLayout() {}
-    SamplerID VulkanGraphicsDriver::CreateSampler() {}
-    void VulkanGraphicsDriver::FreeCommandBuffers() {}
-    void VulkanGraphicsDriver::FreeDescriptorSets() {}
-    void VulkanGraphicsDriver::DestroyBuffer(BufferID buffer) {}
+    ShaderModuleID VulkanDriver::CreateShaderModule() {}
+    DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout() {}
+    SamplerID VulkanDriver::CreateSampler() {}
+    void VulkanDriver::FreeCommandBuffers() {}
+    void VulkanDriver::FreeDescriptorSets() {}
+    void VulkanDriver::DestroyBuffer(BufferID buffer) {}
 
-    void VulkanGraphicsDriver::DestroyCommandPool(CommandPoolID pool)
+    void VulkanDriver::DestroyCommandPool(CommandPoolID pool)
     {
 
     }
 
-    void VulkanGraphicsDriver::DestroyFence(FenceID fence) {}
-    void VulkanGraphicsDriver::DestroyImage(ImageID image) {}
+    void VulkanDriver::DestroyFence(FenceID fence) {}
+    void VulkanDriver::DestroyImage(ImageID image) {}
 
-    void VulkanGraphicsDriver::DestroyImageView(ImageViewID view) {}
+    void VulkanDriver::DestroyImageView(ImageViewID view) {}
 
-    void VulkanGraphicsDriver::DestroyPipeline(PipelineID pipeline) {}
-    void VulkanGraphicsDriver::DestroySemaphore(SemaphoreID semaphore) {}
-    void VulkanGraphicsDriver::DestroySwapchain(SwapchainID swapchain) {}
-    void VulkanGraphicsDriver::DestroySurface(SurfaceID surface) {}
-    void VulkanGraphicsDriver::DestroyShaderModule(ShaderModuleID shaderModule) {}
-    void VulkanGraphicsDriver::DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) {}
-    void VulkanGraphicsDriver::DestroySampler(SamplerID sampler) {}
-    void VulkanGraphicsDriver::WaitForFences(const size_t count, FenceID* fences)
+    void VulkanDriver::DestroyPipeline(PipelineID pipeline) {}
+    void VulkanDriver::DestroySemaphore(SemaphoreID semaphore) {}
+    void VulkanDriver::DestroySwapchain(SwapchainID swapchain) {}
+    void VulkanDriver::DestroySurface(SurfaceID surface) {}
+    void VulkanDriver::DestroyShaderModule(ShaderModuleID shaderModule) {}
+    void VulkanDriver::DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) {}
+    void VulkanDriver::DestroySampler(SamplerID sampler) {}
+    void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
     {
 	    for (size_t i = 0; i < count; i++)
 	    {
@@ -274,37 +314,37 @@ namespace le
 	    }
     }
 
-    void VulkanGraphicsDriver::WaitIdle()
+    void VulkanDriver::WaitIdle()
     {
 	    m_device.waitIdle();
     }
 
-    void VulkanGraphicsDriver::ResetFences(size_t count, uint64_t* fences) {}
+    void VulkanDriver::ResetFences(size_t count, uint64_t* fences) {}
 
-    void VulkanGraphicsDriver::QueueSubmit() {}
+    void VulkanDriver::QueueSubmit() {}
 
-    void VulkanGraphicsDriver::QueuePresent() {}
+    void VulkanDriver::QueuePresent() {}
 
-    void VulkanGraphicsDriver::ResetCommandBuffer(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::BeginCommandBuffer(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::EndCommandBuffer(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdCopyBuffer(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdCopyBufferToImage(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdPipelineBarrier(CommandBufferID buffer) {}
+    void VulkanDriver::ResetCommandBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::BeginCommandBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::EndCommandBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::CmdCopyBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::CmdCopyBufferToImage(CommandBufferID buffer) {}
+    void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer) {}
 
-    void VulkanGraphicsDriver::CmdBeginRendering(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdSetViewport(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdSetScissor(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdBindPipeline(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdSetCullMode(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdPushConstants(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdDrawIndexed(CommandBufferID buffer) {}
-    void VulkanGraphicsDriver::CmdEndRendering(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBeginRendering(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetViewport(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetScissor(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindPipeline(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetCullMode(CommandBufferID buffer) {}
+    void VulkanDriver::CmdPushConstants(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::CmdDrawIndexed(CommandBufferID buffer) {}
+    void VulkanDriver::CmdEndRendering(CommandBufferID buffer) {}
 
-    void VulkanGraphicsDriver::CreateInstance(const std::string_view applicationName)
+    void VulkanDriver::CreateInstance(const std::string_view applicationName)
     {
 	    const vk::ApplicationInfo appInfo(
 		    applicationName.data(),
@@ -345,7 +385,7 @@ namespace le
 	    m_messenger = m_instance.createDebugUtilsMessengerEXT(messengerInfo);
     }
 
-    void VulkanGraphicsDriver::CreateDevice()
+    void VulkanDriver::CreateDevice()
     {
 	    m_physicalDevice = PickDevice();
 
@@ -366,7 +406,7 @@ namespace le
 	    m_device = m_physicalDevice.createDevice(deviceInfo);
     }
 
-    void VulkanGraphicsDriver::CreateAllocator()
+    void VulkanDriver::CreateAllocator()
     {
 	    VmaVulkanFunctions functions{};
 	    functions.vkGetInstanceProcAddr = VULKAN_HPP_DEFAULT_DISPATCHER.vkGetInstanceProcAddr;
@@ -382,7 +422,7 @@ namespace le
 	    LE_CHECK_VK(vmaCreateAllocator(&allocatorInfo, &m_allocator));
     }
 
-    vk::PhysicalDevice VulkanGraphicsDriver::PickDevice()
+    vk::PhysicalDevice VulkanDriver::PickDevice()
     {
 	    uint32_t deviceCount = 0;
 	    LE_CHECK_RESULT(m_instance.enumeratePhysicalDevices(&deviceCount, nullptr));
@@ -400,7 +440,7 @@ namespace le
 	    return {};
     }
 
-    void VulkanGraphicsDriver::FindQueueFamilies(const vk::PhysicalDevice device)
+    void VulkanDriver::FindQueueFamilies(const vk::PhysicalDevice device)
     {
 	    uint32_t familyCount = 0;
 	    device.getQueueFamilyProperties(&familyCount, nullptr);
@@ -450,7 +490,7 @@ namespace le
 	    }
     }
 
-    bool VulkanGraphicsDriver::IsDeviceSuitable(const vk::PhysicalDevice device)
+    bool VulkanDriver::IsDeviceSuitable(const vk::PhysicalDevice device)
     {
 	    vk::PhysicalDeviceProperties deviceProperties;
 	    vk::PhysicalDeviceFeatures deviceFeatures;
@@ -472,7 +512,7 @@ namespace le
 			    && extensionsSupported;
     }
 
-    bool VulkanGraphicsDriver::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
+    bool VulkanDriver::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
                                                            const char* const* deviceExtensions, const uint64_t extensionCount)
     {
 	    // The device requires some extensions (such as the swap chain)
@@ -498,7 +538,7 @@ namespace le
 	    return requiredExtensionSet.empty();
     }
 
-	bool VulkanGraphicsDriver::IsValidationSupported()
+	bool VulkanDriver::IsValidationSupported()
 	{
 		uint32_t layerCount = 0;
 		LE_CHECK_RESULT(vk::enumerateInstanceLayerProperties(&layerCount, nullptr));

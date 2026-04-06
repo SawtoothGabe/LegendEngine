@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
-#include <LE/Graphics/Types.hpp>
 
 namespace le
 {
@@ -9,7 +8,5 @@ namespace le
     {
         VkImage image;
         VmaAllocation allocation;
-
-        static VkFormat GetFormat(Format format);
     };
 }

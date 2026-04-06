@@ -19,7 +19,7 @@ namespace le
         static constexpr size_t FRAMES_IN_FLIGHT = 2;
 
         Application(
-            Scope<GraphicsDriver> driver,
+            Scope<Renderer> renderer,
             std::string_view applicationName,
             int width = 1280, int height = 720);
 
@@ -28,7 +28,7 @@ namespace le
         {
             LE_INFO("Creating application");
             LE_ASSERT(!m_Instance, "Application already exists");
-            m_Instance = std::make_unique<Application>(GraphicsDriver::Create(api, applicationName),
+            m_Instance = std::make_unique<Application>(Renderer::Create(api, applicationName),
                 applicationName, args...);
         }
         ~Application();
