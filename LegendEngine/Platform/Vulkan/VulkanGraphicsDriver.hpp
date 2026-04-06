@@ -20,7 +20,7 @@ namespace le
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
         FenceID CreateFence(bool signaled) override;
-        ImageID CreateImage() override;
+        ImageID CreateImage(const ImageInfo& info) override;
         ImageViewID CreateImageView() override;
         PipelineID CreatePipeline() override;
         SemaphoreID CreateSemaphore() override;

@@ -3,6 +3,7 @@
 #include <set>
 #include <vk_mem_alloc.h>
 #include <VulkanBuffer.hpp>
+#include <VulkanImage.hpp>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include "InstanceUtils.hpp"
@@ -215,7 +216,34 @@ namespace le
 		return FenceID(m_device.createFence({flags}));
     }
 
-    ImageID VulkanGraphicsDriver::CreateImage() {}
+    ImageID VulkanGraphicsDriver::CreateImage(const ImageInfo& info)
+    {
+    	VkImageCreateInfo imageInfo{};
+    	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    	imageInfo.extent.width = info.width;
+    	imageInfo.extent.height = info.height;
+    	imageInfo.extent.depth = 1;
+    	imageInfo.mipLevels = 1;
+    	imageInfo.arrayLayers = info.arrayLayers;
+    	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    	imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+    	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    	imageInfo.format = VulkanImage::GetFormat(info.format);
+
+    	VmaAllocationCreateInfo allocInfo{};
+    	allocInfo.usage = VMA_MEMORY_USAGE_AUTO;
+
+    	const auto image = new VulkanImage;
+
+    	LE_CHECK_VK(vmaCreateImage(m_allocator, &imageInfo, &allocInfo,
+    		&image->image, &image->allocation, nullptr));
+
+    	return ImageID(image);
+    }
+
     ImageViewID VulkanGraphicsDriver::CreateImageView() {}
     PipelineID VulkanGraphicsDriver::CreatePipeline() {}
     SemaphoreID VulkanGraphicsDriver::CreateSemaphore() {}

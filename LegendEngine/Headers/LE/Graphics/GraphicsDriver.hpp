@@ -21,7 +21,7 @@ namespace le
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         virtual FenceID CreateFence(bool signaled = true) = 0;
-        virtual ImageID CreateImage() = 0;
+        virtual ImageID CreateImage(const ImageInfo& info) = 0;
         virtual ImageViewID CreateImageView() = 0;
         virtual PipelineID CreatePipeline() = 0;
         virtual SemaphoreID CreateSemaphore() = 0;

@@ -71,6 +71,14 @@ namespace le
         uint32_t depth;
     };
 
+    enum class Format
+    {
+        R8,
+        R8G8,
+        R8G8B8,
+        R8G8B8A8,
+    };
+
     enum class PipelineStage
     {
         TOP_OF_PIPE,
@@ -113,5 +121,20 @@ namespace le
         GRAPHICS,
         COMPUTE,
         TRANSFER,
+    };
+
+    enum class ImageType
+    {
+        TYPE_2D,
+        TYPE_2D_ARRAY,
+    };
+
+    struct ImageInfo
+    {
+        std::size_t width = 0;
+        std::size_t height = 0;
+        std::size_t arrayLayers = 1;
+        Format format = Format::R8G8B8A8;
+        ImageType type = ImageType::TYPE_2D;
     };
 }
