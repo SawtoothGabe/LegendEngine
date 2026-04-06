@@ -323,7 +323,32 @@ namespace le
 	    return SemaphoreID(m_device.createSemaphore({}));
     }
 
-    SwapchainID VulkanDriver::CreateSwapchain() {}
+    SwapchainID VulkanDriver::CreateSwapchain(const SwapchainInfo& info)
+    {
+    	const auto surface = VULKAN_CAST(SurfaceKHR, info.surface);
+
+    	vk::SurfaceCapabilitiesKHR capabilities;
+    	LE_CHECK_RESULT(m_physicalDevice.getSurfaceCapabilitiesKHR(surface, &capabilities));
+
+    	uint32_t imageCount = capabilities.minImageCount + 1;
+    	if (capabilities.maxImageCount > 0 &&
+			imageCount > capabilities.maxImageCount)
+    		imageCount = capabilities.maxImageCount;
+
+    	const vk::PresentModeKHR presentMode = PickPresentMode(surface, info.vsync);
+
+    	const vk::SwapchainCreateInfoKHR createInfo(
+    		{}, surface, imageCount,
+    		VulkanTypes::GetVkFormat(info.format), vk::ColorSpaceKHR::eSrgbNonlinear,
+    		{ info.extent.width, info.extent.height }, 1,
+    		vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive,
+    		0, nullptr, capabilities.currentTransform,
+    		vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode,
+    		true
+    	);
+
+	    return SwapchainID(m_device.createSwapchainKHR(createInfo));
+    }
 
     SurfaceID VulkanDriver::CreateSurface(Window& window)
     {
@@ -611,4 +636,33 @@ namespace le
 
 		return true;
 	}
+
+	vk::PresentModeKHR VulkanDriver::PickPresentMode(const vk::SurfaceKHR surface, const bool vsync) const
+	{
+    	const std::vector<vk::PresentModeKHR> presentModes =
+    		m_physicalDevice.getSurfacePresentModesKHR(surface);
+
+    	// Fifo is used for vsync. Fifo relaxed might work too.
+    	// An option to use fifo relaxed may be added later.
+    	if (vsync)
+    		return vk::PresentModeKHR::eFifo;
+
+    	// Mailbox is preferred for vsync disabled, but immediate works too.
+    	// If neither are supported, fifo is used.
+
+    	bool immediateSupported = false;
+    	for (const auto& presentMode : presentModes)
+    	{
+    		if (presentMode == vk::PresentModeKHR::eMailbox)
+    			return presentMode;
+
+    		if (presentMode == vk::PresentModeKHR::eImmediate)
+    			immediateSupported = true;
+    	}
+
+    	if (immediateSupported)
+    		return vk::PresentModeKHR::eImmediate;
+
+    	return vk::PresentModeKHR::eFifo;
+    }
 }

@@ -25,7 +25,7 @@ namespace le
         PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
             std::span<DescriptorSetLayoutID> layouts) override;
         SemaphoreID CreateSemaphore() override;
-        SwapchainID CreateSwapchain() override;
+        SwapchainID CreateSwapchain(const SwapchainInfo& info) override;
         SurfaceID CreateSurface(Window& window) override;
         ShaderModuleID CreateShaderModule() override;
         DescriptorSetLayoutID CreateDescriptorSetLayout() override;
@@ -88,6 +88,7 @@ namespace le
 
         void FindQueueFamilies(vk::PhysicalDevice device);
         bool IsDeviceSuitable(vk::PhysicalDevice device);
+        vk::PresentModeKHR PickPresentMode(vk::SurfaceKHR surface, bool vsync) const;
 
         static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device,
             const char* const* deviceExtensions, uint64_t extensionCount);

@@ -73,6 +73,12 @@ namespace le
         uint32_t depth;
     };
 
+    struct Extent2D
+    {
+        uint32_t width;
+        uint32_t height;
+    };
+
     enum class Format
     {
         R8,
@@ -183,5 +189,13 @@ namespace le
         std::span<StageInfo> stages;
         std::span<VertexBinding> vertexBindings;
         std::span<VertexAttribute> vertexAttributes;
+    };
+
+    struct SwapchainInfo
+    {
+        bool vsync = false;
+        Extent2D extent;
+        SurfaceID surface;
+        Format format;
     };
 }
