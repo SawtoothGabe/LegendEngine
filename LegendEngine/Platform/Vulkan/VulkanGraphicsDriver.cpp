@@ -29,7 +29,7 @@ namespace le
 	};
 
     static VKAPI_ATTR vk::Bool32 VKAPI_CALL OnValidationMessage(
-        vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
+        const vk::DebugUtilsMessageSeverityFlagBitsEXT severity,
         vk::DebugUtilsMessageTypeFlagsEXT,
         const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
     {
@@ -187,18 +187,44 @@ namespace le
 	    return ImageViewID(view);
     }
 
-    PipelineID VulkanGraphicsDriver::CreatePipeline()
+    PipelineID VulkanGraphicsDriver::CreatePipeline(const PipelineInfo& info)
     {
 
     }
 
     PipelineLayoutID VulkanGraphicsDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
-    	std::span<DescriptorSetLayoutID> layouts)
+    	const std::span<DescriptorSetLayoutID> layouts)
     {
     	std::vector<vk::PushConstantRange> vkRanges;
     	std::vector<vk::DescriptorSetLayout> vkLayouts;
+    	vkRanges.reserve(ranges.size());
+    	vkLayouts.reserve(layouts.size());
 
-    	vk::PipelineLayoutCreateInfo createInfo;
+    	for (auto [size, offset, stage] : ranges)
+    	{
+    		vk::ShaderStageFlags vkStage;
+    		switch (stage)
+    		{
+    			case ShaderStageFlags::VERTEX: vkStage = vk::ShaderStageFlagBits::eVertex; break;
+			    case ShaderStageFlags::FRAGMENT: vkStage = vk::ShaderStageFlagBits::eFragment; break;
+			    case ShaderStageFlags::ALL: vkStage = vk::ShaderStageFlagBits::eAll; break;
+		    }
+
+    		vkRanges.push_back({
+    			vkStage,
+    			static_cast<uint32_t>(offset),
+    			static_cast<uint32_t>(size)
+    		});
+    	}
+
+    	for (const DescriptorSetLayoutID setLayout : layouts)
+    		vkLayouts.push_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
+
+    	const vk::PipelineLayoutCreateInfo createInfo(
+    		{},
+    		vkLayouts.size(), vkLayouts.data(),
+    		vkRanges.size(), vkRanges.data()
+    	);
 
 		return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
     }

@@ -144,4 +144,9 @@ namespace le
         std::size_t offset = 0;
         ShaderStageFlags stage = ShaderStageFlags::VERTEX;
     };
+
+    struct PipelineInfo
+    {
+        PipelineLayoutID layout;
+    };
 }

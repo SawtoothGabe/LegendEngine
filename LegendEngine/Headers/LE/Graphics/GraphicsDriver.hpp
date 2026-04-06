@@ -25,7 +25,7 @@ namespace le
         virtual FenceID CreateFence(bool signaled = true) = 0;
         virtual ImageID CreateImage(const ImageInfo& info) = 0;
         virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
-        virtual PipelineID CreatePipeline() = 0;
+        virtual PipelineID CreatePipeline(const PipelineInfo& info) = 0;
         virtual PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
             std::span<DescriptorSetLayoutID> layouts) = 0;
         virtual SemaphoreID CreateSemaphore() = 0;

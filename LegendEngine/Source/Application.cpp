@@ -47,8 +47,6 @@ namespace le
         m_ResizeHandler(*this),
         m_graphicsContext(std::move(driver))
     {
-        LE_INFO("Creating application");
-
         std::wstring title(applicationName.size(), L' ');
         std::mbstowcs(title.data(), applicationName.data(),
                       applicationName.size());

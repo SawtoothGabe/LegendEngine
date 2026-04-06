@@ -18,32 +18,19 @@ namespace le
     public:
         static constexpr size_t FRAMES_IN_FLIGHT = 2;
 
-#ifndef LE_HEADLESS
-        // Creates the Application with a WindowRenderTarget
         Application(
             Scope<GraphicsDriver> driver,
             std::string_view applicationName,
-            int width, int height);
-
-        Tether::Window& GetWindow() const;
+            int width = 1280, int height = 720);
 
         template<typename... Args>
         static void Create(GraphicsAPI api, std::string_view applicationName, Args&&... args)
         {
+            LE_INFO("Creating application");
             LE_ASSERT(!m_Instance, "Application already exists");
             m_Instance = std::make_unique<Application>(GraphicsDriver::Create(api, applicationName),
                 applicationName, args...);
         }
-#else
-        Application(GraphicsContext& ctx); // Headless application constructor
-
-        template<typename... Args>
-        static void Create(Args&&... args)
-        {
-            LE_ASSERT(!m_Instance, "Application already exists");
-            m_Instance = std::make_unique<Application>(args...);
-        }
-#endif
         ~Application();
 
         LE_NO_COPY(Application);
@@ -51,6 +38,7 @@ namespace le
         void SetActiveScene(Scene& scene);
         void ClearActiveScene();
 
+        Tether::Window& GetWindow() const;
         GraphicsContext& GetGraphicsContext();
         EventBus& GetEventBus();
         Scene& GetGlobalScene();
