@@ -29,7 +29,7 @@ namespace le
         virtual SemaphoreID CreateSemaphore() = 0;
         virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
         virtual SurfaceID CreateSurface(Window& window) = 0;
-        virtual ShaderModuleID CreateShaderModule() = 0;
+        virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
         virtual DescriptorSetLayoutID CreateDescriptorSetLayout() = 0;
         virtual SamplerID CreateSampler() = 0;
 

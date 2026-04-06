@@ -27,7 +27,7 @@ namespace le
         SemaphoreID CreateSemaphore() override;
         SwapchainID CreateSwapchain(const SwapchainInfo& info) override;
         SurfaceID CreateSurface(Window& window) override;
-        ShaderModuleID CreateShaderModule() override;
+        ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) override;
         DescriptorSetLayoutID CreateDescriptorSetLayout() override;
         SamplerID CreateSampler() override;
 

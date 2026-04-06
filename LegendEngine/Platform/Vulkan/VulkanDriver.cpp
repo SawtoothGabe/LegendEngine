@@ -355,7 +355,15 @@ namespace le
 		return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
     }
 
-    ShaderModuleID VulkanDriver::CreateShaderModule() {}
+    ShaderModuleID VulkanDriver::CreateShaderModule(const ShaderModuleInfo& info)
+    {
+    	const vk::ShaderModuleCreateInfo createInfo(
+    		{}, info.spirvSize, reinterpret_cast<const uint32_t*>(info.spirvCode)
+    	);
+
+		return ShaderModuleID(m_device.createShaderModule(createInfo));
+    }
+
     DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout() {}
     SamplerID VulkanDriver::CreateSampler() {}
     void VulkanDriver::FreeCommandBuffers() {}

@@ -198,4 +198,12 @@ namespace le
         SurfaceID surface;
         Format format;
     };
+
+    struct ShaderModuleInfo
+    {
+        size_t spirvSize = 0;
+        uint8_t* spirvCode = nullptr;
+        size_t dxcSize = 0;
+        uint8_t* dxcCode = nullptr;
+    };
 }
