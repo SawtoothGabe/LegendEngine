@@ -28,7 +28,7 @@ namespace le
         SwapchainID CreateSwapchain(const SwapchainInfo& info) override;
         SurfaceID CreateSurface(Window& window) override;
         ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) override;
-        DescriptorSetLayoutID CreateDescriptorSetLayout() override;
+        DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) override;
         SamplerID CreateSampler() override;
 
         void FreeCommandBuffers() override;

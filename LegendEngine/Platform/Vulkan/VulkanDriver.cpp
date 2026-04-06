@@ -1,5 +1,6 @@
 #include "VulkanDriver.hpp"
 
+#include <DescriptorSetLayout.hpp>
 #include <set>
 #include <vk_mem_alloc.h>
 #include <VulkanBuffer.hpp>
@@ -364,8 +365,13 @@ namespace le
 		return ShaderModuleID(m_device.createShaderModule(createInfo));
     }
 
-    DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout() {}
+    DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings)
+    {
+    	return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
+    }
+
     SamplerID VulkanDriver::CreateSampler() {}
+
     void VulkanDriver::FreeCommandBuffers() {}
     void VulkanDriver::FreeDescriptorSets() {}
     void VulkanDriver::DestroyBuffer(BufferID buffer) {}
@@ -385,7 +391,14 @@ namespace le
     void VulkanDriver::DestroySwapchain(SwapchainID swapchain) {}
     void VulkanDriver::DestroySurface(SurfaceID surface) {}
     void VulkanDriver::DestroyShaderModule(ShaderModuleID shaderModule) {}
-    void VulkanDriver::DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) {}
+
+    void VulkanDriver::DestroyDescriptorSetLayout(const DescriptorSetLayoutID layout)
+    {
+	    const auto vkLayout = reinterpret_cast<DescriptorSetLayout*>(layout.id);
+    	m_device.destroy(vkLayout->layout);
+    	delete vkLayout;
+    }
+
     void VulkanDriver::DestroySampler(SamplerID sampler) {}
     void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
     {

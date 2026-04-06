@@ -10,5 +10,7 @@ namespace le::VulkanTypes
     static VkFormat GetFormat(Format format);
     static vk::Format GetVkFormat(Format format);
     static vk::ShaderStageFlagBits GetShaderStageFlag(ShaderStageFlags stage);
+    static vk::ShaderStageFlagBits GetShaderStageFlags(ShaderStageFlags stage);
     static vk::VertexInputRate GetVertexInputRate(InputRate inputRate);
+    static vk::DescriptorType GetDescriptorType(DescriptorType type);
 }

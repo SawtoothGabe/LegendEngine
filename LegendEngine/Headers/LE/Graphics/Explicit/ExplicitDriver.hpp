@@ -30,7 +30,7 @@ namespace le
         virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
         virtual SurfaceID CreateSurface(Window& window) = 0;
         virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
-        virtual DescriptorSetLayoutID CreateDescriptorSetLayout() = 0;
+        virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
         virtual SamplerID CreateSampler() = 0;
 
         virtual void FreeCommandBuffers() = 0;

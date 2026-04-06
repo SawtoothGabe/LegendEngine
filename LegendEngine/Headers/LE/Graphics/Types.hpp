@@ -206,4 +206,12 @@ namespace le
         size_t dxcSize = 0;
         uint8_t* dxcCode = nullptr;
     };
+
+    struct DescriptorSetLayoutBinding
+    {
+        std::size_t binding = 0;
+        std::size_t descriptorCount = 0;
+        DescriptorType descriptorType = DescriptorType::UNIFORM_BUFFER;
+        ShaderStageFlags stageFlags = ShaderStageFlags::ALL;
+    };
 }
