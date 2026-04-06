@@ -72,9 +72,9 @@ namespace le
         return Texture2DArrayID(new ExplicitTexture2DArray());
     }
 
-    RenderTargetID ExplicitRenderer::CreateRenderTarget()
+    RenderTargetID ExplicitRenderer::CreateRenderTarget(Window& window)
     {
-        return RenderTargetID(new ExplicitRenderTarget(m_driver));
+        return RenderTargetID(new ExplicitRenderTarget(m_driver, window));
     }
 
     void ExplicitRenderer::DestroyMaterial(MaterialID id)

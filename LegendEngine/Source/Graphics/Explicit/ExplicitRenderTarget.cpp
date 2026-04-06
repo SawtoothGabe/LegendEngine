@@ -328,11 +328,11 @@ namespace le
 //         m_Swapchain.reset();
 //     }
 
-    ExplicitRenderTarget::ExplicitRenderTarget(GraphicsDriver& driver)
+    ExplicitRenderTarget::ExplicitRenderTarget(GraphicsDriver& driver, Window& window)
         :
         m_driver(driver)
     {
-        m_surface = m_driver.CreateSurface();
+        m_surface = m_driver.CreateSurface(window);
     }
 
     ExplicitRenderTarget::~ExplicitRenderTarget()

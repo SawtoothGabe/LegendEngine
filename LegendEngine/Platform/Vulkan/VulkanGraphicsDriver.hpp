@@ -3,6 +3,7 @@
 #include "VkDefs.hpp"
 
 #include <vk_mem_alloc.h>
+#include <LE/TetherBindings.hpp>
 #include <LE/Graphics/GraphicsDriver.hpp>
 
 namespace le
@@ -27,7 +28,7 @@ namespace le
             std::span<DescriptorSetLayoutID> layouts) override;
         SemaphoreID CreateSemaphore() override;
         SwapchainID CreateSwapchain() override;
-        SurfaceID CreateSurface() override;
+        SurfaceID CreateSurface(Window& window) override;
         ShaderModuleID CreateShaderModule() override;
         DescriptorSetLayoutID CreateDescriptorSetLayout() override;
         SamplerID CreateSampler() override;

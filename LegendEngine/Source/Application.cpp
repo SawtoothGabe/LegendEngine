@@ -49,7 +49,12 @@ namespace le
     {
         LE_INFO("Creating application");
 
-        m_renderTarget = m_graphicsContext.GetRenderer().CreateRenderTarget();
+        std::wstring title(applicationName.size(), L' ');
+        std::mbstowcs(title.data(), applicationName.data(),
+                      applicationName.size());
+
+        m_Window = Window::Create(width, height, title, false);
+        m_renderTarget = m_graphicsContext.GetRenderer().CreateRenderTarget(*m_Window);
 
         LE_INFO("Application created");
     }

@@ -17,7 +17,7 @@ namespace le
         ShaderID CreateShader() override;
         Texture2DID CreateTexture2D() override;
         Texture2DArrayID CreateTexture2DArray() override;
-        RenderTargetID CreateRenderTarget() override;
+        RenderTargetID CreateRenderTarget(Window& window) override;
 
         void DestroyMaterial(MaterialID id) override;
         void DestroyMesh(MeshID id) override;

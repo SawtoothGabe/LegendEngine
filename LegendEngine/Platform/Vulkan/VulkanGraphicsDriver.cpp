@@ -210,7 +210,11 @@ namespace le
 
     SwapchainID VulkanGraphicsDriver::CreateSwapchain() {}
 
-    SurfaceID VulkanGraphicsDriver::CreateSurface() {}
+    SurfaceID VulkanGraphicsDriver::CreateSurface(Window& window)
+    {
+		return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
+    }
+
     ShaderModuleID VulkanGraphicsDriver::CreateShaderModule() {}
     DescriptorSetLayoutID VulkanGraphicsDriver::CreateDescriptorSetLayout() {}
     SamplerID VulkanGraphicsDriver::CreateSampler() {}
@@ -298,7 +302,7 @@ namespace le
 		    extensions.size(), extensions.data()
 	    );
 	    m_instance = vk::createInstance(instanceCreateInfo);
-	    VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance);
+	    PlatformUtils::LoadVulkanFuncs(m_instance);
 
 	    constexpr vk::DebugUtilsMessengerCreateInfoEXT messengerInfo(
 		    {},

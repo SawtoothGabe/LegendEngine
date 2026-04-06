@@ -6,6 +6,8 @@
 #include <LE/Common/Types.hpp>
 #include <LE/Graphics/Types.hpp>
 
+#include <LE/TetherBindings.hpp>
+
 namespace le
 {
     class Renderer;
@@ -28,7 +30,7 @@ namespace le
             std::span<DescriptorSetLayoutID> layouts) = 0;
         virtual SemaphoreID CreateSemaphore() = 0;
         virtual SwapchainID CreateSwapchain() = 0;
-        virtual SurfaceID CreateSurface() = 0;
+        virtual SurfaceID CreateSurface(Window& window) = 0;
         virtual ShaderModuleID CreateShaderModule() = 0;
         virtual DescriptorSetLayoutID CreateDescriptorSetLayout() = 0;
         virtual SamplerID CreateSampler() = 0;

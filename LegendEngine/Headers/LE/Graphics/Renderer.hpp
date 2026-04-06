@@ -1,5 +1,6 @@
 #pragma once
 
+#include <LE/TetherBindings.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/World/Scene.hpp>
 
@@ -15,7 +16,7 @@ namespace le
         virtual ShaderID CreateShader() = 0;
         virtual Texture2DID CreateTexture2D() = 0;
         virtual Texture2DArrayID CreateTexture2DArray() = 0;
-        virtual RenderTargetID CreateRenderTarget() = 0;
+        virtual RenderTargetID CreateRenderTarget(Window& window) = 0;
 
         virtual void DestroyMaterial(MaterialID id) = 0;
         virtual void DestroyMesh(MeshID id) = 0;

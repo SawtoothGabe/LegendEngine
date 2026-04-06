@@ -9,7 +9,7 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(GraphicsDriver& driver);
+        explicit ExplicitRenderTarget(GraphicsDriver& driver, Window& window);
         ~ExplicitRenderTarget();
     private:
         GraphicsDriver& m_driver;
