@@ -98,8 +98,7 @@ namespace le
 	    ids.reserve(sets.size());
 	    for (vk::DescriptorSet set : sets)
 	    {
-
-		    ids.emplace_back(set);
+		    ids.emplace_back(new DescriptorSet{set});
 	    }
 
 	    return ids;
@@ -791,10 +790,42 @@ namespace le
 		);
     }
 
-    void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
-    void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
-    void VulkanDriver::CmdDrawIndexed(CommandBufferID buffer) {}
-    void VulkanDriver::CmdEndRendering(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindVertexBuffers(const CommandBufferID buffer, const uint32_t firstBinding,
+    	const std::span<BufferID> buffers)
+    {
+        std::vector<vk::Buffer> vkBuffers;
+    	const std::vector<uint64_t> offsets(buffers.size(), 0);
+
+        vkBuffers.reserve(buffers.size());
+        for (const auto& id : buffers)
+        {
+            vkBuffers.emplace_back(reinterpret_cast<VulkanBuffer*>(id.id)->buffer);
+        }
+
+        VULKAN_CAST(CommandBuffer, buffer).bindVertexBuffers(firstBinding, vkBuffers, offsets);
+    }
+
+    void VulkanDriver::CmdBindIndexBuffer(const CommandBufferID buffer, const BufferID indexBuffer,
+        const uint64_t offset)
+    {
+        VULKAN_CAST(CommandBuffer, buffer).bindIndexBuffer(
+            reinterpret_cast<VulkanBuffer*>(indexBuffer.id)->buffer,
+            offset,
+            vk::IndexType::eUint32
+        );
+    }
+
+    void VulkanDriver::CmdDrawIndexed(const CommandBufferID buffer, const uint32_t indexCount,
+        const uint32_t instanceCount, const uint32_t firstIndex, const int32_t vertexOffset,
+        const uint32_t firstInstance)
+    {
+        VULKAN_CAST(CommandBuffer, buffer).drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    }
+
+    void VulkanDriver::CmdEndRendering(const CommandBufferID buffer)
+    {
+        VULKAN_CAST(CommandBuffer, buffer).endRenderingKHR();
+    }
 
     void VulkanDriver::TransitionImageLayout(const CommandBufferID buffer,
     	const ImageID image, const ImageLayout oldLayout,

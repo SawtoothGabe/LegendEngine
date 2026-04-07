@@ -72,9 +72,11 @@ namespace le
             ShaderStageFlags stage, size_t offset, size_t size, void* values) = 0;
         virtual void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) = 0;
-        virtual void CmdBindVertexBuffers(CommandBufferID buffer) = 0;
-        virtual void CmdBindIndexBuffer(CommandBufferID buffer) = 0;
-        virtual void CmdDrawIndexed(CommandBufferID buffer) = 0;
+        virtual void CmdBindVertexBuffers(CommandBufferID buffer, uint32_t firstBinding, std::span<BufferID> buffers) = 0;
+        virtual void CmdBindIndexBuffer(CommandBufferID buffer, BufferID indexBuffer, uint64_t offset) = 0;
+        virtual void CmdDrawIndexed(CommandBufferID buffer, uint32_t indexCount,
+            uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset,
+            uint32_t firstInstance) = 0;
         virtual void CmdEndRendering(CommandBufferID buffer) = 0;
 
         virtual void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,

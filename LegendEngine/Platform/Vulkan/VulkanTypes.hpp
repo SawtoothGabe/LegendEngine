@@ -21,4 +21,5 @@ namespace le::VulkanTypes
     static vk::ImageLayout GetImageLayout(ImageLayout layout);
     static vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
     static vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
+    static vk::IndexType GetIndexType(IndexType indexType);
 }
