@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <string>
+#include <span>
 
 namespace le
 {
@@ -58,6 +59,7 @@ namespace le
     LE_GRAPHICS_RESOURCE_ID(ShaderModule);
     LE_GRAPHICS_RESOURCE_ID(DescriptorSetLayout);
     LE_GRAPHICS_RESOURCE_ID(Sampler);
+    LE_GRAPHICS_RESOURCE_ID(Queue);
 
     struct Offset3D
     {
@@ -241,5 +243,14 @@ namespace le
         Filter filter = Filter::NEAREST;
         AddressMode addressMode = AddressMode::CLAMP_TO_EDGE;
         BorderColor borderColor = BorderColor::OPAQUE_BLACK;
+    };
+
+    struct SubmitInfo
+    {
+        FenceID fence;
+        CommandBufferID commandBuffer;
+        std::span<SemaphoreID> waitSemaphores;
+        std::span<SemaphoreID> signalSemaphores;
+        std::span<PipelineStage> waitDstStageMask;
     };
 }

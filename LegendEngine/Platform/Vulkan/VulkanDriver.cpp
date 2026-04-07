@@ -133,8 +133,7 @@ namespace le
 	    }
 
 	    const vk::CommandPoolCreateInfo info({}, index);
-	    const vk::CommandPool pool = m_device.createCommandPool(info, nullptr);
-	    return CommandPoolID(pool);
+	    return CommandPoolID(m_device.createCommandPool(info, nullptr));
     }
 
     FenceID VulkanDriver::CreateFence(const bool signaled)
@@ -396,6 +395,19 @@ namespace le
 		return SamplerID(m_device.createSampler(createInfo));
     }
 
+    QueueID VulkanDriver::GetQueue(const QueueFamily family)
+    {
+    	uint32_t index = 0;
+    	switch (family)
+    	{
+    		case QueueFamily::GRAPHICS: index = m_indices.graphicsFamilyIndex; break;
+    		case QueueFamily::COMPUTE: index = m_indices.computeFamilyIndex; break;
+    		case QueueFamily::TRANSFER: index = m_indices.transferFamilyIndex; break;
+    	}
+
+	    return QueueID(m_device.getQueue(index, 0));
+    }
+
     void VulkanDriver::FreeCommandBuffers(const CommandPoolID pool, const size_t count, CommandBufferID* buffers)
     {
     	for (size_t i = 0; i < count; i++)
@@ -505,9 +517,37 @@ namespace le
 	    }
     }
 
-    void VulkanDriver::QueueSubmit()
+    void VulkanDriver::QueueSubmit(const QueueID queue, const SubmitInfo& info)
     {
+		const auto vkQueue = VULKAN_CAST(Queue, queue);
+    	const auto vkFence = VULKAN_CAST(Fence, info.fence);
 
+    	std::vector<vk::Semaphore> waitSemaphores;
+    	std::vector<vk::Semaphore> signalSemaphores;
+    	std::vector<vk::PipelineStageFlags> waitStages;
+    	waitSemaphores.reserve(info.waitSemaphores.size());
+    	waitStages.reserve(waitSemaphores.size());
+    	signalSemaphores.reserve(info.signalSemaphores.size());
+
+    	for (const SemaphoreID semaphore : info.waitSemaphores)
+    		waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+
+    	for (const SemaphoreID semaphore : info.signalSemaphores)
+    		signalSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+
+    	for (PipelineStage stage : info.waitDstStageMask)
+    		waitStages.emplace_back(VulkanTypes::GetPipelineStage(stage));
+
+    	const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
+
+		const vk::SubmitInfo submit(
+    		waitSemaphores.size(), waitSemaphores.data(),
+    		waitStages.data(),
+    		1, &commandBuffer,
+    		signalSemaphores.size(), signalSemaphores.data()
+    	);
+
+    	LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
     }
 
     void VulkanDriver::QueuePresent() {}

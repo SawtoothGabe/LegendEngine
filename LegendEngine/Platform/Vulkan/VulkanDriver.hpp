@@ -30,6 +30,7 @@ namespace le
         ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) override;
         DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) override;
         SamplerID CreateSampler(const SamplerInfo& info) override;
+        QueueID GetQueue(QueueFamily family) override;
 
         void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) override;
         void FreeDescriptorSets(size_t count, DescriptorSetID* sets) override;
@@ -50,7 +51,7 @@ namespace le
         void WaitForFences(size_t count, FenceID* fences) override;
         void WaitIdle() override;
         void ResetFences(size_t count, FenceID* fences) override;
-        void QueueSubmit() override;
+        void QueueSubmit(QueueID queue, const SubmitInfo& info) override;
         void QueuePresent() override;
         void ResetCommandBuffer(CommandBufferID buffer) override;
         void BeginCommandBuffer(CommandBufferID buffer) override;

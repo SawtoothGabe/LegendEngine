@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
-#include <LE/Common/Assert.hpp>
 #include <LE/Common/Types.hpp>
 #include <LE/Graphics/Types.hpp>
 
@@ -32,6 +29,7 @@ namespace le
         virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
         virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
         virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
+        virtual QueueID GetQueue(QueueFamily family) = 0;
 
         virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
         virtual void FreeDescriptorSets(size_t count, DescriptorSetID* sets) = 0;
@@ -52,7 +50,7 @@ namespace le
         virtual void WaitForFences(size_t count, FenceID* fences) = 0;
         virtual void WaitIdle() = 0;
         virtual void ResetFences(size_t count, FenceID* fences) = 0;
-        virtual void QueueSubmit() = 0;
+        virtual void QueueSubmit(QueueID, const SubmitInfo& info) = 0;
         virtual void QueuePresent() = 0;
         virtual void ResetCommandBuffer(CommandBufferID buffer) = 0;
         virtual void BeginCommandBuffer(CommandBufferID buffer) = 0;
