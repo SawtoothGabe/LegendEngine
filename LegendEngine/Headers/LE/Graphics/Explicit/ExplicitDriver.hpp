@@ -62,7 +62,7 @@ namespace le
         virtual void CmdPipelineBarrier(CommandBufferID buffer,
             PipelineStage srcStage, PipelineStage dstStage,
             std::span<ImageMemoryBarrier> imageMemoryBarriers) = 0;
-        virtual void CmdBeginRendering(CommandBufferID buffer) = 0;
+        virtual void CmdBeginRendering(CommandBufferID buffer, const RenderingInfo& info) = 0;
         virtual void CmdSetViewport(CommandBufferID buffer) = 0;
         virtual void CmdSetScissor(CommandBufferID buffer) = 0;
         virtual void CmdBindPipeline(CommandBufferID buffer) = 0;

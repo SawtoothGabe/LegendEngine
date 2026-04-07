@@ -18,6 +18,7 @@
 namespace le
 {
 #define VULKAN_CAST(type, identifier) vk::type(reinterpret_cast<Vk##type>(identifier.id))
+#define RAW_CAST(type, identifier) reinterpret_cast<Vk##type>(identifier.id)
 
     Scope<Renderer> CreateVulkanRenderer(std::string_view applicationName)
     {
@@ -215,12 +216,12 @@ namespace le
 
 	    for (auto [location, binding, offset, format] : info.vertexAttributes)
 	    {
-		    attributes.push_back({
+		    attributes.emplace_back(
 			    static_cast<uint32_t>(location),
 			    static_cast<uint32_t>(binding),
 			    VulkanTypes::GetVkFormat(format),
 			    static_cast<uint32_t>(offset)
-		    });
+		    );
 	    }
 
 	    const vk::PipelineVertexInputStateCreateInfo vertexInput(
@@ -313,7 +314,7 @@ namespace le
 	    }
 
 	    for (const DescriptorSetLayoutID& setLayout : layouts)
-		    vkLayouts.emplace_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
+		    vkLayouts.emplace_back(RAW_CAST(DescriptorSetLayout, setLayout));
 
 	    const vk::PipelineLayoutCreateInfo createInfo(
 		    {},
@@ -384,7 +385,7 @@ namespace le
 	    const vk::SamplerAddressMode addressMode = VulkanTypes::GetSamplerAddressMode(info.addressMode);
 	    const vk::BorderColor borderColor = VulkanTypes::GetBorderColor(info.borderColor);
 
-	    vk::SamplerCreateInfo createInfo(
+	    const vk::SamplerCreateInfo createInfo(
 		    {}, filter, filter, vk::SamplerMipmapMode::eNearest,
 		    addressMode, addressMode, addressMode,
 		    0.0f, false, properties.limits.maxSamplerAnisotropy,
@@ -529,13 +530,13 @@ namespace le
 	    waitStages.reserve(waitSemaphores.size());
 	    signalSemaphores.reserve(info.signalSemaphores.size());
 
-	    for (const SemaphoreID semaphore : info.waitSemaphores)
-		    waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID& semaphore : info.waitSemaphores)
+		    waitSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
 
-	    for (const SemaphoreID semaphore : info.signalSemaphores)
-		    signalSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID& semaphore : info.signalSemaphores)
+		    signalSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
 
-	    for (PipelineStage stage : info.waitDstStageMask)
+	    for (const PipelineStage stage : info.waitDstStageMask)
 		    waitStages.emplace_back(VulkanTypes::GetPipelineStage(stage));
 
 	    const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
@@ -559,11 +560,11 @@ namespace le
 	    waitSemaphores.reserve(info.waitSemaphores.size());
 	    swapchains.reserve(info.swapchains.size());
 
-	    for (const SemaphoreID semaphore : info.waitSemaphores)
-		    waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID& semaphore : info.waitSemaphores)
+		    waitSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
 
-	    for (const SwapchainID swapchain : info.swapchains)
-		    swapchains.emplace_back(VULKAN_CAST(SwapchainKHR, swapchain));
+	    for (const SwapchainID& swapchain : info.swapchains)
+		    swapchains.emplace_back(RAW_CAST(SwapchainKHR, swapchain));
 
 	    const vk::PresentInfoKHR presentInfo(
 		    waitSemaphores.size(), waitSemaphores.data(),
@@ -647,10 +648,10 @@ namespace le
 
     void VulkanDriver::CmdPipelineBarrier(const CommandBufferID buffer,
     	const PipelineStage srcStage, const PipelineStage dstStage,
-    	std::span<ImageMemoryBarrier> imageMemoryBarriers)
+    	const std::span<ImageMemoryBarrier> imageMemoryBarriers)
     {
-	    vk::PipelineStageFlags srcStageMask = VulkanTypes::GetPipelineStage(srcStage);
-	    vk::PipelineStageFlags dstStageMask = VulkanTypes::GetPipelineStage(dstStage);
+	    const vk::PipelineStageFlags srcStageMask = VulkanTypes::GetPipelineStage(srcStage);
+	    const vk::PipelineStageFlags dstStageMask = VulkanTypes::GetPipelineStage(dstStage);
     	std::vector<vk::ImageMemoryBarrier> vkImageMemoryBarriers(imageMemoryBarriers.size());
 
     	for (size_t i = 0; i < vkImageMemoryBarriers.size(); i++)
@@ -677,7 +678,57 @@ namespace le
     	);
     }
 
-    void VulkanDriver::CmdBeginRendering(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBeginRendering(const CommandBufferID buffer, const RenderingInfo& info)
+    {
+	    std::vector<vk::RenderingAttachmentInfo> attachments;
+    	attachments.reserve(info.colorAttachments.size());
+
+    	for (const auto& [imageView, imageLayout, clearValue] : info.colorAttachments)
+    	{
+    		vk::RenderingAttachmentInfo attachmentInfo;
+    		attachmentInfo.imageView = VULKAN_CAST(ImageView, imageView);
+    		attachmentInfo.imageLayout = VulkanTypes::GetImageLayout(imageLayout);
+    		attachmentInfo.clearValue.color =
+			{
+				clearValue.x,
+				clearValue.y,
+				clearValue.z,
+				clearValue.w
+			};
+    		attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear;
+    		attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
+
+    		attachments.emplace_back(attachmentInfo);
+    	}
+
+    	vk::RenderingAttachmentInfo depth;
+    	depth.imageView = VULKAN_CAST(ImageView, info.depthAttachment.imageView);
+    	depth.imageLayout = VulkanTypes::GetImageLayout(info.depthAttachment.imageLayout);
+    	depth.clearValue.color =
+		{
+			info.depthAttachment.clearValue.x,
+			info.depthAttachment.clearValue.y,
+			info.depthAttachment.clearValue.z,
+			info.depthAttachment.clearValue.w
+		};
+    	depth.loadOp = vk::AttachmentLoadOp::eClear;
+    	depth.storeOp = vk::AttachmentStoreOp::eStore;
+
+    	const vk::Rect2D extent =
+    	{
+    		static_cast<int32_t>(info.extent.width),
+    		static_cast<int32_t>(info.extent.height)
+    	};
+
+    	const vk::RenderingInfoKHR renderingInfo(
+			{}, extent,
+			1, {}, attachments.size(), attachments.data(),
+			&depth
+    	);
+
+    	VULKAN_CAST(CommandBuffer, buffer).beginRenderingKHR(renderingInfo);
+    }
+
     void VulkanDriver::CmdSetViewport(CommandBufferID buffer) {}
     void VulkanDriver::CmdSetScissor(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindPipeline(CommandBufferID buffer) {}
@@ -808,8 +859,21 @@ namespace le
 		    queueInfos.push_back(vk::DeviceQueueCreateInfo({}, m_indices.transferFamilyIndex,
 		                                                   1, &priority));
 
-	    const vk::DeviceCreateInfo deviceInfo({},
-	                                          queueInfos.size(), queueInfos.data());
+    	const char* extensions[] =
+		{
+    		vk::KHRSwapchainExtensionName,
+    		vk::KHRDynamicRenderingExtensionName
+    	};
+
+	    constexpr vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRendering(true);
+
+	    vk::DeviceCreateInfo deviceInfo;
+    	deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
+    	deviceInfo.pQueueCreateInfos = queueInfos.data();
+    	deviceInfo.enabledExtensionCount = std::size(extensions);
+    	deviceInfo.ppEnabledExtensionNames = extensions;
+    	deviceInfo.pNext = &dynamicRendering;
+
 	    m_device = m_physicalDevice.createDevice(deviceInfo);
     }
 
@@ -839,7 +903,7 @@ namespace le
 	    std::vector<vk::PhysicalDevice> devices(deviceCount);
 	    LE_CHECK_RESULT(m_instance.enumeratePhysicalDevices(&deviceCount, devices.data()));
 
-	    for (const VkPhysicalDevice device : devices)
+	    for (const vk::PhysicalDevice device : devices)
 		    if (IsDeviceSuitable(device))
 			    return device;
 

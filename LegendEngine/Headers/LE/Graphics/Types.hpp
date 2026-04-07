@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <span>
+#include <LE/Math/Types.hpp>
 
 namespace le
 {
@@ -313,5 +314,19 @@ namespace le
         ImageSubresource subresourceRange;
         AccessFlagBits srcAccessMask;
         AccessFlagBits dstAccessMask;
+    };
+
+    struct RenderingAttachmentInfo
+    {
+        ImageViewID imageView;
+        ImageLayout imageLayout;
+        Color clearValue;
+    };
+
+    struct RenderingInfo
+    {
+        std::span<RenderingAttachmentInfo> colorAttachments;
+        RenderingAttachmentInfo depthAttachment;
+        Extent2D extent;
     };
 }
