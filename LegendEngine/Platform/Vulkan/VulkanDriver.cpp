@@ -581,7 +581,7 @@ namespace le
 
     void VulkanDriver::BeginCommandBuffer(const CommandBufferID buffer, bool singleUse)
     {
-	    vk::CommandBufferBeginInfo beginInfo(
+	    const vk::CommandBufferBeginInfo beginInfo(
 		    singleUse ? vk::CommandBufferUsageFlagBits::eOneTimeSubmit : vk::CommandBufferUsageFlags{}
 	    );
 
@@ -654,7 +654,7 @@ namespace le
     {
 	    m_physicalDevice = PickDevice();
 
-	    float priority = 1.0f;
+	    constexpr float priority = 1.0f;
 	    std::vector<vk::DeviceQueueCreateInfo> queueInfos;
 
 	    LE_ASSERT(m_indices.hasGraphicsFamily, "No graphics family found");
