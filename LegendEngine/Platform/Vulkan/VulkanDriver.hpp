@@ -68,7 +68,7 @@ namespace le
         void CmdSetScissor(CommandBufferID buffer, Rect2D rect) override;
         void CmdBindPipeline(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineID pipeline) override;
-        void CmdSetCullMode(CommandBufferID buffer) override;
+        void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) override;
         void CmdPushConstants(CommandBufferID buffer) override;
         void CmdBindDescriptorSets(CommandBufferID buffer) override;
         void CmdBindVertexBuffers(CommandBufferID buffer) override;

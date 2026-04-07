@@ -760,12 +760,16 @@ namespace le
 			VULKAN_CAST(Pipeline, pipeline));
     }
 
-    void VulkanDriver::CmdSetCullMode(CommandBufferID buffer)
+    void VulkanDriver::CmdSetCullMode(const CommandBufferID buffer, CullMode cullMode)
+    {
+		VULKAN_CAST(CommandBuffer, buffer).setCullMode(VulkanTypes::GetCullModeFlags(cullMode));
+    }
+
+    void VulkanDriver::CmdPushConstants(CommandBufferID buffer)
     {
 
     }
 	
-    void VulkanDriver::CmdPushConstants(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}

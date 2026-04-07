@@ -20,4 +20,5 @@ namespace le::VulkanTypes
     static vk::ImageAspectFlags GetImageAspectFlags(ImageAspect aspect);
     static vk::ImageLayout GetImageLayout(ImageLayout layout);
     static vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
+    static vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
 }

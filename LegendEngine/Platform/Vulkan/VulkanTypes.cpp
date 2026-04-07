@@ -181,4 +181,17 @@ namespace le
         LE_ASSERT(false, "Unknown pipeline bind point");
         return vk::PipelineBindPoint::eGraphics;
     }
+
+    vk::CullModeFlags VulkanTypes::GetCullModeFlags(const CullMode cullMode)
+    {
+        switch (cullMode)
+        {
+            case CullMode::NONE: return vk::CullModeFlagBits::eNone;
+            case CullMode::FRONT: return vk::CullModeFlagBits::eFront;
+            case CullMode::BACK: return vk::CullModeFlagBits::eBack;
+        }
+
+        LE_ASSERT(false, "Unknown cull mode");
+        return vk::CullModeFlagBits::eNone;
+    }
 }

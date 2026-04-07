@@ -347,4 +347,11 @@ namespace le
         GRAPHICS,
         COMPUTE
     };
+
+    enum class CullMode
+    {
+        NONE,
+        FRONT,
+        BACK,
+    };
 }

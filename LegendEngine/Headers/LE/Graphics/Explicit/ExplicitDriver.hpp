@@ -17,7 +17,7 @@ namespace le
         virtual std::vector<DescriptorSetID> AllocateDescriptorSets() = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
-        virtual FenceID CreateFence(bool signaled = true) = 0;
+        virtual FenceID CreateFence(bool signaled) = 0;
         virtual ImageID CreateImage(const ImageInfo& info) = 0;
         virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
         virtual PipelineID CreatePipeline(const PipelineInfo& info) = 0;
@@ -65,8 +65,9 @@ namespace le
         virtual void CmdBeginRendering(CommandBufferID buffer, const RenderingInfo& info) = 0;
         virtual void CmdSetViewport(CommandBufferID buffer, Extent2D size) = 0;
         virtual void CmdSetScissor(CommandBufferID buffer, Rect2D rect) = 0;
-        virtual void CmdBindPipeline(CommandBufferID buffer) = 0;
-        virtual void CmdSetCullMode(CommandBufferID buffer) = 0;
+        virtual void CmdBindPipeline(CommandBufferID buffer, PipelineBindPoint bindPoint,
+            PipelineID pipeline) = 0;
+        virtual void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) = 0;
         virtual void CmdPushConstants(CommandBufferID buffer) = 0;
         virtual void CmdBindDescriptorSets(CommandBufferID buffer) = 0;
         virtual void CmdBindVertexBuffers(CommandBufferID buffer) = 0;
