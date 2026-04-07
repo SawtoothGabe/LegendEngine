@@ -645,9 +645,36 @@ namespace le
     		vkRegions.size(), vkRegions.data());
 	}
 
-    void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer)
+    void VulkanDriver::CmdPipelineBarrier(const CommandBufferID buffer,
+    	const PipelineStage srcStage, const PipelineStage dstStage,
+    	std::span<ImageMemoryBarrier> imageMemoryBarriers)
     {
+	    vk::PipelineStageFlags srcStageMask = VulkanTypes::GetPipelineStage(srcStage);
+	    vk::PipelineStageFlags dstStageMask = VulkanTypes::GetPipelineStage(dstStage);
+    	std::vector<vk::ImageMemoryBarrier> vkImageMemoryBarriers(imageMemoryBarriers.size());
 
+    	for (size_t i = 0; i < vkImageMemoryBarriers.size(); i++)
+    	{
+    		const ImageMemoryBarrier& barrier = imageMemoryBarriers[i];
+    		vk::ImageMemoryBarrier& vkBarrier = vkImageMemoryBarriers[i];
+
+    		vkBarrier.oldLayout = VulkanTypes::GetImageLayout(barrier.oldLayout);
+    		vkBarrier.newLayout = VulkanTypes::GetImageLayout(barrier.newLayout);
+    		vkBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    		vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    		vkBarrier.image = VULKAN_CAST(Image, barrier.image);
+    		vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
+    		vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.mipLevel;
+    		vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
+    		vkBarrier.subresourceRange.layerCount = barrier.subresourceRange.layerCount;
+    	}
+
+    	VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
+    		srcStageMask, dstStageMask,
+    		{}, 0, nullptr,
+    		0, nullptr,
+    		vkImageMemoryBarriers.size(), vkImageMemoryBarriers.data()
+    	);
     }
 
     void VulkanDriver::CmdBeginRendering(CommandBufferID buffer) {}
@@ -661,6 +688,12 @@ namespace le
     void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
     void VulkanDriver::CmdDrawIndexed(CommandBufferID buffer) {}
     void VulkanDriver::CmdEndRendering(CommandBufferID buffer) {}
+
+    void VulkanDriver::TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
+	    ImageLayout newLayout, ImageAspect aspect)
+    {
+	    
+    }
 
     void VulkanDriver::CreateInstance(const std::string_view applicationName)
     {

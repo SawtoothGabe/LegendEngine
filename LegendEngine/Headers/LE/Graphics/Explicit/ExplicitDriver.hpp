@@ -59,7 +59,9 @@ namespace le
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
             ImageLayout layout, std::span<BufferImageCopy> regions) = 0;
-        virtual void CmdPipelineBarrier(CommandBufferID buffer) = 0;
+        virtual void CmdPipelineBarrier(CommandBufferID buffer,
+            PipelineStage srcStage, PipelineStage dstStage,
+            std::span<ImageMemoryBarrier> imageMemoryBarriers) = 0;
         virtual void CmdBeginRendering(CommandBufferID buffer) = 0;
         virtual void CmdSetViewport(CommandBufferID buffer) = 0;
         virtual void CmdSetScissor(CommandBufferID buffer) = 0;
@@ -71,6 +73,9 @@ namespace le
         virtual void CmdBindIndexBuffer(CommandBufferID buffer) = 0;
         virtual void CmdDrawIndexed(CommandBufferID buffer) = 0;
         virtual void CmdEndRendering(CommandBufferID buffer) = 0;
+
+        virtual void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
+            ImageLayout newLayout, ImageAspect aspect) = 0;
 
         static Scope<ExplicitDriver> Create(GraphicsAPI api,
             std::string_view applicationName);

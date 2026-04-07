@@ -60,7 +60,9 @@ namespace le
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
             ImageLayout layout, std::span<BufferImageCopy> regions) override;
-        void CmdPipelineBarrier(CommandBufferID buffer) override;
+        void CmdPipelineBarrier(CommandBufferID buffer,
+            PipelineStage srcStage, PipelineStage dstStage,
+            std::span<ImageMemoryBarrier> imageMemoryBarriers) override;
         void CmdBeginRendering(CommandBufferID buffer) override;
         void CmdSetViewport(CommandBufferID buffer) override;
         void CmdSetScissor(CommandBufferID buffer) override;
@@ -72,6 +74,9 @@ namespace le
         void CmdBindIndexBuffer(CommandBufferID buffer) override;
         void CmdDrawIndexed(CommandBufferID buffer) override;
         void CmdEndRendering(CommandBufferID buffer) override;
+
+        void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
+            ImageLayout newLayout, ImageAspect aspect);
     private:
         struct QueueFamilyIndices
         {
