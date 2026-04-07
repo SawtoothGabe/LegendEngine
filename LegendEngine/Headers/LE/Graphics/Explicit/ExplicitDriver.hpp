@@ -14,7 +14,7 @@ namespace le
         virtual ~ExplicitDriver() = default;
 
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
-        virtual std::vector<DescriptorSetID> AllocateDescriptorSets() = 0;
+        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(std::span<DescriptorSetLayoutID> layouts) = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         virtual FenceID CreateFence(bool signaled) = 0;

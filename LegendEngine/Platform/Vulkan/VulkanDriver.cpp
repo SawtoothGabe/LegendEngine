@@ -1,19 +1,18 @@
 #include "VulkanDriver.hpp"
 
-#include <DescriptorSet.hpp>
-#include <DescriptorSetLayout.hpp>
+#include <PoolManager.hpp>
 #include <set>
 #include <vk_mem_alloc.h>
-#include <VulkanBuffer.hpp>
-#include <VulkanImage.hpp>
-#include <VulkanTypes.hpp>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include <Tether/Rendering/Vulkan/DescriptorSet.hpp>
 
+#include "DescriptorSetLayout.hpp"
 #include "PlatformUtils.hpp"
-
 #include "VkDefs.hpp"
+#include "VulkanBuffer.hpp"
+#include "VulkanImage.hpp"
+#include "VulkanTypes.hpp"
 
 namespace le
 {
@@ -78,7 +77,7 @@ namespace le
     {
 	    std::vector<CommandBufferID> ids;
 	    const std::vector<vk::CommandBuffer> buffers
-			    = m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool), {}, static_cast<uint32_t>(count)});
+    		= m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool), {}, static_cast<uint32_t>(count)});
 
 	    ids.reserve(buffers.size());
 	    for (vk::CommandBuffer buffer : buffers)
@@ -87,21 +86,9 @@ namespace le
 	    return ids;
     }
 
-    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets()
+    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const std::span<DescriptorSetLayoutID> layouts)
     {
-	    // TODO: pools
-
-	    std::vector<DescriptorSetID> ids;
-	    const std::vector<vk::DescriptorSet> sets
-			    = m_device.allocateDescriptorSets({});
-
-	    ids.reserve(sets.size());
-	    for (vk::DescriptorSet set : sets)
-	    {
-		    ids.emplace_back(new DescriptorSet{set});
-	    }
-
-	    return ids;
+	    return m_poolManager.Allocate(layouts);
     }
 
     BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
@@ -420,7 +407,11 @@ namespace le
     void VulkanDriver::FreeDescriptorSets(const size_t count, DescriptorSetID* sets)
     {
 	    for (size_t i = 0; i < count; i++)
-		    delete reinterpret_cast<DescriptorSet*>(sets[i].id);
+	    {
+		    const auto set = reinterpret_cast<PoolManager::Set*>(sets[i].id);
+	    	m_poolManager.Free(*set);
+		    delete set;
+	    }
     }
 
     void VulkanDriver::DestroyBuffer(const BufferID buffer)
@@ -781,7 +772,7 @@ namespace le
     	vkSets.reserve(sets.size());
 
     	for (const DescriptorSetID& setID : sets)
-    		vkSets.push_back(reinterpret_cast<DescriptorSet*>(setID.id)->set);
+    		vkSets.push_back(reinterpret_cast<PoolManager::Set*>(setID.id)->set);
 
 		VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
 			VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),

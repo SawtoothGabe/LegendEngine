@@ -1,5 +1,7 @@
 #pragma once
 
+#include <PoolManager.hpp>
+
 #include "VkDefs.hpp"
 
 #include <vk_mem_alloc.h>
@@ -15,7 +17,7 @@ namespace le
         ~VulkanDriver() override;
 
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
-        std::vector<DescriptorSetID> AllocateDescriptorSets() override;
+        std::vector<DescriptorSetID> AllocateDescriptorSets(std::span<DescriptorSetLayoutID> layouts) override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
         FenceID CreateFence(bool signaled) override;
@@ -112,6 +114,8 @@ namespace le
         vk::DebugUtilsMessengerEXT m_messenger;
         vk::PhysicalDevice m_physicalDevice;
         vk::Device m_device;
+
+        PoolManager m_poolManager;
 
         VmaAllocator m_allocator = nullptr;
 
