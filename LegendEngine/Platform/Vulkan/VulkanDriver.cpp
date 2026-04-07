@@ -729,7 +729,18 @@ namespace le
     	VULKAN_CAST(CommandBuffer, buffer).beginRenderingKHR(renderingInfo);
     }
 
-    void VulkanDriver::CmdSetViewport(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetViewport(const CommandBufferID buffer, const Extent2D size)
+    {
+    	const vk::Viewport viewport(
+    		0, 0,
+    		static_cast<float>(size.width),
+    		static_cast<float>(size.height)
+    	);
+
+		VULKAN_CAST(CommandBuffer, buffer).setViewport(0, 1,
+			&viewport);
+    }
+
     void VulkanDriver::CmdSetScissor(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindPipeline(CommandBufferID buffer) {}
     void VulkanDriver::CmdSetCullMode(CommandBufferID buffer) {}
