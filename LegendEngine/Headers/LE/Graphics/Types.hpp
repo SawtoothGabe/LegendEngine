@@ -260,4 +260,58 @@ namespace le
         std::span<SwapchainID> swapchains;
         std::span<uint32_t> imageIndices;
     };
+
+    struct BufferCopy
+    {
+        size_t srcOffset = 0;
+        size_t dstOffset = 0;
+        size_t size = 0;
+    };
+
+    enum class ImageLayout
+    {
+        UNDEFINED,
+        GENERAL,
+        COLOR_ATTACHMENT_OPTIMAL,
+        SHADER_READ_ONLY_OPTIMAL,
+        TRANSFER_SRC_OPTIMAL,
+        TRANSFER_DST_OPTIMAL,
+        READ_ONLY_OPTIMAL,
+        PRESENT_SRC,
+    };
+
+    enum class ImageAspect
+    {
+        COLOR,
+        DEPTH,
+        STENCIL,
+    };
+
+    struct ImageSubresource
+    {
+        ImageAspect aspect;
+        uint32_t mipLevel;
+        uint32_t baseArrayLayer;
+        uint32_t layerCount;
+    };
+
+    struct BufferImageCopy
+    {
+        size_t bufferOffset;
+        uint32_t bufferRowLength;
+        uint32_t bufferImageHeight;
+        ImageSubresource imageSubresource;
+        Offset3D imageOffset;
+        Extent3D imageExtent;
+    };
+
+    struct ImageMemoryBarrier
+    {
+        ImageLayout oldLayout;
+        ImageLayout newLayout;
+        ImageID image;
+        ImageSubresource subresourceRange;
+        AccessFlagBits srcAccessMask;
+        AccessFlagBits dstAccessMask;
+    };
 }

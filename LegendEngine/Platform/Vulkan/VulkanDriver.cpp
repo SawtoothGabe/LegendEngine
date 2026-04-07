@@ -593,9 +593,35 @@ namespace le
 	    VULKAN_CAST(CommandBuffer, buffer).end();
     }
 
-    void VulkanDriver::CmdCopyBuffer(CommandBufferID buffer) {}
-    void VulkanDriver::CmdCopyBufferToImage(CommandBufferID buffer) {}
-    void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer) {}
+    void VulkanDriver::CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions)
+    {
+    	std::vector<vk::BufferCopy> vkRegions(regions.size());
+    	for (size_t i = 0; i < vkRegions.size(); i++)
+    	{
+    		const auto& [srcOffset, dstOffset, size] = regions[i];
+
+    		vk::BufferCopy regionCopy{};
+    		regionCopy.size = size;
+    		regionCopy.srcOffset = srcOffset;
+    		regionCopy.dstOffset = dstOffset;
+
+    		vkRegions[i] = regionCopy;
+    	}
+
+    	const auto vkSrc = VULKAN_CAST(Buffer, src);
+    	const auto vkDst = VULKAN_CAST(Buffer, dst);
+    	VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, vkRegions.size(), vkRegions.data());
+    }
+
+    void VulkanDriver::CmdCopyBufferToImage(CommandBufferID buffer)
+    {
+
+    }
+
+    void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer)
+    {
+
+    }
 
     void VulkanDriver::CmdBeginRendering(CommandBufferID buffer) {}
     void VulkanDriver::CmdSetViewport(CommandBufferID buffer) {}
