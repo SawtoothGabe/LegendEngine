@@ -11,8 +11,8 @@ namespace le
     class VulkanDriver : public ExplicitDriver
     {
     public:
-        VulkanDriver(std::string_view applicationName);
-        ~VulkanDriver();
+        explicit VulkanDriver(std::string_view applicationName);
+        ~VulkanDriver() override;
 
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets() override;
@@ -54,7 +54,7 @@ namespace le
         void QueueSubmit(QueueID queue, const SubmitInfo& info) override;
         void QueuePresent(QueueID queue, const PresentInfo& info) override;
         void ResetCommandBuffer(CommandBufferID buffer) override;
-        void BeginCommandBuffer(CommandBufferID buffer) override;
+        void BeginCommandBuffer(CommandBufferID buffer, bool singleUse) override;
         void EndCommandBuffer(CommandBufferID buffer) override;
 
         void CmdCopyBuffer(CommandBufferID buffer) override;

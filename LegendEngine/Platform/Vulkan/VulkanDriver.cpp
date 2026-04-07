@@ -188,140 +188,140 @@ namespace le
 
     PipelineID VulkanDriver::CreatePipeline(const PipelineInfo& info)
     {
-    	std::vector<vk::Format> formats;
-    	std::vector<vk::PipelineShaderStageCreateInfo> stages;
-    	std::vector<vk::VertexInputBindingDescription> bindings;
-    	std::vector<vk::VertexInputAttributeDescription> attributes;
-    	formats.reserve(info.colorAttachmentFormats.size());
-    	stages.reserve(info.stages.size());
-    	bindings.reserve(info.vertexBindings.size());
-    	attributes.reserve(info.vertexAttributes.size());
+	    std::vector<vk::Format> formats;
+	    std::vector<vk::PipelineShaderStageCreateInfo> stages;
+	    std::vector<vk::VertexInputBindingDescription> bindings;
+	    std::vector<vk::VertexInputAttributeDescription> attributes;
+	    formats.reserve(info.colorAttachmentFormats.size());
+	    stages.reserve(info.stages.size());
+	    bindings.reserve(info.vertexBindings.size());
+	    attributes.reserve(info.vertexAttributes.size());
 
-    	for (const Format format : info.colorAttachmentFormats)
-    		formats.push_back(VulkanTypes::GetVkFormat(format));
+	    for (const Format format : info.colorAttachmentFormats)
+		    formats.push_back(VulkanTypes::GetVkFormat(format));
 
-    	for (const auto& [name, module, stage] : info.stages)
-    		stages.push_back({{}, VulkanTypes::GetShaderStageFlag(stage),
-    			VULKAN_CAST(ShaderModule, module), name.c_str()});
+	    for (const auto& [name, module, stage] : info.stages)
+		    stages.push_back({{}, VulkanTypes::GetShaderStageFlag(stage),
+			    VULKAN_CAST(ShaderModule, module), name.c_str()});
 
-    	for (auto [binding, stride, inputRate] : info.vertexBindings)
-    	{
-    		bindings.emplace_back(
-    			static_cast<uint32_t>(binding),
-    			static_cast<uint32_t>(stride),
-    			VulkanTypes::GetVertexInputRate(inputRate)
-    		);
-    	}
+	    for (auto [binding, stride, inputRate] : info.vertexBindings)
+	    {
+		    bindings.emplace_back(
+			    static_cast<uint32_t>(binding),
+			    static_cast<uint32_t>(stride),
+			    VulkanTypes::GetVertexInputRate(inputRate)
+		    );
+	    }
 
-    	for (auto [location, binding, offset, format] : info.vertexAttributes)
-    	{
-    		attributes.push_back({
-    			static_cast<uint32_t>(location),
-    			static_cast<uint32_t>(binding),
-    			VulkanTypes::GetVkFormat(format),
-    			static_cast<uint32_t>(offset)
-    		});
-    	}
+	    for (auto [location, binding, offset, format] : info.vertexAttributes)
+	    {
+		    attributes.push_back({
+			    static_cast<uint32_t>(location),
+			    static_cast<uint32_t>(binding),
+			    VulkanTypes::GetVkFormat(format),
+			    static_cast<uint32_t>(offset)
+		    });
+	    }
 
-    	const vk::PipelineVertexInputStateCreateInfo vertexInput(
-			{},
-			bindings.size(), bindings.data(),
-			attributes.size(), attributes.data()
-    	);
+	    const vk::PipelineVertexInputStateCreateInfo vertexInput(
+		    {},
+		    bindings.size(), bindings.data(),
+		    attributes.size(), attributes.data()
+	    );
 
 	    constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssembly(
-    		{}, vk::PrimitiveTopology::eTriangleList, false
-    	);
+		    {}, vk::PrimitiveTopology::eTriangleList, false
+	    );
 
-    	constexpr vk::Viewport viewport;
-    	constexpr vk::Rect2D scissor;
+	    constexpr vk::Viewport viewport;
+	    constexpr vk::Rect2D scissor;
 
-    	const vk::PipelineViewportStateCreateInfo viewportState(
-    		{}, 1, &viewport, 1, &scissor
-    	);
+	    const vk::PipelineViewportStateCreateInfo viewportState(
+		    {}, 1, &viewport, 1, &scissor
+	    );
 
 	    constexpr vk::PipelineRasterizationStateCreateInfo rasterizerState;
-    	constexpr vk::PipelineMultisampleStateCreateInfo multisampleState;
+	    constexpr vk::PipelineMultisampleStateCreateInfo multisampleState;
 
-    	const vk::PipelineDepthStencilStateCreateInfo depthStencilState(
-    		{}, true, true, vk::CompareOp::eLess
-    	);
+	    const vk::PipelineDepthStencilStateCreateInfo depthStencilState(
+		    {}, true, true, vk::CompareOp::eLess
+	    );
 
 	    constexpr vk::PipelineColorBlendAttachmentState attachment(
-    		false, vk::BlendFactor::eZero,
-    		vk::BlendFactor::eZero, vk::BlendOp::eAdd,
-    		vk::BlendFactor::eZero, vk::BlendFactor::eZero,
-    		vk::BlendOp::eAdd,
-    		vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
-    			| vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-    	);
+		    false, vk::BlendFactor::eZero,
+		    vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+		    vk::BlendFactor::eZero, vk::BlendFactor::eZero,
+		    vk::BlendOp::eAdd,
+		    vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
+		    | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+	    );
 
-    	const vk::PipelineColorBlendStateCreateInfo colorBlendState(
-    		{}, false, vk::LogicOp::eCopy, 1, &attachment
-    	);
+	    const vk::PipelineColorBlendStateCreateInfo colorBlendState(
+		    {}, false, vk::LogicOp::eCopy, 1, &attachment
+	    );
 
-    	vk::DynamicState dynamicStates[] = {
-    		vk::DynamicState::eViewport,
-    		vk::DynamicState::eCullMode
-    	};
+	    vk::DynamicState dynamicStates[] = {
+		    vk::DynamicState::eViewport,
+		    vk::DynamicState::eCullMode
+	    };
 
-    	const vk::PipelineDynamicStateCreateInfo dynamicState(
-    		{}, std::size(dynamicStates), dynamicStates
-    	);
+	    const vk::PipelineDynamicStateCreateInfo dynamicState(
+		    {}, std::size(dynamicStates), dynamicStates
+	    );
 
-    	const vk::PipelineRenderingCreateInfo rendering(
-    		0,
-    		static_cast<uint32_t>(formats.size()),
-    		formats.data(),
-    		VulkanTypes::GetVkFormat(info.depthFormat)
-    	);
+	    const vk::PipelineRenderingCreateInfo rendering(
+		    0,
+		    static_cast<uint32_t>(formats.size()),
+		    formats.data(),
+		    VulkanTypes::GetVkFormat(info.depthFormat)
+	    );
 
-    	const vk::GraphicsPipelineCreateInfo createInfo(
-    		{}, stages.size(), stages.data(), &vertexInput, &inputAssembly,
-    		nullptr, &viewportState, &rasterizerState, &multisampleState,
-    		&depthStencilState, &colorBlendState, &dynamicState,
-    		VULKAN_CAST(PipelineLayout, info.layout), nullptr, 0,
-    		nullptr, 0, &rendering
-    	);
+	    const vk::GraphicsPipelineCreateInfo createInfo(
+		    {}, stages.size(), stages.data(), &vertexInput, &inputAssembly,
+		    nullptr, &viewportState, &rasterizerState, &multisampleState,
+		    &depthStencilState, &colorBlendState, &dynamicState,
+		    VULKAN_CAST(PipelineLayout, info.layout), nullptr, 0,
+		    nullptr, 0, &rendering
+	    );
 
-		return PipelineID(m_device.createGraphicsPipeline({}, createInfo).value);
+	    return PipelineID(m_device.createGraphicsPipeline({}, createInfo).value);
     }
 
     PipelineLayoutID VulkanDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
-    	const std::span<DescriptorSetLayoutID> layouts)
+                                                        const std::span<DescriptorSetLayoutID> layouts)
     {
-    	std::vector<vk::PushConstantRange> vkRanges;
-    	std::vector<vk::DescriptorSetLayout> vkLayouts;
-    	vkRanges.reserve(ranges.size());
-    	vkLayouts.reserve(layouts.size());
+	    std::vector<vk::PushConstantRange> vkRanges;
+	    std::vector<vk::DescriptorSetLayout> vkLayouts;
+	    vkRanges.reserve(ranges.size());
+	    vkLayouts.reserve(layouts.size());
 
-    	for (auto [size, offset, stage] : ranges)
-    	{
-    		vk::ShaderStageFlags vkStage;
-    		switch (stage)
-    		{
-    			case ShaderStageFlags::VERTEX: vkStage = vk::ShaderStageFlagBits::eVertex; break;
+	    for (auto [size, offset, stage] : ranges)
+	    {
+		    vk::ShaderStageFlags vkStage;
+		    switch (stage)
+		    {
+			    case ShaderStageFlags::VERTEX: vkStage = vk::ShaderStageFlagBits::eVertex; break;
 			    case ShaderStageFlags::FRAGMENT: vkStage = vk::ShaderStageFlagBits::eFragment; break;
 			    case ShaderStageFlags::ALL: vkStage = vk::ShaderStageFlagBits::eAll; break;
 		    }
 
-    		vkRanges.emplace_back(
-    			vkStage,
-    			static_cast<uint32_t>(offset),
-    			static_cast<uint32_t>(size)
-    		);
-    	}
+		    vkRanges.emplace_back(
+			    vkStage,
+			    static_cast<uint32_t>(offset),
+			    static_cast<uint32_t>(size)
+		    );
+	    }
 
-    	for (const DescriptorSetLayoutID& setLayout : layouts)
-    		vkLayouts.emplace_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
+	    for (const DescriptorSetLayoutID& setLayout : layouts)
+		    vkLayouts.emplace_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
 
-    	const vk::PipelineLayoutCreateInfo createInfo(
-    		{},
-    		vkLayouts.size(), vkLayouts.data(),
-    		vkRanges.size(), vkRanges.data()
-    	);
+	    const vk::PipelineLayoutCreateInfo createInfo(
+		    {},
+		    vkLayouts.size(), vkLayouts.data(),
+		    vkRanges.size(), vkRanges.data()
+	    );
 
-		return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
+	    return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
     }
 
     SemaphoreID VulkanDriver::CreateSemaphore()
@@ -331,120 +331,120 @@ namespace le
 
     SwapchainID VulkanDriver::CreateSwapchain(const SwapchainInfo& info)
     {
-    	const auto surface = VULKAN_CAST(SurfaceKHR, info.surface);
+	    const auto surface = VULKAN_CAST(SurfaceKHR, info.surface);
 
-    	vk::SurfaceCapabilitiesKHR capabilities;
-    	LE_CHECK_RESULT(m_physicalDevice.getSurfaceCapabilitiesKHR(surface, &capabilities));
+	    vk::SurfaceCapabilitiesKHR capabilities;
+	    LE_CHECK_RESULT(m_physicalDevice.getSurfaceCapabilitiesKHR(surface, &capabilities));
 
-    	uint32_t imageCount = capabilities.minImageCount + 1;
-    	if (capabilities.maxImageCount > 0 &&
-			imageCount > capabilities.maxImageCount)
-    		imageCount = capabilities.maxImageCount;
+	    uint32_t imageCount = capabilities.minImageCount + 1;
+	    if (capabilities.maxImageCount > 0 &&
+	        imageCount > capabilities.maxImageCount)
+		    imageCount = capabilities.maxImageCount;
 
-    	const vk::PresentModeKHR presentMode = PickPresentMode(surface, info.vsync);
+	    const vk::PresentModeKHR presentMode = PickPresentMode(surface, info.vsync);
 
-    	const vk::SwapchainCreateInfoKHR createInfo(
-    		{}, surface, imageCount,
-    		VulkanTypes::GetVkFormat(info.format), vk::ColorSpaceKHR::eSrgbNonlinear,
-    		{ info.extent.width, info.extent.height }, 1,
-    		vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive,
-    		0, nullptr, capabilities.currentTransform,
-    		vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode,
-    		true
-    	);
+	    const vk::SwapchainCreateInfoKHR createInfo(
+		    {}, surface, imageCount,
+		    VulkanTypes::GetVkFormat(info.format), vk::ColorSpaceKHR::eSrgbNonlinear,
+		    { info.extent.width, info.extent.height }, 1,
+		    vk::ImageUsageFlagBits::eColorAttachment, vk::SharingMode::eExclusive,
+		    0, nullptr, capabilities.currentTransform,
+		    vk::CompositeAlphaFlagBitsKHR::eOpaque, presentMode,
+		    true
+	    );
 
 	    return SwapchainID(m_device.createSwapchainKHR(createInfo));
     }
 
     SurfaceID VulkanDriver::CreateSurface(Window& window)
     {
-		return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
+	    return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
     }
 
     ShaderModuleID VulkanDriver::CreateShaderModule(const ShaderModuleInfo& info)
     {
-    	const vk::ShaderModuleCreateInfo createInfo(
-    		{}, info.spirvSize, reinterpret_cast<const uint32_t*>(info.spirvCode)
-    	);
+	    const vk::ShaderModuleCreateInfo createInfo(
+		    {}, info.spirvSize, reinterpret_cast<const uint32_t*>(info.spirvCode)
+	    );
 
-		return ShaderModuleID(m_device.createShaderModule(createInfo));
+	    return ShaderModuleID(m_device.createShaderModule(createInfo));
     }
 
     DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings)
     {
-    	return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
+	    return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
     }
 
     SamplerID VulkanDriver::CreateSampler(const SamplerInfo& info)
     {
-    	vk::PhysicalDeviceProperties properties;
-    	m_physicalDevice.getProperties(&properties);
+	    vk::PhysicalDeviceProperties properties;
+	    m_physicalDevice.getProperties(&properties);
 
-    	const vk::Filter filter = VulkanTypes::GetFilter(info.filter);
-    	const vk::SamplerAddressMode addressMode = VulkanTypes::GetSamplerAddressMode(info.addressMode);
-    	const vk::BorderColor borderColor = VulkanTypes::GetBorderColor(info.borderColor);
+	    const vk::Filter filter = VulkanTypes::GetFilter(info.filter);
+	    const vk::SamplerAddressMode addressMode = VulkanTypes::GetSamplerAddressMode(info.addressMode);
+	    const vk::BorderColor borderColor = VulkanTypes::GetBorderColor(info.borderColor);
 
-    	vk::SamplerCreateInfo createInfo(
-    		{}, filter, filter, vk::SamplerMipmapMode::eNearest,
-    		addressMode, addressMode, addressMode,
-    		0.0f, false, properties.limits.maxSamplerAnisotropy,
-    		false, vk::CompareOp::eAlways, 0.0f, 1.0f,
-    		borderColor
-    	);
+	    vk::SamplerCreateInfo createInfo(
+		    {}, filter, filter, vk::SamplerMipmapMode::eNearest,
+		    addressMode, addressMode, addressMode,
+		    0.0f, false, properties.limits.maxSamplerAnisotropy,
+		    false, vk::CompareOp::eAlways, 0.0f, 1.0f,
+		    borderColor
+	    );
 
-		return SamplerID(m_device.createSampler(createInfo));
+	    return SamplerID(m_device.createSampler(createInfo));
     }
 
     QueueID VulkanDriver::GetQueue(const QueueFamily family)
     {
-    	uint32_t index = 0;
-    	switch (family)
-    	{
-    		case QueueFamily::GRAPHICS: index = m_indices.graphicsFamilyIndex; break;
-    		case QueueFamily::COMPUTE: index = m_indices.computeFamilyIndex; break;
-    		case QueueFamily::TRANSFER: index = m_indices.transferFamilyIndex; break;
-    	}
+	    uint32_t index = 0;
+	    switch (family)
+	    {
+		    case QueueFamily::GRAPHICS: index = m_indices.graphicsFamilyIndex; break;
+		    case QueueFamily::COMPUTE: index = m_indices.computeFamilyIndex; break;
+		    case QueueFamily::TRANSFER: index = m_indices.transferFamilyIndex; break;
+	    }
 
 	    return QueueID(m_device.getQueue(index, 0));
     }
 
     void VulkanDriver::FreeCommandBuffers(const CommandPoolID pool, const size_t count, CommandBufferID* buffers)
     {
-    	for (size_t i = 0; i < count; i++)
-    	{
-    		const auto buffer = VULKAN_CAST(CommandBuffer, buffers[i]);
-    		m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), 1, &buffer);
-    	}
+	    for (size_t i = 0; i < count; i++)
+	    {
+		    const auto buffer = VULKAN_CAST(CommandBuffer, buffers[i]);
+		    m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), 1, &buffer);
+	    }
     }
 
     void VulkanDriver::FreeDescriptorSets(const size_t count, DescriptorSetID* sets)
     {
-		for (size_t i = 0; i < count; i++)
-			delete reinterpret_cast<DescriptorSet*>(sets[i].id);
+	    for (size_t i = 0; i < count; i++)
+		    delete reinterpret_cast<DescriptorSet*>(sets[i].id);
     }
 
     void VulkanDriver::DestroyBuffer(const BufferID buffer)
     {
 	    const auto vkBuffer = reinterpret_cast<VulkanBuffer*>(buffer.id);
-    	vmaDestroyBuffer(m_allocator, vkBuffer->buffer, vkBuffer->allocation);
-    	delete vkBuffer;
+	    vmaDestroyBuffer(m_allocator, vkBuffer->buffer, vkBuffer->allocation);
+	    delete vkBuffer;
     }
 
     void VulkanDriver::DestroyCommandPool(const CommandPoolID pool)
     {
-		m_device.destroyCommandPool(VULKAN_CAST(CommandPool, pool));
+	    m_device.destroyCommandPool(VULKAN_CAST(CommandPool, pool));
     }
 
     void VulkanDriver::DestroyFence(const FenceID fence)
     {
-		m_device.destroyFence(VULKAN_CAST(Fence, fence));
+	    m_device.destroyFence(VULKAN_CAST(Fence, fence));
     }
 
     void VulkanDriver::DestroyImage(const ImageID image)
     {
 	    const auto vkImage = reinterpret_cast<VulkanImage*>(image.id);
-    	vmaDestroyImage(m_allocator, vkImage->image, vkImage->allocation);
-    	delete vkImage;
+	    vmaDestroyImage(m_allocator, vkImage->image, vkImage->allocation);
+	    delete vkImage;
     }
 
     void VulkanDriver::DestroyImageView(const ImageViewID view)
@@ -464,17 +464,17 @@ namespace le
 
     void VulkanDriver::DestroySemaphore(const SemaphoreID semaphore)
     {
-		m_device.destroySemaphore(VULKAN_CAST(Semaphore, semaphore));
+	    m_device.destroySemaphore(VULKAN_CAST(Semaphore, semaphore));
     }
 
     void VulkanDriver::DestroySwapchain(const SwapchainID swapchain)
     {
-		m_device.destroySwapchainKHR(VULKAN_CAST(SwapchainKHR, swapchain));
+	    m_device.destroySwapchainKHR(VULKAN_CAST(SwapchainKHR, swapchain));
     }
 
     void VulkanDriver::DestroySurface(const SurfaceID surface)
     {
-		m_instance.destroySurfaceKHR(VULKAN_CAST(SurfaceKHR, surface));
+	    m_instance.destroySurfaceKHR(VULKAN_CAST(SurfaceKHR, surface));
     }
 
     void VulkanDriver::DestroyShaderModule(const ShaderModuleID shaderModule)
@@ -485,8 +485,8 @@ namespace le
     void VulkanDriver::DestroyDescriptorSetLayout(const DescriptorSetLayoutID layout)
     {
 	    const auto vkLayout = reinterpret_cast<DescriptorSetLayout*>(layout.id);
-    	m_device.destroy(vkLayout->layout);
-    	delete vkLayout;
+	    m_device.destroy(vkLayout->layout);
+	    delete vkLayout;
     }
 
     void VulkanDriver::DestroySampler(const SamplerID sampler)
@@ -513,70 +513,86 @@ namespace le
 	    for (size_t i = 0; i < count; i++)
 	    {
 		    const auto fence = VULKAN_CAST(Fence, fences[i]);
-	    	m_device.resetFences(fence);
+		    m_device.resetFences(fence);
 	    }
     }
 
     void VulkanDriver::QueueSubmit(const QueueID queue, const SubmitInfo& info)
     {
-		const auto vkQueue = VULKAN_CAST(Queue, queue);
-    	const auto vkFence = VULKAN_CAST(Fence, info.fence);
+	    const auto vkQueue = VULKAN_CAST(Queue, queue);
+	    const auto vkFence = VULKAN_CAST(Fence, info.fence);
 
-    	std::vector<vk::Semaphore> waitSemaphores;
-    	std::vector<vk::Semaphore> signalSemaphores;
-    	std::vector<vk::PipelineStageFlags> waitStages;
-    	waitSemaphores.reserve(info.waitSemaphores.size());
-    	waitStages.reserve(waitSemaphores.size());
-    	signalSemaphores.reserve(info.signalSemaphores.size());
+	    std::vector<vk::Semaphore> waitSemaphores;
+	    std::vector<vk::Semaphore> signalSemaphores;
+	    std::vector<vk::PipelineStageFlags> waitStages;
+	    waitSemaphores.reserve(info.waitSemaphores.size());
+	    waitStages.reserve(waitSemaphores.size());
+	    signalSemaphores.reserve(info.signalSemaphores.size());
 
-    	for (const SemaphoreID semaphore : info.waitSemaphores)
-    		waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID semaphore : info.waitSemaphores)
+		    waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
 
-    	for (const SemaphoreID semaphore : info.signalSemaphores)
-    		signalSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID semaphore : info.signalSemaphores)
+		    signalSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
 
-    	for (PipelineStage stage : info.waitDstStageMask)
-    		waitStages.emplace_back(VulkanTypes::GetPipelineStage(stage));
+	    for (PipelineStage stage : info.waitDstStageMask)
+		    waitStages.emplace_back(VulkanTypes::GetPipelineStage(stage));
 
-    	const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
+	    const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
 
-		const vk::SubmitInfo submit(
-    		waitSemaphores.size(), waitSemaphores.data(),
-    		waitStages.data(),
-    		1, &commandBuffer,
-    		signalSemaphores.size(), signalSemaphores.data()
-    	);
+	    const vk::SubmitInfo submit(
+		    waitSemaphores.size(), waitSemaphores.data(),
+		    waitStages.data(),
+		    1, &commandBuffer,
+		    signalSemaphores.size(), signalSemaphores.data()
+	    );
 
-    	LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
+	    LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
     }
 
     void VulkanDriver::QueuePresent(const QueueID queue, const PresentInfo& info)
     {
-    	const auto vkQueue = VULKAN_CAST(Queue, queue);
+	    const auto vkQueue = VULKAN_CAST(Queue, queue);
 
-    	std::vector<vk::Semaphore> waitSemaphores;
-    	std::vector<vk::SwapchainKHR> swapchains;
-    	waitSemaphores.reserve(info.waitSemaphores.size());
-    	swapchains.reserve(info.swapchains.size());
+	    std::vector<vk::Semaphore> waitSemaphores;
+	    std::vector<vk::SwapchainKHR> swapchains;
+	    waitSemaphores.reserve(info.waitSemaphores.size());
+	    swapchains.reserve(info.swapchains.size());
 
-    	for (const SemaphoreID semaphore : info.waitSemaphores)
-    		waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+	    for (const SemaphoreID semaphore : info.waitSemaphores)
+		    waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
 
-    	for (const SwapchainID swapchain : info.swapchains)
-    		swapchains.emplace_back(VULKAN_CAST(SwapchainKHR, swapchain));
+	    for (const SwapchainID swapchain : info.swapchains)
+		    swapchains.emplace_back(VULKAN_CAST(SwapchainKHR, swapchain));
 
-    	const vk::PresentInfoKHR presentInfo(
-    		waitSemaphores.size(), waitSemaphores.data(),
-    		swapchains.size(), swapchains.data(),
-    		info.imageIndices.data()
-    	);
+	    const vk::PresentInfoKHR presentInfo(
+		    waitSemaphores.size(), waitSemaphores.data(),
+		    swapchains.size(), swapchains.data(),
+		    info.imageIndices.data()
+	    );
 
-    	LE_CHECK_RESULT(vkQueue.presentKHR(presentInfo));
+	    LE_CHECK_RESULT(vkQueue.presentKHR(presentInfo));
     }
 
-    void VulkanDriver::ResetCommandBuffer(CommandBufferID buffer) {}
-    void VulkanDriver::BeginCommandBuffer(CommandBufferID buffer) {}
-    void VulkanDriver::EndCommandBuffer(CommandBufferID buffer) {}
+    void VulkanDriver::ResetCommandBuffer(const CommandBufferID buffer)
+    {
+	    VULKAN_CAST(CommandBuffer, buffer).reset();
+    }
+
+    void VulkanDriver::BeginCommandBuffer(const CommandBufferID buffer, bool singleUse)
+    {
+	    vk::CommandBufferBeginInfo beginInfo(
+		    singleUse ? vk::CommandBufferUsageFlagBits::eOneTimeSubmit : vk::CommandBufferUsageFlags{}
+	    );
+
+	    VULKAN_CAST(CommandBuffer, buffer).begin(beginInfo);
+    }
+
+    void VulkanDriver::EndCommandBuffer(const CommandBufferID buffer)
+    {
+	    VULKAN_CAST(CommandBuffer, buffer).end();
+    }
+
     void VulkanDriver::CmdCopyBuffer(CommandBufferID buffer) {}
     void VulkanDriver::CmdCopyBufferToImage(CommandBufferID buffer) {}
     void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer) {}
@@ -761,31 +777,60 @@ namespace le
 			    && extensionsSupported;
     }
 
-    bool VulkanDriver::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
-                                                           const char* const* deviceExtensions, const uint64_t extensionCount)
+    vk::PresentModeKHR VulkanDriver::PickPresentMode(const vk::SurfaceKHR surface, const bool vsync) const
     {
-	    // The device requires some extensions (such as the swap chain)
-	    // We need to check for those here before we can use the device.
+	    const std::vector<vk::PresentModeKHR> presentModes =
+			    m_physicalDevice.getSurfacePresentModesKHR(surface);
 
-	    uint32_t count;
-	    LE_CHECK_RESULT(device.enumerateDeviceExtensionProperties(nullptr, &count, nullptr));
+	    // Fifo is used for vsync. Fifo relaxed might work too.
+	    // An option to use fifo relaxed may be added later.
+	    if (vsync)
+		    return vk::PresentModeKHR::eFifo;
 
-	    std::vector<vk::ExtensionProperties> availableExtensions(count);
-	    LE_CHECK_RESULT(device.enumerateDeviceExtensionProperties(nullptr, &count,
-		    availableExtensions.data()));
+	    // Mailbox is preferred for vsync disabled, but immediate works too.
+	    // If neither are supported, fifo is used.
 
-	    std::vector<std::string> requiredExtensions(extensionCount);
-	    for (uint64_t i = 0; i < extensionCount; i++)
-		    requiredExtensions[i] = std::string(deviceExtensions[i]);
+	    bool immediateSupported = false;
+	    for (const auto& presentMode : presentModes)
+	    {
+		    if (presentMode == vk::PresentModeKHR::eMailbox)
+			    return presentMode;
 
-	    std::set requiredExtensionSet(requiredExtensions.begin(),
-	                                  requiredExtensions.end());
+		    if (presentMode == vk::PresentModeKHR::eImmediate)
+			    immediateSupported = true;
+	    }
 
-	    for (auto& availableExtension : availableExtensions)
-		    requiredExtensionSet.erase(availableExtension.extensionName);
+	    if (immediateSupported)
+		    return vk::PresentModeKHR::eImmediate;
 
-	    return requiredExtensionSet.empty();
+	    return vk::PresentModeKHR::eFifo;
     }
+
+	bool VulkanDriver::CheckDeviceExtensionSupport(const vk::PhysicalDevice device,
+	                                               const char* const* deviceExtensions, const uint64_t extensionCount)
+	{
+		// The device requires some extensions (such as the swap chain)
+		// We need to check for those here before we can use the device.
+
+		uint32_t count;
+		LE_CHECK_RESULT(device.enumerateDeviceExtensionProperties(nullptr, &count, nullptr));
+
+		std::vector<vk::ExtensionProperties> availableExtensions(count);
+		LE_CHECK_RESULT(device.enumerateDeviceExtensionProperties(nullptr, &count,
+			availableExtensions.data()));
+
+		std::vector<std::string> requiredExtensions(extensionCount);
+		for (uint64_t i = 0; i < extensionCount; i++)
+			requiredExtensions[i] = std::string(deviceExtensions[i]);
+
+		std::set requiredExtensionSet(requiredExtensions.begin(),
+		                              requiredExtensions.end());
+
+		for (auto& availableExtension : availableExtensions)
+			requiredExtensionSet.erase(availableExtension.extensionName);
+
+		return requiredExtensionSet.empty();
+	}
 
 	bool VulkanDriver::IsValidationSupported()
 	{
@@ -811,33 +856,4 @@ namespace le
 
 		return true;
 	}
-
-	vk::PresentModeKHR VulkanDriver::PickPresentMode(const vk::SurfaceKHR surface, const bool vsync) const
-	{
-    	const std::vector<vk::PresentModeKHR> presentModes =
-    		m_physicalDevice.getSurfacePresentModesKHR(surface);
-
-    	// Fifo is used for vsync. Fifo relaxed might work too.
-    	// An option to use fifo relaxed may be added later.
-    	if (vsync)
-    		return vk::PresentModeKHR::eFifo;
-
-    	// Mailbox is preferred for vsync disabled, but immediate works too.
-    	// If neither are supported, fifo is used.
-
-    	bool immediateSupported = false;
-    	for (const auto& presentMode : presentModes)
-    	{
-    		if (presentMode == vk::PresentModeKHR::eMailbox)
-    			return presentMode;
-
-    		if (presentMode == vk::PresentModeKHR::eImmediate)
-    			immediateSupported = true;
-    	}
-
-    	if (immediateSupported)
-    		return vk::PresentModeKHR::eImmediate;
-
-    	return vk::PresentModeKHR::eFifo;
-    }
 }
