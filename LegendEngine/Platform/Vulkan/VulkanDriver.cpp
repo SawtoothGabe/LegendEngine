@@ -1,5 +1,6 @@
 #include "VulkanDriver.hpp"
 
+#include <DescriptorSet.hpp>
 #include <DescriptorSetLayout.hpp>
 #include <set>
 #include <vk_mem_alloc.h>
@@ -8,6 +9,8 @@
 #include <VulkanTypes.hpp>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <Tether/Rendering/Vulkan/DescriptorSet.hpp>
+
 #include "PlatformUtils.hpp"
 
 #include "VkDefs.hpp"
@@ -78,7 +81,7 @@ namespace le
 
 	    ids.reserve(buffers.size());
 	    for (vk::CommandBuffer buffer : buffers)
-		    ids.push_back(CommandBufferID(buffer));
+		    ids.emplace_back(buffer);
 
 	    return ids;
     }
@@ -93,7 +96,10 @@ namespace le
 
 	    ids.reserve(sets.size());
 	    for (vk::DescriptorSet set : sets)
-		    ids.push_back(DescriptorSetID(set));
+	    {
+
+		    ids.emplace_back(set);
+	    }
 
 	    return ids;
     }
@@ -195,17 +201,17 @@ namespace le
     	for (const Format format : info.colorAttachmentFormats)
     		formats.push_back(VulkanTypes::GetVkFormat(format));
 
-    	for (const auto [name, module, stage] : info.stages)
+    	for (const auto& [name, module, stage] : info.stages)
     		stages.push_back({{}, VulkanTypes::GetShaderStageFlag(stage),
     			VULKAN_CAST(ShaderModule, module), name.c_str()});
 
     	for (auto [binding, stride, inputRate] : info.vertexBindings)
     	{
-    		bindings.push_back({
+    		bindings.emplace_back(
     			static_cast<uint32_t>(binding),
     			static_cast<uint32_t>(stride),
     			VulkanTypes::GetVertexInputRate(inputRate)
-    		});
+    		);
     	}
 
     	for (auto [location, binding, offset, format] : info.vertexAttributes)
@@ -300,15 +306,15 @@ namespace le
 			    case ShaderStageFlags::ALL: vkStage = vk::ShaderStageFlagBits::eAll; break;
 		    }
 
-    		vkRanges.push_back({
+    		vkRanges.emplace_back(
     			vkStage,
     			static_cast<uint32_t>(offset),
     			static_cast<uint32_t>(size)
-    		});
+    		);
     	}
 
-    	for (const DescriptorSetLayoutID setLayout : layouts)
-    		vkLayouts.push_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
+    	for (const DescriptorSetLayoutID& setLayout : layouts)
+    		vkLayouts.emplace_back(VULKAN_CAST(DescriptorSetLayout, setLayout));
 
     	const vk::PipelineLayoutCreateInfo createInfo(
     		{},
@@ -390,25 +396,79 @@ namespace le
 		return SamplerID(m_device.createSampler(createInfo));
     }
 
-    void VulkanDriver::FreeCommandBuffers() {}
-    void VulkanDriver::FreeDescriptorSets() {}
-    void VulkanDriver::DestroyBuffer(BufferID buffer) {}
-
-    void VulkanDriver::DestroyCommandPool(CommandPoolID pool)
+    void VulkanDriver::FreeCommandBuffers(const CommandPoolID pool, const size_t count, CommandBufferID* buffers)
     {
-
+    	for (size_t i = 0; i < count; i++)
+    	{
+    		const auto buffer = VULKAN_CAST(CommandBuffer, buffers[i]);
+    		m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), 1, &buffer);
+    	}
     }
 
-    void VulkanDriver::DestroyFence(FenceID fence) {}
-    void VulkanDriver::DestroyImage(ImageID image) {}
+    void VulkanDriver::FreeDescriptorSets(const size_t count, DescriptorSetID* sets)
+    {
+		for (size_t i = 0; i < count; i++)
+			delete reinterpret_cast<DescriptorSet*>(sets[i].id);
+    }
 
-    void VulkanDriver::DestroyImageView(ImageViewID view) {}
+    void VulkanDriver::DestroyBuffer(const BufferID buffer)
+    {
+	    const auto vkBuffer = reinterpret_cast<VulkanBuffer*>(buffer.id);
+    	vmaDestroyBuffer(m_allocator, vkBuffer->buffer, vkBuffer->allocation);
+    	delete vkBuffer;
+    }
 
-    void VulkanDriver::DestroyPipeline(PipelineID pipeline) {}
-    void VulkanDriver::DestroySemaphore(SemaphoreID semaphore) {}
-    void VulkanDriver::DestroySwapchain(SwapchainID swapchain) {}
-    void VulkanDriver::DestroySurface(SurfaceID surface) {}
-    void VulkanDriver::DestroyShaderModule(ShaderModuleID shaderModule) {}
+    void VulkanDriver::DestroyCommandPool(const CommandPoolID pool)
+    {
+		m_device.destroyCommandPool(VULKAN_CAST(CommandPool, pool));
+    }
+
+    void VulkanDriver::DestroyFence(const FenceID fence)
+    {
+		m_device.destroyFence(VULKAN_CAST(Fence, fence));
+    }
+
+    void VulkanDriver::DestroyImage(const ImageID image)
+    {
+	    const auto vkImage = reinterpret_cast<VulkanImage*>(image.id);
+    	vmaDestroyImage(m_allocator, vkImage->image, vkImage->allocation);
+    	delete vkImage;
+    }
+
+    void VulkanDriver::DestroyImageView(const ImageViewID view)
+    {
+	    m_device.destroyImageView(VULKAN_CAST(ImageView, view));
+    }
+
+    void VulkanDriver::DestroyPipeline(const PipelineID pipeline)
+    {
+	    m_device.destroyPipeline(VULKAN_CAST(Pipeline, pipeline));
+    }
+
+    void VulkanDriver::DestroyPipelineLayout(const PipelineLayoutID pipelineLayout)
+    {
+	    m_device.destroyPipelineLayout(VULKAN_CAST(PipelineLayout, pipelineLayout));
+    }
+
+    void VulkanDriver::DestroySemaphore(const SemaphoreID semaphore)
+    {
+		m_device.destroySemaphore(VULKAN_CAST(Semaphore, semaphore));
+    }
+
+    void VulkanDriver::DestroySwapchain(const SwapchainID swapchain)
+    {
+		m_device.destroySwapchainKHR(VULKAN_CAST(SwapchainKHR, swapchain));
+    }
+
+    void VulkanDriver::DestroySurface(const SurfaceID surface)
+    {
+		m_instance.destroySurfaceKHR(VULKAN_CAST(SurfaceKHR, surface));
+    }
+
+    void VulkanDriver::DestroyShaderModule(const ShaderModuleID shaderModule)
+    {
+	    m_device.destroyShaderModule(VULKAN_CAST(ShaderModule, shaderModule));
+    }
 
     void VulkanDriver::DestroyDescriptorSetLayout(const DescriptorSetLayoutID layout)
     {
@@ -417,7 +477,11 @@ namespace le
     	delete vkLayout;
     }
 
-    void VulkanDriver::DestroySampler(SamplerID sampler) {}
+    void VulkanDriver::DestroySampler(const SamplerID sampler)
+    {
+	    m_device.destroySampler(VULKAN_CAST(Sampler, sampler));
+    }
+
     void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
     {
 	    for (size_t i = 0; i < count; i++)
@@ -432,9 +496,19 @@ namespace le
 	    m_device.waitIdle();
     }
 
-    void VulkanDriver::ResetFences(size_t count, uint64_t* fences) {}
+    void VulkanDriver::ResetFences(const size_t count, FenceID* fences)
+    {
+	    for (size_t i = 0; i < count; i++)
+	    {
+		    const auto fence = VULKAN_CAST(Fence, fences[i]);
+	    	m_device.resetFences(fence);
+	    }
+    }
 
-    void VulkanDriver::QueueSubmit() {}
+    void VulkanDriver::QueueSubmit()
+    {
+
+    }
 
     void VulkanDriver::QueuePresent() {}
 

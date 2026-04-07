@@ -33,14 +33,15 @@ namespace le
         virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
         virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
 
-        virtual void FreeCommandBuffers() = 0;
-        virtual void FreeDescriptorSets() = 0;
+        virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
+        virtual void FreeDescriptorSets(size_t count, DescriptorSetID* sets) = 0;
         virtual void DestroyBuffer(BufferID buffer) = 0;
         virtual void DestroyCommandPool(CommandPoolID pool) = 0;
         virtual void DestroyFence(FenceID fence) = 0;
         virtual void DestroyImage(ImageID image) = 0;
         virtual void DestroyImageView(ImageViewID view) = 0;
         virtual void DestroyPipeline(PipelineID pipeline) = 0;
+        virtual void DestroyPipelineLayout(PipelineLayoutID layoutID);
         virtual void DestroySemaphore(SemaphoreID semaphore) = 0;
         virtual void DestroySwapchain(SwapchainID swapchain) = 0;
         virtual void DestroySurface(SurfaceID surface) = 0;
@@ -50,7 +51,7 @@ namespace le
 
         virtual void WaitForFences(size_t count, FenceID* fences) = 0;
         virtual void WaitIdle() = 0;
-        virtual void ResetFences(size_t count, uint64_t* fences) = 0;
+        virtual void ResetFences(size_t count, FenceID* fences) = 0;
         virtual void QueueSubmit() = 0;
         virtual void QueuePresent() = 0;
         virtual void ResetCommandBuffer(CommandBufferID buffer) = 0;

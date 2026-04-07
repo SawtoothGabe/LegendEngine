@@ -31,14 +31,15 @@ namespace le
         DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) override;
         SamplerID CreateSampler(const SamplerInfo& info) override;
 
-        void FreeCommandBuffers() override;
-        void FreeDescriptorSets() override;
+        void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) override;
+        void FreeDescriptorSets(size_t count, DescriptorSetID* sets) override;
         void DestroyBuffer(BufferID buffer) override;
         void DestroyCommandPool(CommandPoolID pool) override;
         void DestroyFence(FenceID fence) override;
         void DestroyImage(ImageID image) override;
         void DestroyImageView(ImageViewID view) override;
         void DestroyPipeline(PipelineID pipeline) override;
+        void DestroyPipelineLayout(PipelineLayoutID pipelineLayout) override;
         void DestroySemaphore(SemaphoreID semaphore) override;
         void DestroySwapchain(SwapchainID swapchain) override;
         void DestroySurface(SurfaceID surface) override;
@@ -48,7 +49,7 @@ namespace le
 
         void WaitForFences(size_t count, FenceID* fences) override;
         void WaitIdle() override;
-        void ResetFences(size_t count, uint64_t* fences) override;
+        void ResetFences(size_t count, FenceID* fences) override;
         void QueueSubmit() override;
         void QueuePresent() override;
         void ResetCommandBuffer(CommandBufferID buffer) override;
