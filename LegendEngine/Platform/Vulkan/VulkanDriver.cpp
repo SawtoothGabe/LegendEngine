@@ -550,7 +550,29 @@ namespace le
     	LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
     }
 
-    void VulkanDriver::QueuePresent() {}
+    void VulkanDriver::QueuePresent(const QueueID queue, const PresentInfo& info)
+    {
+    	const auto vkQueue = VULKAN_CAST(Queue, queue);
+
+    	std::vector<vk::Semaphore> waitSemaphores;
+    	std::vector<vk::SwapchainKHR> swapchains;
+    	waitSemaphores.reserve(info.waitSemaphores.size());
+    	swapchains.reserve(info.swapchains.size());
+
+    	for (const SemaphoreID semaphore : info.waitSemaphores)
+    		waitSemaphores.emplace_back(VULKAN_CAST(Semaphore, semaphore));
+
+    	for (const SwapchainID swapchain : info.swapchains)
+    		swapchains.emplace_back(VULKAN_CAST(SwapchainKHR, swapchain));
+
+    	const vk::PresentInfoKHR presentInfo(
+    		waitSemaphores.size(), waitSemaphores.data(),
+    		swapchains.size(), swapchains.data(),
+    		info.imageIndices.data()
+    	);
+
+    	LE_CHECK_RESULT(vkQueue.presentKHR(presentInfo));
+    }
 
     void VulkanDriver::ResetCommandBuffer(CommandBufferID buffer) {}
     void VulkanDriver::BeginCommandBuffer(CommandBufferID buffer) {}

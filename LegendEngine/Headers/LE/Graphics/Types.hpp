@@ -253,4 +253,11 @@ namespace le
         std::span<SemaphoreID> signalSemaphores;
         std::span<PipelineStage> waitDstStageMask;
     };
+
+    struct PresentInfo
+    {
+        std::span<SemaphoreID> waitSemaphores;
+        std::span<SwapchainID> swapchains;
+        std::span<uint32_t> imageIndices;
+    };
 }
