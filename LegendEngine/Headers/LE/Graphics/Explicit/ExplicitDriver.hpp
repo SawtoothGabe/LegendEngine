@@ -68,7 +68,8 @@ namespace le
         virtual void CmdBindPipeline(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineID pipeline) = 0;
         virtual void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) = 0;
-        virtual void CmdPushConstants(CommandBufferID buffer) = 0;
+        virtual void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
+            ShaderStageFlags stage, size_t offset, size_t size, void* values) = 0;
         virtual void CmdBindDescriptorSets(CommandBufferID buffer) = 0;
         virtual void CmdBindVertexBuffers(CommandBufferID buffer) = 0;
         virtual void CmdBindIndexBuffer(CommandBufferID buffer) = 0;

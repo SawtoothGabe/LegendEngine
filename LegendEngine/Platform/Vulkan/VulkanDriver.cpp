@@ -765,11 +765,16 @@ namespace le
 		VULKAN_CAST(CommandBuffer, buffer).setCullMode(VulkanTypes::GetCullModeFlags(cullMode));
     }
 
-    void VulkanDriver::CmdPushConstants(CommandBufferID buffer)
+    void VulkanDriver::CmdPushConstants(const CommandBufferID buffer, const PipelineLayoutID layout,
+    	const ShaderStageFlags stage, const size_t offset, const size_t size, void* values)
     {
-
+		VULKAN_CAST(CommandBuffer, buffer).pushConstants(
+			VULKAN_CAST(PipelineLayout, layout),
+			VulkanTypes::GetShaderStageFlags(stage),
+			offset, size, values
+		);
     }
-	
+
     void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}

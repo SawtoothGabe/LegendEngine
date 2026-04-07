@@ -69,7 +69,8 @@ namespace le
         void CmdBindPipeline(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineID pipeline) override;
         void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) override;
-        void CmdPushConstants(CommandBufferID buffer) override;
+        void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
+            ShaderStageFlags stage, size_t offset, size_t size, void* values) override;
         void CmdBindDescriptorSets(CommandBufferID buffer) override;
         void CmdBindVertexBuffers(CommandBufferID buffer) override;
         void CmdBindIndexBuffer(CommandBufferID buffer) override;
