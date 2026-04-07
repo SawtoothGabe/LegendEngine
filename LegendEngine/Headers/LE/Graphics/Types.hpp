@@ -69,6 +69,12 @@ namespace le
         int32_t z;
     };
 
+    struct Offset2D
+    {
+        int32_t x;
+        int32_t y;
+    };
+
     struct Extent3D
     {
         uint32_t width;
@@ -173,7 +179,7 @@ namespace le
     {
         size_t binding = 0;
         size_t stride = 0;
-        InputRate inputRate;
+        InputRate inputRate = InputRate::VERTEX;
     };
 
     struct VertexAttribute
@@ -327,6 +333,12 @@ namespace le
     {
         std::span<RenderingAttachmentInfo> colorAttachments;
         RenderingAttachmentInfo depthAttachment;
+        Extent2D extent;
+    };
+
+    struct Rect2D
+    {
+        Offset2D offset;
         Extent2D extent;
     };
 }

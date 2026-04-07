@@ -741,8 +741,22 @@ namespace le
 			&viewport);
     }
 
-    void VulkanDriver::CmdSetScissor(CommandBufferID buffer) {}
-    void VulkanDriver::CmdBindPipeline(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetScissor(const CommandBufferID buffer, Rect2D rect)
+    {
+    	const vk::Rect2D scissor(
+    		{ rect.offset.x, rect.offset.y },
+    		{ rect.extent.width, rect.extent.height }
+		);
+
+    	VULKAN_CAST(CommandBuffer, buffer).setScissor(0, 1,
+			&scissor);
+    }
+
+    void VulkanDriver::CmdBindPipeline(CommandBufferID buffer)
+    {
+		    
+    }
+
     void VulkanDriver::CmdSetCullMode(CommandBufferID buffer) {}
     void VulkanDriver::CmdPushConstants(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}

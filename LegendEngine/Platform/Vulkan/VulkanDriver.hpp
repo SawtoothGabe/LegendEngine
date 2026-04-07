@@ -65,7 +65,7 @@ namespace le
             std::span<ImageMemoryBarrier> imageMemoryBarriers) override;
         void CmdBeginRendering(CommandBufferID buffer, const RenderingInfo& info) override;
         void CmdSetViewport(CommandBufferID buffer, Extent2D size) override;
-        void CmdSetScissor(CommandBufferID buffer) override;
+        void CmdSetScissor(CommandBufferID buffer, Rect2D rect) override;
         void CmdBindPipeline(CommandBufferID buffer) override;
         void CmdSetCullMode(CommandBufferID buffer) override;
         void CmdPushConstants(CommandBufferID buffer) override;
