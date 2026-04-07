@@ -2,8 +2,8 @@
 
 namespace le
 {
-    class DescriptorSet
+    struct DescriptorSet
     {
-
+        vk::DescriptorSet set;
     };
 }

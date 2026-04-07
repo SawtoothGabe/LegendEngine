@@ -71,7 +71,8 @@ namespace le
         void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) override;
         void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
             ShaderStageFlags stage, size_t offset, size_t size, void* values) override;
-        void CmdBindDescriptorSets(CommandBufferID buffer) override;
+        void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
+            PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) override;
         void CmdBindVertexBuffers(CommandBufferID buffer) override;
         void CmdBindIndexBuffer(CommandBufferID buffer) override;
         void CmdDrawIndexed(CommandBufferID buffer) override;

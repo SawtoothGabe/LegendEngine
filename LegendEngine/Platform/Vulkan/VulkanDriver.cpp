@@ -775,7 +775,22 @@ namespace le
 		);
     }
 
-    void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
+    void VulkanDriver::CmdBindDescriptorSets(const CommandBufferID buffer, const PipelineBindPoint bindPoint,
+    	const PipelineLayoutID layout, const size_t firstSet, const std::span<DescriptorSetID> sets)
+    {
+    	std::vector<vk::DescriptorSet> vkSets;
+    	vkSets.reserve(sets.size());
+
+    	for (const DescriptorSetID& setID : sets)
+    		vkSets.push_back(reinterpret_cast<DescriptorSet*>(setID.id)->set);
+
+		VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
+			VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),
+			static_cast<uint32_t>(firstSet), vkSets.size(), vkSets.data(),
+			0, nullptr
+		);
+    }
+
     void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindIndexBuffer(CommandBufferID buffer) {}
     void VulkanDriver::CmdDrawIndexed(CommandBufferID buffer) {}
