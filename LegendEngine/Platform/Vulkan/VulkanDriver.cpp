@@ -689,10 +689,66 @@ namespace le
     void VulkanDriver::CmdDrawIndexed(CommandBufferID buffer) {}
     void VulkanDriver::CmdEndRendering(CommandBufferID buffer) {}
 
-    void VulkanDriver::TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
-	    ImageLayout newLayout, ImageAspect aspect)
+    void VulkanDriver::TransitionImageLayout(const CommandBufferID buffer,
+    	const ImageID image, const ImageLayout oldLayout,
+	    const ImageLayout newLayout, const ImageAspect aspect)
     {
-	    
+	    const auto vkImage = VULKAN_CAST(Image, image);
+        const vk::ImageLayout vkOldLayout = VulkanTypes::GetImageLayout(oldLayout);
+        const vk::ImageLayout vkNewLayout = VulkanTypes::GetImageLayout(newLayout);
+        const vk::ImageAspectFlags aspectMask = VulkanTypes::GetImageAspectFlags(aspect);
+
+        vk::ImageMemoryBarrier barrier{};
+        barrier.oldLayout = vkOldLayout;
+        barrier.newLayout = vkNewLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = vkImage;
+        barrier.subresourceRange.aspectMask = aspectMask;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        vk::PipelineStageFlags sourceStage;
+        vk::PipelineStageFlags destinationStage;
+
+        if (vkOldLayout == vk::ImageLayout::eUndefined && vkNewLayout == vk::ImageLayout::eTransferDstOptimal) {
+            barrier.srcAccessMask = {};
+            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        }
+        else if (vkOldLayout == vk::ImageLayout::eTransferDstOptimal && vkNewLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+            sourceStage = vk::PipelineStageFlagBits::eTransfer;
+            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+        }
+        else if (vkOldLayout == vk::ImageLayout::eUndefined
+            && vkNewLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+        {
+            barrier.srcAccessMask = {};
+            barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead
+                | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+
+            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+            destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+        }
+        else
+        {
+            LE_ASSERT(false, "Unsupported layout transition");
+        }
+
+        VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
+            sourceStage, destinationStage,
+            {},
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+        );
     }
 
     void VulkanDriver::CreateInstance(const std::string_view applicationName)
