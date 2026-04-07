@@ -82,7 +82,7 @@ namespace le
         void CmdEndRendering(CommandBufferID buffer) override;
 
         void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
-            ImageLayout newLayout, ImageAspect aspect);
+            ImageLayout newLayout, ImageAspect aspect) override;
     private:
         struct QueueFamilyIndices
         {
@@ -102,7 +102,7 @@ namespace le
 
         void FindQueueFamilies(vk::PhysicalDevice device);
         bool IsDeviceSuitable(vk::PhysicalDevice device);
-        vk::PresentModeKHR PickPresentMode(vk::SurfaceKHR surface, bool vsync) const;
+        [[nodiscard]] vk::PresentModeKHR PickPresentMode(vk::SurfaceKHR surface, bool vsync) const;
 
         static bool CheckDeviceExtensionSupport(vk::PhysicalDevice device,
             const char* const* deviceExtensions, uint64_t extensionCount);

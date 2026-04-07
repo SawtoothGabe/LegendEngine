@@ -194,16 +194,4 @@ namespace le
         LE_ASSERT(false, "Unknown cull mode");
         return vk::CullModeFlagBits::eNone;
     }
-
-    vk::IndexType VulkanTypes::GetIndexType(const IndexType indexType)
-    {
-        switch (indexType)
-        {
-            case IndexType::UINT16: return vk::IndexType::eUint16;
-            case IndexType::UINT32: return vk::IndexType::eUint32;
-        }
-
-        LE_ASSERT(false, "Unknown index type");
-        return vk::IndexType::eUint32;
-    }
 }

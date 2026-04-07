@@ -354,10 +354,4 @@ namespace le
         FRONT,
         BACK,
     };
-
-    enum class IndexType
-    {
-        UINT16,
-        UINT32
-    };
 }
