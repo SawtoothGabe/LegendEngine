@@ -58,7 +58,8 @@ namespace le
         void EndCommandBuffer(CommandBufferID buffer) override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
-        void CmdCopyBufferToImage(CommandBufferID buffer) override;
+        void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
+            ImageLayout layout, std::span<BufferImageCopy> regions) override;
         void CmdPipelineBarrier(CommandBufferID buffer) override;
         void CmdBeginRendering(CommandBufferID buffer) override;
         void CmdSetViewport(CommandBufferID buffer) override;

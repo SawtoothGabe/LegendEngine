@@ -17,4 +17,6 @@ namespace le::VulkanTypes
     static vk::SamplerAddressMode GetSamplerAddressMode(AddressMode addressMode);
     static vk::BorderColor GetBorderColor(BorderColor borderColor);
     static vk::PipelineStageFlags GetPipelineStage(PipelineStage stage);
+    static vk::ImageAspectFlags GetImageAspectFlags(ImageAspect aspect);
+    static vk::ImageLayout GetImageLayout(ImageLayout layout);
 }

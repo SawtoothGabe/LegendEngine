@@ -138,4 +138,35 @@ namespace le
         LE_ASSERT(false, "Unknown pipeline stage");
         return vk::PipelineStageFlagBits::eTopOfPipe;
     }
+
+    vk::ImageAspectFlags VulkanTypes::GetImageAspectFlags(const ImageAspect aspect)
+    {
+        switch (aspect)
+        {
+            case ImageAspect::COLOR: return vk::ImageAspectFlagBits::eColor;
+            case ImageAspect::DEPTH: return vk::ImageAspectFlagBits::eDepth;
+            case ImageAspect::STENCIL: return vk::ImageAspectFlagBits::eStencil;
+        }
+
+        LE_ASSERT(false, "Unknown image aspect");
+        return vk::ImageAspectFlagBits::eColor;
+    }
+
+    vk::ImageLayout VulkanTypes::GetImageLayout(const ImageLayout layout)
+    {
+        switch (layout)
+        {
+            case ImageLayout::UNDEFINED: return vk::ImageLayout::eUndefined;
+            case ImageLayout::GENERAL: return vk::ImageLayout::eGeneral;
+            case ImageLayout::COLOR_ATTACHMENT_OPTIMAL: return vk::ImageLayout::eColorAttachmentOptimal;
+            case ImageLayout::SHADER_READ_ONLY_OPTIMAL: return vk::ImageLayout::eShaderReadOnlyOptimal;
+            case ImageLayout::TRANSFER_SRC_OPTIMAL: return vk::ImageLayout::eTransferSrcOptimal;
+            case ImageLayout::TRANSFER_DST_OPTIMAL: return vk::ImageLayout::eTransferDstOptimal;
+            case ImageLayout::READ_ONLY_OPTIMAL: return vk::ImageLayout::eReadOnlyOptimal;
+            case ImageLayout::PRESENT_SRC: return vk::ImageLayout::ePresentSrcKHR;
+        }
+
+        LE_ASSERT(false, "Unknown image layout");
+        return vk::ImageLayout::eUndefined;
+    }
 }

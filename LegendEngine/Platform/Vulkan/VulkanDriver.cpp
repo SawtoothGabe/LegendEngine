@@ -593,7 +593,7 @@ namespace le
 	    VULKAN_CAST(CommandBuffer, buffer).end();
     }
 
-    void VulkanDriver::CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions)
+    void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
     	std::vector<vk::BufferCopy> vkRegions(regions.size());
     	for (size_t i = 0; i < vkRegions.size(); i++)
@@ -613,10 +613,37 @@ namespace le
     	VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, vkRegions.size(), vkRegions.data());
     }
 
-    void VulkanDriver::CmdCopyBufferToImage(CommandBufferID buffer)
+    void VulkanDriver::CmdCopyBufferToImage(const CommandBufferID buffer, const BufferID src,
+    	const ImageID dst, const ImageLayout layout, const std::span<BufferImageCopy> regions)
     {
+    	std::vector<vk::BufferImageCopy> vkRegions(regions.size());
+    	for (size_t i = 0; i < vkRegions.size(); i++)
+    	{
+    		const BufferImageCopy& region = regions[i];
+    		vk::BufferImageCopy& regionCopy = vkRegions[i];
 
-    }
+    		regionCopy.bufferOffset = region.bufferOffset;
+    		regionCopy.bufferOffset = region.bufferOffset;
+    		regionCopy.bufferRowLength = region.bufferRowLength;
+    		regionCopy.bufferImageHeight = region.bufferImageHeight;
+    		regionCopy.imageSubresource.aspectMask     = VulkanTypes::GetImageAspectFlags(region.imageSubresource.aspect);
+    		regionCopy.imageSubresource.mipLevel       = region.imageSubresource.mipLevel;
+    		regionCopy.imageSubresource.baseArrayLayer = region.imageSubresource.baseArrayLayer;
+    		regionCopy.imageSubresource.layerCount     = region.imageSubresource.layerCount;
+    		regionCopy.imageOffset.x = region.imageOffset.x;
+    		regionCopy.imageOffset.y = region.imageOffset.y;
+    		regionCopy.imageOffset.z = region.imageOffset.z;
+    		regionCopy.imageExtent.width = region.imageExtent.width;
+    		regionCopy.imageExtent.height = region.imageExtent.height;
+    		regionCopy.imageExtent.depth = region.imageExtent.depth;
+    	}
+
+	    const auto vkBuffer = VULKAN_CAST(Buffer, src);
+	    const auto vkImage = VULKAN_CAST(Image, dst);
+	    const vk::ImageLayout vkLayout = VulkanTypes::GetImageLayout(layout);
+    	VULKAN_CAST(CommandBuffer, buffer).copyBufferToImage(vkBuffer, vkImage, vkLayout,
+    		vkRegions.size(), vkRegions.data());
+	}
 
     void VulkanDriver::CmdPipelineBarrier(CommandBufferID buffer)
     {
