@@ -752,12 +752,19 @@ namespace le
 			&scissor);
     }
 
-    void VulkanDriver::CmdBindPipeline(CommandBufferID buffer)
+    void VulkanDriver::CmdBindPipeline(const CommandBufferID buffer,
+    	const PipelineBindPoint bindPoint, const PipelineID pipeline)
     {
-		    
+		VULKAN_CAST(CommandBuffer, buffer).bindPipeline(
+			VulkanTypes::GetPipelineBindPoint(bindPoint),
+			VULKAN_CAST(Pipeline, pipeline));
     }
 
-    void VulkanDriver::CmdSetCullMode(CommandBufferID buffer) {}
+    void VulkanDriver::CmdSetCullMode(CommandBufferID buffer)
+    {
+
+    }
+	
     void VulkanDriver::CmdPushConstants(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindDescriptorSets(CommandBufferID buffer) {}
     void VulkanDriver::CmdBindVertexBuffers(CommandBufferID buffer) {}

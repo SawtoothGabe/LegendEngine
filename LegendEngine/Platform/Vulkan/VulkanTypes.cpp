@@ -169,4 +169,16 @@ namespace le
         LE_ASSERT(false, "Unknown image layout");
         return vk::ImageLayout::eUndefined;
     }
+
+    vk::PipelineBindPoint VulkanTypes::GetPipelineBindPoint(const PipelineBindPoint bindPoint)
+    {
+        switch (bindPoint)
+        {
+            case PipelineBindPoint::GRAPHICS: return vk::PipelineBindPoint::eGraphics;
+            case PipelineBindPoint::COMPUTE: return vk::PipelineBindPoint::eCompute;
+        }
+
+        LE_ASSERT(false, "Unknown pipeline bind point");
+        return vk::PipelineBindPoint::eGraphics;
+    }
 }

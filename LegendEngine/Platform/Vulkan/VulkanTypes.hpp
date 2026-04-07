@@ -19,4 +19,5 @@ namespace le::VulkanTypes
     static vk::PipelineStageFlags GetPipelineStage(PipelineStage stage);
     static vk::ImageAspectFlags GetImageAspectFlags(ImageAspect aspect);
     static vk::ImageLayout GetImageLayout(ImageLayout layout);
+    static vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
 }

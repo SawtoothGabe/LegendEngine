@@ -341,4 +341,10 @@ namespace le
         Offset2D offset;
         Extent2D extent;
     };
+
+    enum class PipelineBindPoint
+    {
+        GRAPHICS,
+        COMPUTE
+    };
 }
