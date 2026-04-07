@@ -125,4 +125,17 @@ namespace le
         LE_ASSERT(false, "Unknown border color");
         return vk::BorderColor::eIntOpaqueBlack;
     }
+
+    vk::PipelineStageFlags VulkanTypes::GetPipelineStage(const PipelineStage stage)
+    {
+        switch (stage)
+        {
+            case PipelineStage::TOP_OF_PIPE: return vk::PipelineStageFlagBits::eTopOfPipe;
+            case PipelineStage::TRANSFER: return vk::PipelineStageFlagBits::eTransfer;
+            case PipelineStage::FRAGMENT_SHADER: return vk::PipelineStageFlagBits::eFragmentShader;
+        }
+
+        LE_ASSERT(false, "Unknown pipeline stage");
+        return vk::PipelineStageFlagBits::eTopOfPipe;
+    }
 }
