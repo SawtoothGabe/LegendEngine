@@ -86,9 +86,25 @@ namespace le
 	    return ids;
     }
 
-    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const std::span<DescriptorSetLayoutID> layouts)
+    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const PoolManagerID manager, const size_t count)
     {
-	    return m_poolManager.Allocate(layouts);
+    	const auto pManager = reinterpret_cast<PoolManager*>(manager.id);
+    	return pManager->Allocate(count);
+    }
+
+    PoolManagerID VulkanDriver::CreateLayoutPoolManager(const DescriptorSetLayoutID layout)
+    {
+    	return PoolManagerID(new PoolManager(m_device, *reinterpret_cast<DescriptorSetLayout*>(layout.id), 32));
+    }
+
+    void VulkanDriver::DestroyLayoutPoolManager(const PoolManagerID manager)
+    {
+	    delete reinterpret_cast<PoolManager*>(manager.id);
+    }
+
+    void VulkanDriver::ResetAllPools(const PoolManagerID manager)
+    {
+	    reinterpret_cast<PoolManager*>(manager.id)->ResetAllPools();
     }
 
     BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
@@ -401,16 +417,6 @@ namespace le
 	    {
 		    const auto buffer = VULKAN_CAST(CommandBuffer, buffers[i]);
 		    m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), 1, &buffer);
-	    }
-    }
-
-    void VulkanDriver::FreeDescriptorSets(const size_t count, DescriptorSetID* sets)
-    {
-	    for (size_t i = 0; i < count; i++)
-	    {
-		    const auto set = reinterpret_cast<PoolManager::Set*>(sets[i].id);
-	    	m_poolManager.Free(*set);
-		    delete set;
 	    }
     }
 
@@ -768,15 +774,9 @@ namespace le
     void VulkanDriver::CmdBindDescriptorSets(const CommandBufferID buffer, const PipelineBindPoint bindPoint,
     	const PipelineLayoutID layout, const size_t firstSet, const std::span<DescriptorSetID> sets)
     {
-    	std::vector<vk::DescriptorSet> vkSets;
-    	vkSets.reserve(sets.size());
-
-    	for (const DescriptorSetID& setID : sets)
-    		vkSets.push_back(reinterpret_cast<PoolManager::Set*>(setID.id)->set);
-
 		VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
 			VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),
-			static_cast<uint32_t>(firstSet), vkSets.size(), vkSets.data(),
+			static_cast<uint32_t>(firstSet), sets.size(), reinterpret_cast<vk::DescriptorSet*>(sets.data()),
 			0, nullptr
 		);
     }

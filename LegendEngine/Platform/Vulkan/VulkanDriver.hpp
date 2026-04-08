@@ -17,9 +17,10 @@ namespace le
         ~VulkanDriver() override;
 
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
-        std::vector<DescriptorSetID> AllocateDescriptorSets(std::span<DescriptorSetLayoutID> layouts) override;
+        std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, size_t count) override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
+        PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) override;
         FenceID CreateFence(bool signaled) override;
         ImageID CreateImage(const ImageInfo& info) override;
         ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) override;
@@ -35,9 +36,9 @@ namespace le
         QueueID GetQueue(QueueFamily family) override;
 
         void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) override;
-        void FreeDescriptorSets(size_t count, DescriptorSetID* sets) override;
         void DestroyBuffer(BufferID buffer) override;
         void DestroyCommandPool(CommandPoolID pool) override;
+        void DestroyLayoutPoolManager(PoolManagerID manager) override;
         void DestroyFence(FenceID fence) override;
         void DestroyImage(ImageID image) override;
         void DestroyImageView(ImageViewID view) override;
@@ -50,6 +51,7 @@ namespace le
         void DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) override;
         void DestroySampler(SamplerID sampler) override;
 
+        void ResetAllPools(PoolManagerID manager) override;
         void WaitForFences(size_t count, FenceID* fences) override;
         void WaitIdle() override;
         void ResetFences(size_t count, FenceID* fences) override;
@@ -114,8 +116,6 @@ namespace le
         vk::DebugUtilsMessengerEXT m_messenger;
         vk::PhysicalDevice m_physicalDevice;
         vk::Device m_device;
-
-        PoolManager m_poolManager;
 
         VmaAllocator m_allocator = nullptr;
 

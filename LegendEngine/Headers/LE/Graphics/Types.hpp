@@ -43,6 +43,7 @@ namespace le
     LE_GRAPHICS_RESOURCE_ID(Texture2D);
     LE_GRAPHICS_RESOURCE_ID(Texture2DArray);
     LE_GRAPHICS_RESOURCE_ID(RenderTarget);
+    LE_GRAPHICS_RESOURCE_ID(PoolManager);
 
     // GPU primitives
     LE_GRAPHICS_RESOURCE_ID(Buffer);
@@ -61,6 +62,8 @@ namespace le
     LE_GRAPHICS_RESOURCE_ID(DescriptorSetLayout);
     LE_GRAPHICS_RESOURCE_ID(Sampler);
     LE_GRAPHICS_RESOURCE_ID(Queue);
+
+    static_assert(sizeof(void*) == sizeof(BufferID));
 
     struct Offset3D
     {

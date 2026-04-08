@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <LE/Common/UID.hpp>
 #include <LE/Graphics/Types.hpp>
 
 #include "VkDefs.hpp"
@@ -10,27 +11,33 @@ namespace le
 {
     struct DescriptorSetLayout;
 
-    class PoolManager
+    class PoolManager final
     {
     public:
-        struct Set
-        {
-            vk::DescriptorSet set;
-            vk::DescriptorPool pool;
-            DescriptorSetLayout* pLayout;
-        };
+        static constexpr size_t GROWTH_FACTOR = 2;
 
-        PoolManager();
+        explicit PoolManager(vk::Device device, const DescriptorSetLayout& layout, size_t startSize);
+        ~PoolManager();
 
-        std::vector<DescriptorSetID> Allocate(std::span<DescriptorSetLayoutID> layouts);
-        void Free(Set& set);
+        std::vector<DescriptorSetID> Allocate(size_t count);
+        void ResetAllPools();
     private:
         struct Pool
         {
             vk::DescriptorPool pool;
-            std::unordered_map<vk::DescriptorType, size_t> sizes;
+            size_t remaining = 0;
         };
 
+        void PopulateSizes(const DescriptorSetLayout& layout);
+        Pool& FindAvailablePool(size_t allocCount);
+        Pool& CreateNewPool();
+
+        vk::Device m_device;
         std::vector<Pool> m_pools;
+        size_t m_nextAllocSize;
+        size_t m_startSize;
+
+        vk::DescriptorSetLayout m_layout;
+        std::vector<vk::DescriptorPoolSize> m_sizes;
     };
 }

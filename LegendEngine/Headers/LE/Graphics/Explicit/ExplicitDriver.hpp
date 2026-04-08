@@ -14,9 +14,10 @@ namespace le
         virtual ~ExplicitDriver() = default;
 
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
-        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(std::span<DescriptorSetLayoutID> layouts) = 0;
+        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, size_t count) = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
+        virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
         virtual FenceID CreateFence(bool signaled) = 0;
         virtual ImageID CreateImage(const ImageInfo& info) = 0;
         virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
@@ -32,9 +33,9 @@ namespace le
         virtual QueueID GetQueue(QueueFamily family) = 0;
 
         virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
-        virtual void FreeDescriptorSets(size_t count, DescriptorSetID* sets) = 0;
         virtual void DestroyBuffer(BufferID buffer) = 0;
         virtual void DestroyCommandPool(CommandPoolID pool) = 0;
+        virtual void DestroyLayoutPoolManager(PoolManagerID manager) = 0;
         virtual void DestroyFence(FenceID fence) = 0;
         virtual void DestroyImage(ImageID image) = 0;
         virtual void DestroyImageView(ImageViewID view) = 0;
@@ -47,6 +48,7 @@ namespace le
         virtual void DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) = 0;
         virtual void DestroySampler(SamplerID sampler) = 0;
 
+        virtual void ResetAllPools(PoolManagerID manager) = 0;
         virtual void WaitForFences(size_t count, FenceID* fences) = 0;
         virtual void WaitIdle() = 0;
         virtual void ResetFences(size_t count, FenceID* fences) = 0;
