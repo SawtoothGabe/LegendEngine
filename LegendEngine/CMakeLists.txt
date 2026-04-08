@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.10)
 project ("LegendEngine")
 
-add_subdirectory(Vendor)
+include(cmake/Deps.cmake)
 
 if (LE_BUILD_TESTS)
 	add_subdirectory(Tests)
