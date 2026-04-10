@@ -1,10 +1,14 @@
 #include <print>
+#include <slang.h>
 
-#include <simdjson/simdjson.h>
+#include "Options.hpp"
 
-int main()
+int main(const int argc, char* argv[])
 {
-    std::println("Hello, world!");
+    Options options(argc, argv);
+    options.Print();
+
+
 
     return 0;
 }

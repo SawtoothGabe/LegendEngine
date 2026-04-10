@@ -2,7 +2,7 @@ project ("LegendShaders")
 include(FetchContent)
 
 file(GLOB_RECURSE LESHADERS_SOURCES "Source/*.cpp" "Source/*.hpp")
-add_executable(${PROJECT_NAME} ${LESHADERS_SOURCES})
+add_executable(lesh ${LESHADERS_SOURCES})
 
 FetchContent_Declare(
     slang
@@ -37,4 +37,5 @@ endif ()
 message(STATUS "Making dependencies for LegendShaders available")
 FetchContent_MakeAvailable(slang simdjson)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE slang simdjson stdc++exp)
+target_include_directories(lesh PRIVATE Source)
+target_link_libraries(lesh PRIVATE slang simdjson stdc++exp)
