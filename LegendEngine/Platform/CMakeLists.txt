@@ -17,8 +17,6 @@ if (LE_OPENGL_API)
 endif()
 
 if (LE_VULKAN_API)
-    add_subdirectory(Vulkan/Shaders)
-
     find_package(Vulkan)
     if (NOT Vulkan_FOUND)
         message(FATAL_ERROR "LE_VULKAN_API is enabled, but the Vulkan SDK was not found. \nInstall it from https://vulkan.lunarg.com/, or run \"apt install libvulkan-dev vulkan-validationlayers vulkan-tools glslc\"")
@@ -28,7 +26,6 @@ if (LE_VULKAN_API)
 
     file(GLOB_RECURSE LE_VK_SOURCES "Vulkan/*.cpp" "Vulkan/*.hpp")
     add_library(LEVulkan STATIC ${LE_VK_SOURCES})
-    add_dependencies(LEVulkan spv2cpp)
 
     get_property(compiled_shader_headers GLOBAL PROPERTY SPV_HEADERS_DIR)
 

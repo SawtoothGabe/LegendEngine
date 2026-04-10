@@ -1,0 +1,6 @@
+{
+  "features": ["textured"],
+  "modules": [
+    "builtin_textured.slang"
+  ]
+}
