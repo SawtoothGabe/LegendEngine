@@ -2,8 +2,7 @@
 .vscode
 CMakeSettings.json
 CMakeFiles
-cmake-build-debug
-cmake-build-release
+cmake-build-*
 Build
 LegendEngine/Docs/Doxygen
 LegendEngine/Vendor/*/

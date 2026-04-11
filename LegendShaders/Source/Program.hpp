@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <simdjson.h>
+#include <slang-com-ptr.h>
 #include <slang.h>
 
 class ModuleRegistry;

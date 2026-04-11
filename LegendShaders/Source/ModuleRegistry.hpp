@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <slang-com-ptr.h>
 #include <slang.h>
 #include <string>
 #include <unordered_map>
