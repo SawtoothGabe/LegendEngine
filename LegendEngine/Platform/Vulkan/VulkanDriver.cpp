@@ -5,7 +5,6 @@
 #include <vk_mem_alloc.h>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
-#include <Tether/Rendering/Vulkan/DescriptorSet.hpp>
 
 #include "DescriptorSetLayout.hpp"
 #include "PlatformUtils.hpp"

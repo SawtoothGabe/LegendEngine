@@ -1,5 +1,4 @@
 #include "Options.hpp"
-
 #include <print>
 
 Options::Options(const int argc, char* argv[])
@@ -7,14 +6,14 @@ Options::Options(const int argc, char* argv[])
     auto last = LastArg::OTHER;
     for (int i = 1; i < argc; i++)
     {
-        std::string arg = argv[i];
+        const std::string_view arg = argv[i];
 
         if (last != LastArg::OTHER)
         {
             switch (last)
             {
                 case LastArg::OTHER: break;
-                case LastArg::INCLUDE: includeDirs.push_back(arg); break;
+                case LastArg::INCLUDE: includeDirs.push_back(arg.data()); break;
                 case LastArg::OUTPUT: output = arg; break;
             }
 
@@ -31,39 +30,62 @@ Options::Options(const int argc, char* argv[])
         if (ParseOutput(last, arg))
             continue;
 
-        inputs.push_back(arg);
+        inputs.emplace_back(arg);
     }
 }
 
-void Options::Print()
+void Options::PopulateSessionInfo(
+    const Slang::ComPtr<slang::IGlobalSession>& globalSession,
+    std::vector<slang::TargetDesc>& targets,
+    std::vector<slang::CompilerOptionEntry>& compilerOptions) const
 {
-    std::println("Options:");
-
-    std::println("\tflags =");
     if (flags & CompileFlagBits::DXIL)
-        std::println("\t\tCompileFlagBits::DXIL");
+    {
+        targets.push_back({
+            .format = SLANG_DXIL,
+            .profile = globalSession->findProfile("sm_5_0")
+        });
+
+        compilerOptions.push_back({
+            slang::CompilerOptionName::DownstreamArgs,
+            {slang::CompilerOptionValueKind::String, 0, 0, "-Idxc", nullptr}
+        });
+    }
+
     if (flags & CompileFlagBits::SPIRV)
-        std::println("\t\tCompileFlagBits::SPIRV");
+    {
+        targets.push_back({
+            .format = SLANG_SPIRV,
+            .profile = globalSession->findProfile("spirv_1_0")
+        });
+
+        compilerOptions.push_back({
+            slang::CompilerOptionName::EmitSpirvDirectly,
+            {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}
+        });
+    }
+
     if (flags & CompileFlagBits::GLSL)
-        std::println("\t\tCompileFlagBits::GLSL");
+    {
+        targets.push_back({
+            .format = SLANG_GLSL,
+            .profile = globalSession->findProfile("glsl_400")
+        });
+    }
+
     if (flags & CompileFlagBits::WGSL)
-        std::println("\t\tCompileFlagBits::WGSL");
-
-    std::println("\tincludeDirs =");
-    for (const std::string& string : includeDirs)
-        std::println("\t\t\"{}\"", string);
-
-    std::println("\toutput = \"{}\"", output);
-
-    std::println("\tinputs =");
-    for (const std::string& string : inputs)
-        std::println("\t\t\"{}\"", string);
+    {
+        targets.push_back({
+            .format = SLANG_WGSL,
+            .profile = globalSession->findProfile("wgsl_400")
+        });
+    }
 }
 
-bool Options::ParseFlags(LastArg& last, const std::string& arg)
+bool Options::ParseFlags(LastArg& last, const std::string_view arg)
 {
     last = LastArg::OTHER;
-    
+
     if (arg == "--dxil")
     {
         flags |= CompileFlagBits::DXIL;
@@ -91,7 +113,7 @@ bool Options::ParseFlags(LastArg& last, const std::string& arg)
     return false;
 }
 
-bool Options::ParseInclude(LastArg& last, const std::string& arg)
+bool Options::ParseInclude(LastArg& last, const std::string_view arg)
 {
     if (!arg.starts_with("-I"))
         return false;
@@ -102,13 +124,11 @@ bool Options::ParseInclude(LastArg& last, const std::string& arg)
         return true;
     }
 
-    const std::string path = arg.substr(2, arg.length() - 1);
-    includeDirs.push_back(path);
-
+    includeDirs.push_back(arg.substr(2, arg.length() - 1).data());
     return true;
 }
 
-bool Options::ParseOutput(LastArg& last, const std::string& arg)
+bool Options::ParseOutput(LastArg& last, const std::string_view arg)
 {
     if (!arg.starts_with("-o"))
         return false;

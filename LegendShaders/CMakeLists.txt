@@ -12,6 +12,16 @@ FetchContent_Declare(
 )
 FetchContent_Declare(simdjson GIT_REPOSITORY https://github.com/simdjson/simdjson)
 
+if (WIN32)
+    FetchContent_Declare(
+        dxc
+        URL https://github.com/microsoft/DirectXShaderCompiler/releases/download/v1.9.2602/dxc_2026_02_20.zip
+        DOWNLOAD_EXTRACT_TIMESTAMP NEW
+    )
+
+    FetchContent_MakeAvailable(dxc)
+endif ()
+
 # slang options
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(SLANG_ENABLE_IR_BREAK_ALLOC "$<$<CONFIG:Debug>:TRUE>$<$<NOT:$<CONFIG:Debug>>:FALSE>")

@@ -23,17 +23,7 @@ if (LE_HEADLESS)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC -DLE_HEADLESS)
 endif()
 
-target_include_directories(${PROJECT_NAME} 
-PUBLIC
-	"Headers"
-PRIVATE
-	${CMAKE_CURRENT_BINARY_DIR} # For including assets
-)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-	tether
-	tetherRendering
-	${EXTRA_LIBS}
-)
+target_include_directories(${PROJECT_NAME} PUBLIC "Headers")
+target_link_libraries(${PROJECT_NAME} PUBLIC tether ${EXTRA_LIBS})
 
 add_subdirectory(Platform)

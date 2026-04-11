@@ -13,7 +13,7 @@ struct VSInput
 
 struct Camera
 {
-    ConstantBuffer<float4x4> vpMat;
+    float4x4 vpMat;
 };
 
 struct Object
@@ -23,7 +23,8 @@ struct Object
 
 struct Material
 {
-    ConstantBuffer<float4> color;
+    float4 color;
+    Sampler2D albedo;
 };
 
 struct Light
@@ -33,17 +34,11 @@ struct Light
     uint type;
 };
 
-struct SceneData
+struct Scene
 {
     float ambientLight;
     uint lightCount;
     Light lights[];
-};
-
-struct Scene
-{
-    StructuredBuffer<SceneData> data;
-    Sampler2D albedo;
 };
 
 #define OBJECT_DATA [[vk::push_constant]]
