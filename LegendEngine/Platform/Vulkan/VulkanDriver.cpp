@@ -85,6 +85,18 @@ namespace le
 	    return ids;
     }
 
+    CommandBufferID VulkanDriver::AllocateCommandBuffer(const CommandPoolID pool)
+    {
+    	vk::CommandBufferAllocateInfo info;
+    	info.commandBufferCount = 1;
+    	info.commandPool = VULKAN_CAST(CommandPool, pool);
+
+    	vk::CommandBuffer buffer;
+    	LE_CHECK_RESULT(m_device.allocateCommandBuffers(&info, &buffer));
+
+    	return CommandBufferID(buffer);
+    }
+
     std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const PoolManagerID manager, DescriptorPoolID& outPool, const size_t count)
     {
 	    const auto pManager = reinterpret_cast<PoolManager*>(manager.id);

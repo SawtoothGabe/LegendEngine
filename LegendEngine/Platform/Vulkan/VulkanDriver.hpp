@@ -17,6 +17,7 @@ namespace le
         ~VulkanDriver() override;
 
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
+        CommandBufferID AllocateCommandBuffer(CommandPoolID pool) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) override;
         BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
