@@ -112,6 +112,12 @@ int main(const int argc, char* argv[])
         return -1;
     }
 
+    if (!options.flags)
+    {
+        std::println(stderr, "error: no compilation targets specified (--dxil --spirv --glsl --wgsl)");
+        return -1;
+    }
+
     Slang::ComPtr<slang::IGlobalSession> globalSession;
     slang::createGlobalSession(globalSession.writeRef());
 

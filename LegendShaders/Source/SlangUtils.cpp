@@ -11,5 +11,3 @@ void SlangUtils::Diagnose(slang::IBlob* blob)
     std::println(stderr, "{}", static_cast<const char*>(blob->getBufferPointer()));
     throw std::runtime_error("Slang function returned non-null diagnosis");
 }
-
-

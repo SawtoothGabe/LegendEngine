@@ -43,12 +43,7 @@ void Options::PopulateSessionInfo(
     {
         targets.push_back({
             .format = SLANG_DXIL,
-            .profile = globalSession->findProfile("sm_5_0")
-        });
-
-        compilerOptions.push_back({
-            slang::CompilerOptionName::DownstreamArgs,
-            {slang::CompilerOptionValueKind::String, 0, 0, "-Idxc", nullptr}
+            .profile = globalSession->findProfile("sm_6_0")
         });
     }
 
@@ -56,7 +51,7 @@ void Options::PopulateSessionInfo(
     {
         targets.push_back({
             .format = SLANG_SPIRV,
-            .profile = globalSession->findProfile("spirv_1_0")
+            .profile = globalSession->findProfile("spirv_1_3")
         });
 
         compilerOptions.push_back({

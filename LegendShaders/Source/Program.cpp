@@ -1,7 +1,8 @@
+#include <lesh/Shader.hpp>
+
 #include "Program.hpp"
 
 #include <filesystem>
-#include <fstream>
 #include <future>
 #include <ModuleRegistry.hpp>
 #include <print>
@@ -9,24 +10,30 @@
 #include <slang-com-ptr.h>
 #include <slang.h>
 #include <SlangUtils.hpp>
+#include <utility>
 
 using namespace simdjson;
+
+le::sh::Features operator|=(le::sh::Features& lhs, const le::sh::Features& rhs)
+{
+    return lhs = static_cast<le::sh::Features>(static_cast<size_t>(lhs) | static_cast<size_t>(rhs));
+}
 
 Program Program::FromJson(ModuleRegistry& registry, const std::string_view path, const std::string_view json, ondemand::parser& parser)
 {
     const std::filesystem::path jsonPath(path);
-    Program program;
-
     const padded_string paddedJson = json;
-    ondemand::document doc = parser.iterate(paddedJson);
+    le::sh::Features features = {};
+    std::vector<Slang::ComPtr<slang::IModule>> modules;
 
+    ondemand::document doc = parser.iterate(paddedJson);
     std::vector<std::filesystem::path> modulePaths;
     for (auto field : doc.get_object())
     {
         const std::string_view key = field.escaped_key();
         if (key == "features")
             for (auto el : field.value().get_array())
-                program.AddFeature(el.get_string().value());
+                features |= GetFeature(el.get_string().value());
         else if (key == "modules")
             for (auto el : field.value().get_array())
                 modulePaths.emplace_back(el.get_string().value());
@@ -38,35 +45,31 @@ Program Program::FromJson(ModuleRegistry& registry, const std::string_view path,
     for (const auto& module : modulePaths)
     {
         const std::filesystem::path relative = jsonPath.parent_path() / module;
-        program.m_modules.emplace_back(registry.TryCreate(relative));
+        modules.push_back(registry.TryCreate(relative));
     }
 
-    return program;
+    return {path, features, modules};
 }
 
 Program Program::FromSlang(ModuleRegistry& registry, const std::string_view path)
 {
-    Program program;
-    program.m_modules.emplace_back(registry.TryCreate(path));
-
-    return program;
+    return { path, registry.TryCreate(path) };
 }
 
-Slang::ComPtr<slang::IComponentType> Program::Link(slang::ISession* session)
+Slang::ComPtr<slang::IComponentType> Program::Link(slang::ISession* session) const
 {
     std::vector<slang::IComponentType*> components;
-    for (auto module : m_modules)
-        components.emplace_back(module);
+    for (const auto& module : m_modules)
+        components.push_back(module.get());
 
-    std::vector<Slang::ComPtr<slang::IEntryPoint>> entrypoints = GetEntrypoints();
-    for (const auto& entrypoint : entrypoints)
+    for (const auto& entrypoint : m_entrypoints)
         components.emplace_back(entrypoint);
 
     Slang::ComPtr<slang::IBlob> diagnostics;
     Slang::ComPtr<slang::IComponentType> composedProgram;
     session->createCompositeComponentType(
         components.data(),
-        components.size(),
+        static_cast<SlangInt>(components.size()),
         composedProgram.writeRef(),
         diagnostics.writeRef()
     );
@@ -82,16 +85,57 @@ Slang::ComPtr<slang::IComponentType> Program::Link(slang::ISession* session)
     return linkedProgram;
 }
 
-void Program::AddFeature(const std::string_view feature)
+std::string Program::GetFilenameHash() const
 {
-    if (feature == "textured")
-    {
-        m_features.emplace_back(Feature::TEXTURED);
-        return;
-    }
+    return m_filenameHash;
 }
 
-std::vector<Slang::ComPtr<slang::IEntryPoint>> Program::GetEntrypoints()
+const std::vector<Slang::ComPtr<slang::IEntryPoint>>& Program::GetEntrypoints() const
+{
+    return m_entrypoints;
+}
+
+le::sh::Features Program::GetFeatures() const
+{
+    return m_features;
+}
+
+Program::Program(const std::string_view path, const Slang::ComPtr<slang::IModule>& module)
+    :
+    m_filenameHash(GetHashedName(path))
+{
+    m_modules.emplace_back(module);
+
+    m_entrypoints = MakeEntrypoints();
+}
+
+Program::Program(const std::string_view path, le::sh::Features features,
+                 std::vector<Slang::ComPtr<slang::IModule>> modules)
+    :
+    m_filenameHash(GetHashedName(path)),
+    m_features(features),
+    m_modules(std::move(modules))
+{
+    m_entrypoints = MakeEntrypoints();
+}
+
+std::string Program::GetHashedName(const std::string_view path)
+{
+    constexpr std::hash<std::string> hasher;
+    const std::string filename = std::filesystem::path(path).filename().string();
+    size_t hash = hasher(filename);
+    return std::format("{:x}", hash);
+}
+
+le::sh::Features Program::GetFeature(const std::string_view feature)
+{
+    if (feature == "textured")
+        return le::sh::Features::TEXTURED;
+
+    throw std::runtime_error(std::format("Invalid feature \"{}\"", feature));
+}
+
+std::vector<Slang::ComPtr<slang::IEntryPoint>> Program::MakeEntrypoints()
 {
     std::vector<Slang::ComPtr<slang::IEntryPoint>> entrypoints;
     for (Slang::ComPtr<slang::IModule>& module : m_modules)
@@ -100,7 +144,7 @@ std::vector<Slang::ComPtr<slang::IEntryPoint>> Program::GetEntrypoints()
         for (uint32_t i = 0; i < entrypointCount; i++)
         {
             Slang::ComPtr<slang::IEntryPoint> pEntrypoint = nullptr;
-            SlangResult result = module->getDefinedEntryPoint(i, pEntrypoint.writeRef());
+            SlangResult result = module->getDefinedEntryPoint(static_cast<SlangInt32>(i), pEntrypoint.writeRef());
 
             if (!pEntrypoint || SLANG_FAILED(result))
                 continue;
