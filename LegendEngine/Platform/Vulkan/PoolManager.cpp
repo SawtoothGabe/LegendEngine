@@ -21,13 +21,14 @@ namespace le
             m_device.destroyDescriptorPool(pool);
     }
 
-    std::vector<DescriptorSetID> PoolManager::Allocate(const size_t count)
+    std::vector<DescriptorSetID> PoolManager::Allocate(DescriptorPoolID& outPool, const size_t count)
     {
         auto& [pool, remaining] = FindAvailablePool(count);
         remaining -= count;
 
         const std::vector vkLayouts(count, m_layout);
 
+        outPool = DescriptorPoolID(pool);
         const vk::DescriptorSetAllocateInfo allocInfo(
             pool, vkLayouts.size(), vkLayouts.data()
         );
@@ -39,6 +40,26 @@ namespace le
         setIDs.assign(pSets, pSets + sets.size());
 
         return setIDs;
+    }
+
+    void PoolManager::Free(const vk::DescriptorPool pool, size_t count, DescriptorSetID* sets)
+    {
+        bool foundPool = false;
+        for (Pool& managedPool : m_pools)
+        {
+            if (managedPool.pool == pool)
+            {
+                foundPool = true;
+                LE_ASSERT(managedPool.remaining >= count, "Freed too many sets from pool");
+                managedPool.remaining -= count;
+                break;
+            }
+        }
+
+        LE_ASSERT(foundPool, "Tried to free sets from pool manager not containing input pool");
+
+        LE_CHECK_RESULT(m_device.freeDescriptorSets(pool, count,
+            reinterpret_cast<vk::DescriptorSet*>(sets)));
     }
 
     void PoolManager::ResetAllPools()
@@ -76,7 +97,7 @@ namespace le
     PoolManager::Pool& PoolManager::CreateNewPool()
     {
         const vk::DescriptorPoolCreateInfo info(
-            {}, m_nextAllocSize, m_sizes
+            vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, m_nextAllocSize, m_sizes
         );
 
         Pool& pool = m_pools.emplace_back(m_device.createDescriptorPool(info), m_nextAllocSize);

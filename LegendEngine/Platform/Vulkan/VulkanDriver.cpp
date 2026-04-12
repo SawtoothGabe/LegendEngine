@@ -76,7 +76,7 @@ namespace le
     {
 	    std::vector<CommandBufferID> ids;
 	    const std::vector<vk::CommandBuffer> buffers
-    		= m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool), {}, static_cast<uint32_t>(count)});
+			    = m_device.allocateCommandBuffers({VULKAN_CAST(CommandPool, pool), {}, static_cast<uint32_t>(count)});
 
 	    ids.reserve(buffers.size());
 	    for (vk::CommandBuffer buffer : buffers)
@@ -85,25 +85,10 @@ namespace le
 	    return ids;
     }
 
-    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const PoolManagerID manager, const size_t count)
+    std::vector<DescriptorSetID> VulkanDriver::AllocateDescriptorSets(const PoolManagerID manager, DescriptorPoolID& outPool, const size_t count)
     {
-    	const auto pManager = reinterpret_cast<PoolManager*>(manager.id);
-    	return pManager->Allocate(count);
-    }
-
-    PoolManagerID VulkanDriver::CreateLayoutPoolManager(const DescriptorSetLayoutID layout)
-    {
-    	return PoolManagerID(new PoolManager(m_device, *reinterpret_cast<DescriptorSetLayout*>(layout.id), 32));
-    }
-
-    void VulkanDriver::DestroyLayoutPoolManager(const PoolManagerID manager)
-    {
-	    delete reinterpret_cast<PoolManager*>(manager.id);
-    }
-
-    void VulkanDriver::ResetAllPools(const PoolManagerID manager)
-    {
-	    reinterpret_cast<PoolManager*>(manager.id)->ResetAllPools();
+	    const auto pManager = reinterpret_cast<PoolManager*>(manager.id);
+	    return pManager->Allocate(outPool, count);
     }
 
     BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
@@ -136,6 +121,11 @@ namespace le
 
 	    const vk::CommandPoolCreateInfo info({}, index);
 	    return CommandPoolID(m_device.createCommandPool(info, nullptr));
+    }
+
+    PoolManagerID VulkanDriver::CreateLayoutPoolManager(const DescriptorSetLayoutID layout)
+    {
+	    return PoolManagerID(new PoolManager(m_device, *reinterpret_cast<DescriptorSetLayout*>(layout.id), 32));
     }
 
     FenceID VulkanDriver::CreateFence(const bool signaled)
@@ -419,6 +409,12 @@ namespace le
 	    }
     }
 
+    void VulkanDriver::FreeDescriptorSets(const PoolManagerID manager, const DescriptorPoolID pool, const size_t count,
+                                          DescriptorSetID* sets)
+    {
+	    reinterpret_cast<PoolManager*>(manager.id)->Free(VULKAN_CAST(DescriptorPool, pool), count, sets);
+    }
+
     void VulkanDriver::DestroyBuffer(const BufferID buffer)
     {
 	    const auto vkBuffer = reinterpret_cast<VulkanBuffer*>(buffer.id);
@@ -429,6 +425,11 @@ namespace le
     void VulkanDriver::DestroyCommandPool(const CommandPoolID pool)
     {
 	    m_device.destroyCommandPool(VULKAN_CAST(CommandPool, pool));
+    }
+
+    void VulkanDriver::DestroyLayoutPoolManager(const PoolManagerID manager)
+    {
+	    delete reinterpret_cast<PoolManager*>(manager.id);
     }
 
     void VulkanDriver::DestroyFence(const FenceID fence)
@@ -488,6 +489,11 @@ namespace le
     void VulkanDriver::DestroySampler(const SamplerID sampler)
     {
 	    m_device.destroySampler(VULKAN_CAST(Sampler, sampler));
+    }
+
+    void VulkanDriver::ResetAllPools(const PoolManagerID manager)
+    {
+	    reinterpret_cast<PoolManager*>(manager.id)->ResetAllPools();
     }
 
     void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
@@ -591,292 +597,292 @@ namespace le
 
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
-    	std::vector<vk::BufferCopy> vkRegions(regions.size());
-    	for (size_t i = 0; i < vkRegions.size(); i++)
-    	{
-    		const auto& [srcOffset, dstOffset, size] = regions[i];
+	    std::vector<vk::BufferCopy> vkRegions(regions.size());
+	    for (size_t i = 0; i < vkRegions.size(); i++)
+	    {
+		    const auto& [srcOffset, dstOffset, size] = regions[i];
 
-    		vk::BufferCopy regionCopy{};
-    		regionCopy.size = size;
-    		regionCopy.srcOffset = srcOffset;
-    		regionCopy.dstOffset = dstOffset;
+		    vk::BufferCopy regionCopy{};
+		    regionCopy.size = size;
+		    regionCopy.srcOffset = srcOffset;
+		    regionCopy.dstOffset = dstOffset;
 
-    		vkRegions[i] = regionCopy;
-    	}
+		    vkRegions[i] = regionCopy;
+	    }
 
-    	const auto vkSrc = VULKAN_CAST(Buffer, src);
-    	const auto vkDst = VULKAN_CAST(Buffer, dst);
-    	VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, vkRegions.size(), vkRegions.data());
+	    const auto vkSrc = VULKAN_CAST(Buffer, src);
+	    const auto vkDst = VULKAN_CAST(Buffer, dst);
+	    VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, vkRegions.size(), vkRegions.data());
     }
 
     void VulkanDriver::CmdCopyBufferToImage(const CommandBufferID buffer, const BufferID src,
-    	const ImageID dst, const ImageLayout layout, const std::span<BufferImageCopy> regions)
+                                            const ImageID dst, const ImageLayout layout, const std::span<BufferImageCopy> regions)
     {
-    	std::vector<vk::BufferImageCopy> vkRegions(regions.size());
-    	for (size_t i = 0; i < vkRegions.size(); i++)
-    	{
-    		const BufferImageCopy& region = regions[i];
-    		vk::BufferImageCopy& regionCopy = vkRegions[i];
+	    std::vector<vk::BufferImageCopy> vkRegions(regions.size());
+	    for (size_t i = 0; i < vkRegions.size(); i++)
+	    {
+		    const BufferImageCopy& region = regions[i];
+		    vk::BufferImageCopy& regionCopy = vkRegions[i];
 
-    		regionCopy.bufferOffset = region.bufferOffset;
-    		regionCopy.bufferOffset = region.bufferOffset;
-    		regionCopy.bufferRowLength = region.bufferRowLength;
-    		regionCopy.bufferImageHeight = region.bufferImageHeight;
-    		regionCopy.imageSubresource.aspectMask     = VulkanTypes::GetImageAspectFlags(region.imageSubresource.aspect);
-    		regionCopy.imageSubresource.mipLevel       = region.imageSubresource.mipLevel;
-    		regionCopy.imageSubresource.baseArrayLayer = region.imageSubresource.baseArrayLayer;
-    		regionCopy.imageSubresource.layerCount     = region.imageSubresource.layerCount;
-    		regionCopy.imageOffset.x = region.imageOffset.x;
-    		regionCopy.imageOffset.y = region.imageOffset.y;
-    		regionCopy.imageOffset.z = region.imageOffset.z;
-    		regionCopy.imageExtent.width = region.imageExtent.width;
-    		regionCopy.imageExtent.height = region.imageExtent.height;
-    		regionCopy.imageExtent.depth = region.imageExtent.depth;
-    	}
+		    regionCopy.bufferOffset = region.bufferOffset;
+		    regionCopy.bufferOffset = region.bufferOffset;
+		    regionCopy.bufferRowLength = region.bufferRowLength;
+		    regionCopy.bufferImageHeight = region.bufferImageHeight;
+		    regionCopy.imageSubresource.aspectMask     = VulkanTypes::GetImageAspectFlags(region.imageSubresource.aspect);
+		    regionCopy.imageSubresource.mipLevel       = region.imageSubresource.mipLevel;
+		    regionCopy.imageSubresource.baseArrayLayer = region.imageSubresource.baseArrayLayer;
+		    regionCopy.imageSubresource.layerCount     = region.imageSubresource.layerCount;
+		    regionCopy.imageOffset.x = region.imageOffset.x;
+		    regionCopy.imageOffset.y = region.imageOffset.y;
+		    regionCopy.imageOffset.z = region.imageOffset.z;
+		    regionCopy.imageExtent.width = region.imageExtent.width;
+		    regionCopy.imageExtent.height = region.imageExtent.height;
+		    regionCopy.imageExtent.depth = region.imageExtent.depth;
+	    }
 
 	    const auto vkBuffer = VULKAN_CAST(Buffer, src);
 	    const auto vkImage = VULKAN_CAST(Image, dst);
 	    const vk::ImageLayout vkLayout = VulkanTypes::GetImageLayout(layout);
-    	VULKAN_CAST(CommandBuffer, buffer).copyBufferToImage(vkBuffer, vkImage, vkLayout,
-    		vkRegions.size(), vkRegions.data());
-	}
+	    VULKAN_CAST(CommandBuffer, buffer).copyBufferToImage(vkBuffer, vkImage, vkLayout,
+	                                                         vkRegions.size(), vkRegions.data());
+    }
 
     void VulkanDriver::CmdPipelineBarrier(const CommandBufferID buffer,
-    	const PipelineStage srcStage, const PipelineStage dstStage,
-    	const std::span<ImageMemoryBarrier> imageMemoryBarriers)
+                                          const PipelineStage srcStage, const PipelineStage dstStage,
+                                          const std::span<ImageMemoryBarrier> imageMemoryBarriers)
     {
 	    const vk::PipelineStageFlags srcStageMask = VulkanTypes::GetPipelineStage(srcStage);
 	    const vk::PipelineStageFlags dstStageMask = VulkanTypes::GetPipelineStage(dstStage);
-    	std::vector<vk::ImageMemoryBarrier> vkImageMemoryBarriers(imageMemoryBarriers.size());
+	    std::vector<vk::ImageMemoryBarrier> vkImageMemoryBarriers(imageMemoryBarriers.size());
 
-    	for (size_t i = 0; i < vkImageMemoryBarriers.size(); i++)
-    	{
-    		const ImageMemoryBarrier& barrier = imageMemoryBarriers[i];
-    		vk::ImageMemoryBarrier& vkBarrier = vkImageMemoryBarriers[i];
+	    for (size_t i = 0; i < vkImageMemoryBarriers.size(); i++)
+	    {
+		    const ImageMemoryBarrier& barrier = imageMemoryBarriers[i];
+		    vk::ImageMemoryBarrier& vkBarrier = vkImageMemoryBarriers[i];
 
-    		vkBarrier.oldLayout = VulkanTypes::GetImageLayout(barrier.oldLayout);
-    		vkBarrier.newLayout = VulkanTypes::GetImageLayout(barrier.newLayout);
-    		vkBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    		vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    		vkBarrier.image = VULKAN_CAST(Image, barrier.image);
-    		vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
-    		vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.mipLevel;
-    		vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
-    		vkBarrier.subresourceRange.layerCount = barrier.subresourceRange.layerCount;
-    	}
+		    vkBarrier.oldLayout = VulkanTypes::GetImageLayout(barrier.oldLayout);
+		    vkBarrier.newLayout = VulkanTypes::GetImageLayout(barrier.newLayout);
+		    vkBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		    vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		    vkBarrier.image = VULKAN_CAST(Image, barrier.image);
+		    vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
+		    vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.mipLevel;
+		    vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
+		    vkBarrier.subresourceRange.layerCount = barrier.subresourceRange.layerCount;
+	    }
 
-    	VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
-    		srcStageMask, dstStageMask,
-    		{}, 0, nullptr,
-    		0, nullptr,
-    		vkImageMemoryBarriers.size(), vkImageMemoryBarriers.data()
-    	);
+	    VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
+		    srcStageMask, dstStageMask,
+		    {}, 0, nullptr,
+		    0, nullptr,
+		    vkImageMemoryBarriers.size(), vkImageMemoryBarriers.data()
+	    );
     }
 
     void VulkanDriver::CmdBeginRendering(const CommandBufferID buffer, const RenderingInfo& info)
     {
 	    std::vector<vk::RenderingAttachmentInfo> attachments;
-    	attachments.reserve(info.colorAttachments.size());
+	    attachments.reserve(info.colorAttachments.size());
 
-    	for (const auto& [imageView, imageLayout, clearValue] : info.colorAttachments)
-    	{
-    		vk::RenderingAttachmentInfo attachmentInfo;
-    		attachmentInfo.imageView = VULKAN_CAST(ImageView, imageView);
-    		attachmentInfo.imageLayout = VulkanTypes::GetImageLayout(imageLayout);
-    		attachmentInfo.clearValue.color =
-			{
-				clearValue.x,
-				clearValue.y,
-				clearValue.z,
-				clearValue.w
-			};
-    		attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear;
-    		attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
+	    for (const auto& [imageView, imageLayout, clearValue] : info.colorAttachments)
+	    {
+		    vk::RenderingAttachmentInfo attachmentInfo;
+		    attachmentInfo.imageView = VULKAN_CAST(ImageView, imageView);
+		    attachmentInfo.imageLayout = VulkanTypes::GetImageLayout(imageLayout);
+		    attachmentInfo.clearValue.color =
+		    {
+			    clearValue.x,
+			    clearValue.y,
+			    clearValue.z,
+			    clearValue.w
+		    };
+		    attachmentInfo.loadOp = vk::AttachmentLoadOp::eClear;
+		    attachmentInfo.storeOp = vk::AttachmentStoreOp::eStore;
 
-    		attachments.emplace_back(attachmentInfo);
-    	}
+		    attachments.emplace_back(attachmentInfo);
+	    }
 
-    	vk::RenderingAttachmentInfo depth;
-    	depth.imageView = VULKAN_CAST(ImageView, info.depthAttachment.imageView);
-    	depth.imageLayout = VulkanTypes::GetImageLayout(info.depthAttachment.imageLayout);
-    	depth.clearValue.color =
-		{
-			info.depthAttachment.clearValue.x,
-			info.depthAttachment.clearValue.y,
-			info.depthAttachment.clearValue.z,
-			info.depthAttachment.clearValue.w
-		};
-    	depth.loadOp = vk::AttachmentLoadOp::eClear;
-    	depth.storeOp = vk::AttachmentStoreOp::eStore;
+	    vk::RenderingAttachmentInfo depth;
+	    depth.imageView = VULKAN_CAST(ImageView, info.depthAttachment.imageView);
+	    depth.imageLayout = VulkanTypes::GetImageLayout(info.depthAttachment.imageLayout);
+	    depth.clearValue.color =
+	    {
+		    info.depthAttachment.clearValue.x,
+		    info.depthAttachment.clearValue.y,
+		    info.depthAttachment.clearValue.z,
+		    info.depthAttachment.clearValue.w
+	    };
+	    depth.loadOp = vk::AttachmentLoadOp::eClear;
+	    depth.storeOp = vk::AttachmentStoreOp::eStore;
 
-    	const vk::Rect2D extent =
-    	{
-    		static_cast<int32_t>(info.extent.width),
-    		static_cast<int32_t>(info.extent.height)
-    	};
+	    const vk::Rect2D extent =
+	    {
+		    static_cast<int32_t>(info.extent.width),
+		    static_cast<int32_t>(info.extent.height)
+	    };
 
-    	const vk::RenderingInfoKHR renderingInfo(
-			{}, extent,
-			1, {}, attachments.size(), attachments.data(),
-			&depth
-    	);
+	    const vk::RenderingInfoKHR renderingInfo(
+		    {}, extent,
+		    1, {}, attachments.size(), attachments.data(),
+		    &depth
+	    );
 
-    	VULKAN_CAST(CommandBuffer, buffer).beginRenderingKHR(renderingInfo);
+	    VULKAN_CAST(CommandBuffer, buffer).beginRenderingKHR(renderingInfo);
     }
 
     void VulkanDriver::CmdSetViewport(const CommandBufferID buffer, const Extent2D size)
     {
-    	const vk::Viewport viewport(
-    		0, 0,
-    		static_cast<float>(size.width),
-    		static_cast<float>(size.height)
-    	);
+	    const vk::Viewport viewport(
+		    0, 0,
+		    static_cast<float>(size.width),
+		    static_cast<float>(size.height)
+	    );
 
-		VULKAN_CAST(CommandBuffer, buffer).setViewport(0, 1,
-			&viewport);
+	    VULKAN_CAST(CommandBuffer, buffer).setViewport(0, 1,
+	                                                   &viewport);
     }
 
     void VulkanDriver::CmdSetScissor(const CommandBufferID buffer, Rect2D rect)
     {
-    	const vk::Rect2D scissor(
-    		{ rect.offset.x, rect.offset.y },
-    		{ rect.extent.width, rect.extent.height }
-		);
+	    const vk::Rect2D scissor(
+		    { rect.offset.x, rect.offset.y },
+		    { rect.extent.width, rect.extent.height }
+	    );
 
-    	VULKAN_CAST(CommandBuffer, buffer).setScissor(0, 1,
-			&scissor);
+	    VULKAN_CAST(CommandBuffer, buffer).setScissor(0, 1,
+	                                                  &scissor);
     }
 
     void VulkanDriver::CmdBindPipeline(const CommandBufferID buffer,
-    	const PipelineBindPoint bindPoint, const PipelineID pipeline)
+                                       const PipelineBindPoint bindPoint, const PipelineID pipeline)
     {
-		VULKAN_CAST(CommandBuffer, buffer).bindPipeline(
-			VulkanTypes::GetPipelineBindPoint(bindPoint),
-			VULKAN_CAST(Pipeline, pipeline));
+	    VULKAN_CAST(CommandBuffer, buffer).bindPipeline(
+		    VulkanTypes::GetPipelineBindPoint(bindPoint),
+		    VULKAN_CAST(Pipeline, pipeline));
     }
 
     void VulkanDriver::CmdSetCullMode(const CommandBufferID buffer, CullMode cullMode)
     {
-		VULKAN_CAST(CommandBuffer, buffer).setCullMode(VulkanTypes::GetCullModeFlags(cullMode));
+	    VULKAN_CAST(CommandBuffer, buffer).setCullMode(VulkanTypes::GetCullModeFlags(cullMode));
     }
 
     void VulkanDriver::CmdPushConstants(const CommandBufferID buffer, const PipelineLayoutID layout,
-    	const ShaderStageFlags stage, const size_t offset, const size_t size, void* values)
+                                        const ShaderStageFlags stage, const size_t offset, const size_t size, void* values)
     {
-		VULKAN_CAST(CommandBuffer, buffer).pushConstants(
-			VULKAN_CAST(PipelineLayout, layout),
-			VulkanTypes::GetShaderStageFlags(stage),
-			offset, size, values
-		);
+	    VULKAN_CAST(CommandBuffer, buffer).pushConstants(
+		    VULKAN_CAST(PipelineLayout, layout),
+		    VulkanTypes::GetShaderStageFlags(stage),
+		    offset, size, values
+	    );
     }
 
     void VulkanDriver::CmdBindDescriptorSets(const CommandBufferID buffer, const PipelineBindPoint bindPoint,
-    	const PipelineLayoutID layout, const size_t firstSet, const std::span<DescriptorSetID> sets)
+                                             const PipelineLayoutID layout, const size_t firstSet, const std::span<DescriptorSetID> sets)
     {
-		VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
-			VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),
-			static_cast<uint32_t>(firstSet), sets.size(), reinterpret_cast<vk::DescriptorSet*>(sets.data()),
-			0, nullptr
-		);
+	    VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
+		    VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),
+		    static_cast<uint32_t>(firstSet), sets.size(), reinterpret_cast<vk::DescriptorSet*>(sets.data()),
+		    0, nullptr
+	    );
     }
 
     void VulkanDriver::CmdBindVertexBuffers(const CommandBufferID buffer, const uint32_t firstBinding,
-    	const std::span<BufferID> buffers)
+                                            const std::span<BufferID> buffers)
     {
-        std::vector<vk::Buffer> vkBuffers;
-    	const std::vector<uint64_t> offsets(buffers.size(), 0);
+	    std::vector<vk::Buffer> vkBuffers;
+	    const std::vector<uint64_t> offsets(buffers.size(), 0);
 
-        vkBuffers.reserve(buffers.size());
-        for (const auto& id : buffers)
-        {
-            vkBuffers.emplace_back(reinterpret_cast<VulkanBuffer*>(id.id)->buffer);
-        }
+	    vkBuffers.reserve(buffers.size());
+	    for (const auto& id : buffers)
+	    {
+		    vkBuffers.emplace_back(reinterpret_cast<VulkanBuffer*>(id.id)->buffer);
+	    }
 
-        VULKAN_CAST(CommandBuffer, buffer).bindVertexBuffers(firstBinding, vkBuffers, offsets);
+	    VULKAN_CAST(CommandBuffer, buffer).bindVertexBuffers(firstBinding, vkBuffers, offsets);
     }
 
     void VulkanDriver::CmdBindIndexBuffer(const CommandBufferID buffer, const BufferID indexBuffer,
-        const uint64_t offset)
+                                          const uint64_t offset)
     {
-        VULKAN_CAST(CommandBuffer, buffer).bindIndexBuffer(
-            reinterpret_cast<VulkanBuffer*>(indexBuffer.id)->buffer,
-            offset,
-            vk::IndexType::eUint32
-        );
+	    VULKAN_CAST(CommandBuffer, buffer).bindIndexBuffer(
+		    reinterpret_cast<VulkanBuffer*>(indexBuffer.id)->buffer,
+		    offset,
+		    vk::IndexType::eUint32
+	    );
     }
 
     void VulkanDriver::CmdDrawIndexed(const CommandBufferID buffer, const uint32_t indexCount,
-        const uint32_t instanceCount, const uint32_t firstIndex, const int32_t vertexOffset,
-        const uint32_t firstInstance)
+                                      const uint32_t instanceCount, const uint32_t firstIndex, const int32_t vertexOffset,
+                                      const uint32_t firstInstance)
     {
-        VULKAN_CAST(CommandBuffer, buffer).drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	    VULKAN_CAST(CommandBuffer, buffer).drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
     void VulkanDriver::CmdEndRendering(const CommandBufferID buffer)
     {
-        VULKAN_CAST(CommandBuffer, buffer).endRenderingKHR();
+	    VULKAN_CAST(CommandBuffer, buffer).endRenderingKHR();
     }
 
     void VulkanDriver::TransitionImageLayout(const CommandBufferID buffer,
-    	const ImageID image, const ImageLayout oldLayout,
-	    const ImageLayout newLayout, const ImageAspect aspect)
+                                             const ImageID image, const ImageLayout oldLayout,
+                                             const ImageLayout newLayout, const ImageAspect aspect)
     {
 	    const auto vkImage = VULKAN_CAST(Image, image);
-        const vk::ImageLayout vkOldLayout = VulkanTypes::GetImageLayout(oldLayout);
-        const vk::ImageLayout vkNewLayout = VulkanTypes::GetImageLayout(newLayout);
-        const vk::ImageAspectFlags aspectMask = VulkanTypes::GetImageAspectFlags(aspect);
+	    const vk::ImageLayout vkOldLayout = VulkanTypes::GetImageLayout(oldLayout);
+	    const vk::ImageLayout vkNewLayout = VulkanTypes::GetImageLayout(newLayout);
+	    const vk::ImageAspectFlags aspectMask = VulkanTypes::GetImageAspectFlags(aspect);
 
-        vk::ImageMemoryBarrier barrier{};
-        barrier.oldLayout = vkOldLayout;
-        barrier.newLayout = vkNewLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = vkImage;
-        barrier.subresourceRange.aspectMask = aspectMask;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
+	    vk::ImageMemoryBarrier barrier{};
+	    barrier.oldLayout = vkOldLayout;
+	    barrier.newLayout = vkNewLayout;
+	    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	    barrier.image = vkImage;
+	    barrier.subresourceRange.aspectMask = aspectMask;
+	    barrier.subresourceRange.baseMipLevel = 0;
+	    barrier.subresourceRange.levelCount = 1;
+	    barrier.subresourceRange.baseArrayLayer = 0;
+	    barrier.subresourceRange.layerCount = 1;
 
-        vk::PipelineStageFlags sourceStage;
-        vk::PipelineStageFlags destinationStage;
+	    vk::PipelineStageFlags sourceStage;
+	    vk::PipelineStageFlags destinationStage;
 
-        if (vkOldLayout == vk::ImageLayout::eUndefined && vkNewLayout == vk::ImageLayout::eTransferDstOptimal) {
-            barrier.srcAccessMask = {};
-            barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+	    if (vkOldLayout == vk::ImageLayout::eUndefined && vkNewLayout == vk::ImageLayout::eTransferDstOptimal) {
+		    barrier.srcAccessMask = {};
+		    barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eTransfer;
-        }
-        else if (vkOldLayout == vk::ImageLayout::eTransferDstOptimal && vkNewLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
-            barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-            barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+		    sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+		    destinationStage = vk::PipelineStageFlagBits::eTransfer;
+	    }
+	    else if (vkOldLayout == vk::ImageLayout::eTransferDstOptimal && vkNewLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+		    barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+		    barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
 
-            sourceStage = vk::PipelineStageFlagBits::eTransfer;
-            destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
-        }
-        else if (vkOldLayout == vk::ImageLayout::eUndefined
-            && vkNewLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
-        {
-            barrier.srcAccessMask = {};
-            barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead
-                | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+		    sourceStage = vk::PipelineStageFlagBits::eTransfer;
+		    destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
+	    }
+	    else if (vkOldLayout == vk::ImageLayout::eUndefined
+	             && vkNewLayout == vk::ImageLayout::eDepthStencilAttachmentOptimal)
+	    {
+		    barrier.srcAccessMask = {};
+		    barrier.dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead
+		                            | vk::AccessFlagBits::eDepthStencilAttachmentWrite;
 
-            sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-            destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
-        }
-        else
-        {
-            LE_ASSERT(false, "Unsupported layout transition");
-        }
+		    sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+		    destinationStage = vk::PipelineStageFlagBits::eEarlyFragmentTests;
+	    }
+	    else
+	    {
+		    LE_ASSERT(false, "Unsupported layout transition");
+	    }
 
-        VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
-            sourceStage, destinationStage,
-            {},
-            0, nullptr,
-            0, nullptr,
-            1, &barrier
-        );
+	    VULKAN_CAST(CommandBuffer, buffer).pipelineBarrier(
+		    sourceStage, destinationStage,
+		    {},
+		    0, nullptr,
+		    0, nullptr,
+		    1, &barrier
+	    );
     }
 
     void VulkanDriver::CreateInstance(const std::string_view applicationName)
@@ -936,20 +942,20 @@ namespace le
 		    queueInfos.push_back(vk::DeviceQueueCreateInfo({}, m_indices.transferFamilyIndex,
 		                                                   1, &priority));
 
-    	const char* extensions[] =
-		{
-    		vk::KHRSwapchainExtensionName,
-    		vk::KHRDynamicRenderingExtensionName
-    	};
+	    const char* extensions[] =
+	    {
+		    vk::KHRSwapchainExtensionName,
+		    vk::KHRDynamicRenderingExtensionName
+	    };
 
 	    constexpr vk::PhysicalDeviceDynamicRenderingFeaturesKHR dynamicRendering(true);
 
 	    vk::DeviceCreateInfo deviceInfo;
-    	deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
-    	deviceInfo.pQueueCreateInfos = queueInfos.data();
-    	deviceInfo.enabledExtensionCount = std::size(extensions);
-    	deviceInfo.ppEnabledExtensionNames = extensions;
-    	deviceInfo.pNext = &dynamicRendering;
+	    deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueInfos.size());
+	    deviceInfo.pQueueCreateInfos = queueInfos.data();
+	    deviceInfo.enabledExtensionCount = std::size(extensions);
+	    deviceInfo.ppEnabledExtensionNames = extensions;
+	    deviceInfo.pNext = &dynamicRendering;
 
 	    m_device = m_physicalDevice.createDevice(deviceInfo);
     }

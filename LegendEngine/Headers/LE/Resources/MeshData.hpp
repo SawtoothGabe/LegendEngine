@@ -3,6 +3,8 @@
 #include <LE/Common/Types.hpp>
 #include <LE/Resources/Resource.hpp>
 
+#include <span>
+
 namespace le
 {
     class MeshData : public Resource
@@ -23,8 +25,8 @@ namespace le
 
         MeshData();
 
-        size_t GetVertexCount() const;
-        size_t GetIndexCount() const;
+        [[nodiscard]] size_t GetVertexCount() const;
+        [[nodiscard]] size_t GetIndexCount() const;
 
         static Ref<MeshData> Create(std::span<Vertex3> vertices, std::span<uint32_t> indices,
             UpdateFrequency frequency);

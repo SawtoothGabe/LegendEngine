@@ -14,7 +14,7 @@ namespace le
         virtual ~ExplicitDriver() = default;
 
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
-        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, size_t count) = 0;
+        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
@@ -33,6 +33,7 @@ namespace le
         virtual QueueID GetQueue(QueueFamily family) = 0;
 
         virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
+        virtual void FreeDescriptorSets(PoolManagerID manager, DescriptorPoolID pool, size_t count, DescriptorSetID* sets) = 0;
         virtual void DestroyBuffer(BufferID buffer) = 0;
         virtual void DestroyCommandPool(CommandPoolID pool) = 0;
         virtual void DestroyLayoutPoolManager(PoolManagerID manager) = 0;

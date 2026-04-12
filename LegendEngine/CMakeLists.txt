@@ -25,6 +25,6 @@ if (LE_HEADLESS)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "Headers")
-target_link_libraries(${PROJECT_NAME} PUBLIC tether ${EXTRA_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC tether compile-shaders ${EXTRA_LIBS})
 
 add_subdirectory(Platform)

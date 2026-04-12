@@ -19,7 +19,8 @@ namespace le
         explicit PoolManager(vk::Device device, const DescriptorSetLayout& layout, size_t startSize);
         ~PoolManager();
 
-        std::vector<DescriptorSetID> Allocate(size_t count);
+        std::vector<DescriptorSetID> Allocate(DescriptorPoolID& outPool, size_t count);
+        void Free(vk::DescriptorPool pool, size_t count, DescriptorSetID* sets);
         void ResetAllPools();
     private:
         struct Pool

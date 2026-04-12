@@ -49,6 +49,7 @@ namespace le
     LE_GRAPHICS_RESOURCE_ID(Buffer);
     LE_GRAPHICS_RESOURCE_ID(CommandBuffer);
     LE_GRAPHICS_RESOURCE_ID(DescriptorSet);
+    LE_GRAPHICS_RESOURCE_ID(DescriptorPool);
     LE_GRAPHICS_RESOURCE_ID(CommandPool);
     LE_GRAPHICS_RESOURCE_ID(Fence);
     LE_GRAPHICS_RESOURCE_ID(Image);

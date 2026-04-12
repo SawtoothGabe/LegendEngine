@@ -76,7 +76,7 @@ function (le_add_shaders_target name shaders)
                     list(APPEND modules ${module_path})
                 endforeach()
             endif()
-            
+
             get_shader_dependencies(includes ${modules})
         else ()
             get_shader_dependencies(includes ${shader})

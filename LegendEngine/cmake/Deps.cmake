@@ -10,6 +10,7 @@ endfunction()
 
 function(DeclareLibs)
     DeclareGitRepo(Tether https://github.com/SawtoothGabe/Tether)
+	FetchContent_Declare(VMA GIT_REPOSITORY https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 
 	cmake_policy(SET CMP0135 NEW) # Fix DOWNLOAD_EXTRACT_TIMESTAMP warning
 	FetchContent_Declare(googletest
@@ -27,7 +28,11 @@ function(MakeLibsAvailable)
 
     if (NOT LE_TETHER_EXTERN)
         FetchContent_MakeAvailable(Tether)
-    endif()
+	endif()
+
+	if (LE_VULKAN_API)
+		FetchContent_MakeAvailable(VMA)
+	endif ()
 endfunction()
 
 DeclareLibs()
