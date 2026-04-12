@@ -42,6 +42,9 @@ Program Program::FromJson(ModuleRegistry& registry, const std::string_view path,
                 std::filesystem::path(path).filename().string(), key);
     }
 
+    if (modulePaths.empty())
+        throw std::runtime_error(std::format("shader config file \"{}\" references no modules", path));
+
     for (const auto& module : modulePaths)
     {
         const std::filesystem::path relative = jsonPath.parent_path() / module;
@@ -128,7 +131,11 @@ Program::Program(const std::string_view path, le::sh::Features features,
 std::string Program::GetHashedName(const std::string_view path)
 {
     constexpr std::hash<std::string> hasher;
+
     const std::string filename = std::filesystem::path(path).stem().string();
+    if (filename.empty())
+        throw std::runtime_error("shader filename cannot be empty");
+
     size_t hash = hasher(filename);
     return std::format("{:x}", hash);
 }

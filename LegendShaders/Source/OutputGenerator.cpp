@@ -27,6 +27,9 @@ static void AppendDXIL(std::string& output, const Program& program, slang::IComp
     comp->getEntryPointCode(entrypointIndex, 0, code.writeRef(), diagnostics.writeRef());
     SlangUtils::Diagnose(diagnostics);
 
+    if (!code)
+        throw std::runtime_error("getEntryPointCode returned nullptr code. DXIL is only available with MSVC on Windows.");
+
     output += std::format("static uint8_t SHADER_{}_ENTRYPOINT{}_DXIL[] = \n{{",
         program.GetFilenameHash(), entrypointIndex);
 

@@ -27,8 +27,35 @@ function (le_add_shaders_target name shaders)
         # Get the name of the file without path (with extension)
         get_filename_component(FILENAME ${shader} NAME)
 
+        # Get just the extension
+        get_filename_component(EXTENSION ${shader} EXT)
+
+        if (${EXTENSION} MATCHES "json")
+            get_filename_component(config_dir ${shader} DIRECTORY)
+
+            # Read JSON file
+            file(READ "${shader}" json_content)
+
+            string(JSON moduleCount LENGTH ${json_content} "modules")
+            set(modules "")
+            if(moduleCount GREATER 0)
+                math(EXPR last_index "${moduleCount} - 1")
+                foreach(i RANGE ${last_index})
+                    string(JSON item GET ${json_content} "modules" ${i})
+
+                    set(module_path "${config_dir}/${item}")
+                    get_filename_component(module_path "${module_path}" ABSOLUTE)
+                    list(APPEND modules ${module_path})
+                endforeach()
+            endif()
+        endif()
+
         add_custom_command(
-            OUTPUT "${BUILD_SHADER_DIR}/${FILENAME}.cpp"
+            OUTPUT
+                "${BUILD_SHADER_DIR}/${FILENAME}.cpp"
+            DEPENDS
+                ${shader}
+                ${modules}
             COMMAND
                 lesh
                 ${DXIL_OPTION}
