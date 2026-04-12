@@ -118,21 +118,34 @@ int main(const int argc, char* argv[])
         return -1;
     }
 
-    Slang::ComPtr<slang::IGlobalSession> globalSession;
-    slang::createGlobalSession(globalSession.writeRef());
+    if (options.inputs.empty())
+    {
+        std::println(stderr, "error: no input files specified");
+        return -1;
+    }
 
-    const Slang::ComPtr<slang::ISession> session = CreateSession(options, globalSession);
+    try
+    {
+        Slang::ComPtr<slang::IGlobalSession> globalSession;
+        slang::createGlobalSession(globalSession.writeRef());
 
-    std::vector<std::string> slangFiles;
-    std::vector<JsonFile> jsonFiles;
-    SortFiles(options, jsonFiles, slangFiles);
+        const Slang::ComPtr<slang::ISession> session = CreateSession(options, globalSession);
 
-    ModuleRegistry registry(session);
-    std::vector<Program> programs = CompilePrograms(registry, jsonFiles, slangFiles);
+        std::vector<std::string> slangFiles;
+        std::vector<JsonFile> jsonFiles;
+        SortFiles(options, jsonFiles, slangFiles);
 
-    std::string cCode = OutputGenerator::LinkProgramsAndMakeOutput(options, session, programs);
-    std::ofstream output(options.output.data());
-    output << cCode;
+        ModuleRegistry registry(session);
+        std::vector<Program> programs = CompilePrograms(registry, jsonFiles, slangFiles);
+
+        std::string cCode = OutputGenerator::LinkProgramsAndMakeOutput(options, session, programs);
+        std::ofstream output(options.output.data());
+        output << cCode;
+    }
+    catch (const std::exception& e)
+    {
+        std::println(stderr, "error: {}", e.what());
+    }
 
     return 0;
 }

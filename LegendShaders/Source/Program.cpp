@@ -107,6 +107,9 @@ Program::Program(const std::string_view path, const Slang::ComPtr<slang::IModule
     m_modules.emplace_back(module);
 
     m_entrypoints = MakeEntrypoints();
+
+    if (m_entrypoints.empty())
+        throw std::runtime_error(std::format("shader program \"{}\" has no entrypoints", path));
 }
 
 Program::Program(const std::string_view path, le::sh::Features features,
@@ -117,6 +120,9 @@ Program::Program(const std::string_view path, le::sh::Features features,
     m_modules(std::move(modules))
 {
     m_entrypoints = MakeEntrypoints();
+
+    if (m_entrypoints.empty())
+        throw std::runtime_error(std::format("shader program \"{}\" has no entrypoints", path));
 }
 
 std::string Program::GetHashedName(const std::string_view path)
