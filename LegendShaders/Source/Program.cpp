@@ -128,7 +128,7 @@ Program::Program(const std::string_view path, le::sh::Features features,
 std::string Program::GetHashedName(const std::string_view path)
 {
     constexpr std::hash<std::string> hasher;
-    const std::string filename = std::filesystem::path(path).filename().string();
+    const std::string filename = std::filesystem::path(path).stem().string();
     size_t hash = hasher(filename);
     return std::format("{:x}", hash);
 }
