@@ -62,6 +62,8 @@ namespace le
         void BeginCommandBuffer(CommandBufferID buffer, bool singleUse) override;
         void EndCommandBuffer(CommandBufferID buffer) override;
         void* GetMappedBufferData(BufferID buffer) override;
+        size_t GetBufferSize(BufferID buffer) override;
+        bool IsFenceSignaled(FenceID fence) override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

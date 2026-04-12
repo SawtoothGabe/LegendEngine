@@ -600,6 +600,16 @@ namespace le
 	    return reinterpret_cast<VulkanBuffer*>(buffer.id)->allocationInfo.pMappedData;
     }
 
+    size_t VulkanDriver::GetBufferSize(const BufferID buffer)
+    {
+    	return reinterpret_cast<VulkanBuffer*>(buffer.id)->allocationInfo.size;
+    }
+
+    bool VulkanDriver::IsFenceSignaled(const FenceID fence)
+    {
+	    return m_device.getFenceStatus(VULKAN_CAST(Fence, fence)) == vk::Result::eSuccess;
+    }
+
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
 	    std::vector<vk::BufferCopy> vkRegions(regions.size());

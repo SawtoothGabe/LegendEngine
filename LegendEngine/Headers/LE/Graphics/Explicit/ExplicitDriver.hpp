@@ -14,6 +14,7 @@ namespace le
         virtual ~ExplicitDriver() = default;
 
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
+        virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
         virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
         virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
@@ -60,6 +61,7 @@ namespace le
         virtual void EndCommandBuffer(CommandBufferID buffer) = 0;
         virtual void* GetMappedBufferData(BufferID buffer) = 0;
         virtual size_t GetBufferSize(BufferID buffer) = 0;
+        virtual bool IsFenceSignaled(FenceID fence) = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

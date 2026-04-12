@@ -41,13 +41,8 @@ namespace le
         m_buffer = m_driver.CreateBuffer(m_usage, newSize, false);
     }
 
-    std::size_t SimpleBuffer::GetSize()
+    Buffer::Desc SimpleBuffer::GetDesc() const
     {
-        return m_driver.GetBufferSize(m_buffer);
-    }
-
-    BufferID SimpleBuffer::GetBuffer()
-    {
-        return m_buffer;
+        return {m_buffer, m_driver.GetBufferSize(m_buffer)};
     }
 }
