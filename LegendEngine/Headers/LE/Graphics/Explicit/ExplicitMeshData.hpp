@@ -24,8 +24,8 @@ namespace le
         void Update(std::span<Vertex3> vertices, std::span<uint32_t> indices);
         void Resize(size_t vertexCount, size_t indexCount);
 
-        size_t GetVertexCount() const;
-        size_t GetIndexCount() const;
+        [[nodiscard]] size_t GetVertexCount() const override;
+        [[nodiscard]] size_t GetIndexCount() const override;
 
         Buffer& GetVertexBuffer() const;
         Buffer& GetIndexBuffer() const;

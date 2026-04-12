@@ -358,4 +358,6 @@ namespace le
         FRONT,
         BACK,
     };
+
+    BufferUsageFlags operator|(BufferUsageFlags lhs, BufferUsageFlags rhs);
 }

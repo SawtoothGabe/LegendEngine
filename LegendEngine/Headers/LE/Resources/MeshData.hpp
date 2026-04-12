@@ -25,8 +25,8 @@ namespace le
 
         MeshData();
 
-        [[nodiscard]] size_t GetVertexCount() const;
-        [[nodiscard]] size_t GetIndexCount() const;
+        [[nodiscard]] virtual size_t GetVertexCount() const;
+        [[nodiscard]] virtual size_t GetIndexCount() const;
 
         static Ref<MeshData> Create(std::span<Vertex3> vertices, std::span<uint32_t> indices,
             UpdateFrequency frequency);
