@@ -10,9 +10,12 @@ namespace le
         m_driver(renderer.GetDriver())
     {
         m_uniformBuffers.resize(Application::FRAMES_IN_FLIGHT);
-        m_sets.resize(Application::FRAMES_IN_FLIGHT);
+        m_sets = m_driver.AllocateDescriptorSets(
+            renderer.GetMaterialPoolManager(),
+            m_descriptorPool,
+            Application::FRAMES_IN_FLIGHT
+        );
 
-        m_driver.AllocateDescriptorSets();
         for (size_t i = 0; i < m_uniformBuffers.size(); ++i)
             m_uniformBuffers[i] = m_driver.CreateBuffer(BufferUsageFlags::UNIFORM_BUFFER,
                 sizeof(Uniforms), true);
@@ -20,7 +23,13 @@ namespace le
 
     ExplicitMaterial::~ExplicitMaterial()
     {
-        m_driver.FreeDescriptorSets();
+        m_driver.FreeDescriptorSets(
+            m_renderer.GetMaterialPoolManager(),
+            m_descriptorPool,
+            m_sets.size(),
+            m_sets.data()
+        );
+
         for (size_t i = 0; i < m_uniformBuffers.size(); ++i)
             m_driver.DestroyBuffer(m_uniformBuffers[i]);
     }

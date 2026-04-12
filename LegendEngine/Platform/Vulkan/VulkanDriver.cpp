@@ -595,6 +595,11 @@ namespace le
 	    VULKAN_CAST(CommandBuffer, buffer).end();
     }
 
+    void* VulkanDriver::GetMappedBufferData(const BufferID buffer)
+    {
+	    return reinterpret_cast<VulkanBuffer*>(buffer.id)->allocationInfo.pMappedData;
+    }
+
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
 	    std::vector<vk::BufferCopy> vkRegions(regions.size());

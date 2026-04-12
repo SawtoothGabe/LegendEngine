@@ -9,7 +9,7 @@ namespace le
     class ExplicitRenderer final : public Renderer
     {
     public:
-        ExplicitRenderer(Scope<ExplicitDriver> driver);
+        explicit ExplicitRenderer(Scope<ExplicitDriver> driver);
         ~ExplicitRenderer() override;
 
         MaterialID CreateMaterial() override;
@@ -31,6 +31,15 @@ namespace le
         void EndFrame() override;
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
+        PoolManagerID& GetMaterialPoolManager() const;
+
+        CommandPoolID GetGraphicsPool() const;
+        CommandPoolID GetTransferPool() const;
+
+        QueueID GetGraphicsQueue() const;
+        QueueID GetTransferQueue() const;
+        std::mutex& GetGraphicsMutex() const;
+        std::mutex& GetTransferMutex() const;
 
         ExplicitDriver& GetDriver() const;
     private:

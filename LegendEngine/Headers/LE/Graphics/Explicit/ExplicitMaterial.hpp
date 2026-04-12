@@ -14,6 +14,8 @@ namespace le
         ExplicitRenderer& m_renderer;
         ExplicitDriver& m_driver;
 
+        DescriptorPoolID m_descriptorPool;
+
         std::vector<BufferID> m_uniformBuffers;
         std::vector<DescriptorSetID> m_sets;
     };

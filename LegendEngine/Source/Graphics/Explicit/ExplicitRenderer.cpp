@@ -37,7 +37,7 @@ namespace le
             for (auto& deletionFunc : queue)
                 deletionFunc();
 
-        m_driver->FreeCommandBuffers();
+        m_driver->FreeCommandBuffers(m_gfxPool, m_commandBuffers.size(), m_commandBuffers.data());
 
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
@@ -62,7 +62,10 @@ namespace le
 
     ShaderID ExplicitRenderer::CreateShader()
     {
-        return ShaderID(m_driver->CreatePipeline().id);
+        PipelineInfo info;
+        // TODO: info
+
+        return ShaderID(m_driver->CreatePipeline(info).id);
     }
 
     Texture2DID ExplicitRenderer::CreateTexture2D()
@@ -129,7 +132,7 @@ namespace le
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
         m_driver->ResetCommandBuffer(buffer);
-        m_driver->BeginCommandBuffer(buffer);
+        m_driver->BeginCommandBuffer(buffer, false);
 
         m_driver->CmdBeginRendering(buffer);
 
@@ -288,7 +291,7 @@ namespace le
     {
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
-            m_inFlightFences[i] = m_driver->CreateFence();
+            m_inFlightFences[i] = m_driver->CreateFence(true);
             m_renderFinishedSemaphores[i] = m_driver->CreateSemaphore();
         }
     }
