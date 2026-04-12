@@ -588,6 +588,11 @@ namespace le
 	    LE_CHECK_RESULT(vkQueue.presentKHR(presentInfo));
     }
 
+    void VulkanDriver::QueueWaitIdle(const QueueID queue)
+    {
+	    VULKAN_CAST(Queue, queue).waitIdle();
+    }
+
     void VulkanDriver::ResetCommandBuffer(const CommandBufferID buffer)
     {
 	    VULKAN_CAST(CommandBuffer, buffer).reset();

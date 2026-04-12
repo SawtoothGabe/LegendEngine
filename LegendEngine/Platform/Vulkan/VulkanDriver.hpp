@@ -59,6 +59,7 @@ namespace le
         void ResetFences(size_t count, FenceID* fences) override;
         void QueueSubmit(QueueID queue, const SubmitInfo& info) override;
         void QueuePresent(QueueID queue, const PresentInfo& info) override;
+        void QueueWaitIdle(QueueID queue) override;
         void ResetCommandBuffer(CommandBufferID buffer) override;
         void BeginCommandBuffer(CommandBufferID buffer, bool singleUse) override;
         void EndCommandBuffer(CommandBufferID buffer) override;

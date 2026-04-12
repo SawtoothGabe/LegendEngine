@@ -56,6 +56,7 @@ namespace le
         virtual void ResetFences(size_t count, FenceID* fences) = 0;
         virtual void QueueSubmit(QueueID queue, const SubmitInfo& info) = 0;
         virtual void QueuePresent(QueueID queue, const PresentInfo& info) = 0;
+        virtual void QueueWaitIdle(QueueID queue) = 0;
         virtual void ResetCommandBuffer(CommandBufferID buffer) = 0;
         virtual void BeginCommandBuffer(CommandBufferID buffer, bool singleUse) = 0;
         virtual void EndCommandBuffer(CommandBufferID buffer) = 0;
