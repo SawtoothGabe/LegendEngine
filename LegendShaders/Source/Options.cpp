@@ -47,6 +47,14 @@ void Options::PopulateSessionInfo(
         });
     }
 
+    if (flags & CompileFlagBits::GLSL)
+    {
+        targets.push_back({
+            .format = SLANG_GLSL,
+            .profile = globalSession->findProfile("glsl_400")
+        });
+    }
+
     if (flags & CompileFlagBits::SPIRV)
     {
         targets.push_back({
@@ -57,14 +65,6 @@ void Options::PopulateSessionInfo(
         compilerOptions.push_back({
             slang::CompilerOptionName::EmitSpirvDirectly,
             {slang::CompilerOptionValueKind::Int, 1, 0, nullptr, nullptr}
-        });
-    }
-
-    if (flags & CompileFlagBits::GLSL)
-    {
-        targets.push_back({
-            .format = SLANG_GLSL,
-            .profile = globalSession->findProfile("glsl_400")
         });
     }
 

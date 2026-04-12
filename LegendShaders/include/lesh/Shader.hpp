@@ -36,6 +36,9 @@ namespace le::sh
         const char* pName = nullptr;
         size_t dxilCodeSize = 0;
         uint8_t* pDxilCode = nullptr;
+
+        // null terminated
+        const char* pGlslCode = nullptr;
     };
 
     struct ShaderInfo
@@ -47,7 +50,6 @@ namespace le::sh
         uint8_t* pSpirvCode = nullptr;
 
         // null terminated
-        const char* pGlslCode = nullptr;
         const char* pWgslCode = nullptr;
     };
 }

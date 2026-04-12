@@ -35,6 +35,20 @@ static void AppendDXIL(std::string& output, const Program& program, slang::IComp
     output += "\n};\n\n";
 }
 
+static void AppendGLSL(std::string& output, const Program& program, slang::IComponentType* comp, size_t entrypointIndex, size_t targetIndex)
+{
+    Slang::ComPtr<slang::IBlob> diagnostics;
+    Slang::ComPtr<slang::IBlob> code;
+
+    // The idea for DXIL for the most part exists in OpenGL as well, so these have to be per-entrypoint.
+    // ...and also because slang likes to generate two function called main if there are two glsl entrypoints
+    comp->getEntryPointCode(entrypointIndex, targetIndex, code.writeRef(), diagnostics.writeRef());
+    SlangUtils::Diagnose(diagnostics);
+
+    output += std::format("static const char* SHADER_{}_ENTRYPOINT{}_GLSL = R\"(\n{})\";\n\n",
+        program.GetFilenameHash(), entrypointIndex, static_cast<const char*>(code->getBufferPointer()));
+}
+
 static Slang::ComPtr<slang::IBlob> GetCode(size_t index, slang::IComponentType* comp)
 {
     Slang::ComPtr<slang::IBlob> diagnostics;
@@ -107,6 +121,13 @@ static std::string AddEntrypoints(const Options& options, std::string& output, P
             i
         );
 
+        std::string glslName;
+        if (options.flags & Options::CompileFlagBits::GLSL)
+        {
+            glslName = std::format("{}_GLSL", symbolName);
+            AppendGLSL(output, program, comp, i, options.flags & Options::CompileFlagBits::DXIL);
+        }
+
         entrypointNames += std::format("\t{},\n", symbolName);
         output += std::format("static le::sh::Entrypoint {} = \n{{\n", symbolName);
         output += std::format("\t.stage = {},\n", GetStageName(pReflection->getStage()));
@@ -117,6 +138,9 @@ static std::string AddEntrypoints(const Options& options, std::string& output, P
             output += std::format("\t.dxilCodeSize = sizeof({}_DXIL),\n", symbolName);
             output += std::format("\t.pDxilCode = {}_DXIL,\n", symbolName);
         }
+
+        if (options.flags & Options::CompileFlagBits::GLSL)
+            output += std::format("\t.pGlslCode = {},\n", glslName);
 
         output += "};\n\n";
     }
@@ -150,14 +174,11 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
 
         static_assert(static_cast<int>(Options::CompileFlagBits::DXIL) == 1);
         size_t targetIndex = options.flags & Options::CompileFlagBits::DXIL;
+        targetIndex += options.flags & Options::CompileFlagBits::GLSL ? 1 : 0;
 
         if (options.flags & Options::CompileFlagBits::SPIRV)
             AppendNextTargetBytes(output, linkedProgram, targetIndex++,
                 std::format("SHADER_{}_SPIRV", filenameHash));
-
-        if (options.flags & Options::CompileFlagBits::GLSL)
-            AppendNextTargetString(output, linkedProgram, targetIndex++,
-                std::format("SHADER_{}_GLSL", filenameHash));
 
         if (options.flags & Options::CompileFlagBits::WGSL)
             AppendNextTargetString(output, linkedProgram, targetIndex,
@@ -180,9 +201,6 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
             output += std::format("\t.spirvCodeSize = sizeof(SHADER_{}_SPIRV),\n", program.GetFilenameHash());
             output += std::format("\t.pSpirvCode = SHADER_{}_SPIRV,\n", program.GetFilenameHash());
         }
-
-        if (options.flags & Options::CompileFlagBits::GLSL)
-            output += std::format("\t.pGlslCode = SHADER_{}_GLSL,\n", program.GetFilenameHash());
 
         if (options.flags & Options::CompileFlagBits::WGSL)
             output += std::format("\t.pWgslCode = SHADER_{}_WGSL,\n", program.GetFilenameHash());

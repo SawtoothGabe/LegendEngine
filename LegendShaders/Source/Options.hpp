@@ -11,8 +11,8 @@ struct Options
     enum class CompileFlagBits
     {
         DXIL  = 1 << 0,
-        SPIRV = 1 << 1,
-        GLSL  = 1 << 2,
+        GLSL  = 1 << 1,
+        SPIRV = 1 << 2,
         WGSL  = 1 << 3,
     };
 
