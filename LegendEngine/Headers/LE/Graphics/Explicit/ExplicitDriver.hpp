@@ -59,6 +59,7 @@ namespace le
         virtual void BeginCommandBuffer(CommandBufferID buffer, bool singleUse) = 0;
         virtual void EndCommandBuffer(CommandBufferID buffer) = 0;
         virtual void* GetMappedBufferData(BufferID buffer) = 0;
+        virtual size_t GetBufferSize(BufferID buffer) = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
