@@ -6,7 +6,7 @@ Object obj;
 [[vk::binding(0, 0)]]
 ParameterBlock<Camera> cam;
 
-[[vk::binding(0, 1)]]
+[[vk::binding(0, 2)]]
 ParameterBlock<Material> mat;
 
 [shader("vertex")]

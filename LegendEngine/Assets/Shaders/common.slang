@@ -37,8 +37,6 @@ struct Light
 struct Scene
 {
     float ambientLight;
-    uint lightCount;
-    Light lights[];
 };
 
 #define OBJECT_DATA [[vk::push_constant]]
