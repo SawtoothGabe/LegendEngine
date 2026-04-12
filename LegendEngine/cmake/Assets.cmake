@@ -22,6 +22,34 @@ if (LE_WEBGPU_API)
     set(WGSL_OPTION --wgsl)
 endif ()
 
+function(get_shader_dependencies out_var)
+    set(all_deps "")
+
+    # Loop through all shader files passed as arguments
+    foreach(shader_file ${ARGN})
+        file(READ "${shader_file}" shader_content)
+
+        # Find all #include "..." lines
+        string(REGEX MATCHALL "#include[ \t]+\"([^\"]+)\"" includes "${shader_content}")
+
+        foreach(include_line ${includes})
+            string(REGEX REPLACE "#include[ \t]+\"([^\"]+)\"" "\\1" include_file "${include_line}")
+
+            # Resolve relative to shader file's directory
+            get_filename_component(shader_dir "${shader_file}" DIRECTORY)
+            set(include_path "${shader_dir}/${include_file}")
+            get_filename_component(include_path "${include_path}" ABSOLUTE)
+
+            list(APPEND all_deps "${include_path}")
+        endforeach()
+    endforeach()
+
+    # Remove duplicates
+    list(REMOVE_DUPLICATES all_deps)
+
+    set(${out_var} ${all_deps} PARENT_SCOPE)
+endfunction()
+
 function (le_add_shaders_target name shaders)
     foreach (shader IN LISTS shaders)
         # Get the name of the file without path (with extension)
@@ -48,6 +76,10 @@ function (le_add_shaders_target name shaders)
                     list(APPEND modules ${module_path})
                 endforeach()
             endif()
+            
+            get_shader_dependencies(includes ${modules})
+        else ()
+            get_shader_dependencies(includes ${shader})
         endif()
 
         add_custom_command(
@@ -56,6 +88,7 @@ function (le_add_shaders_target name shaders)
             DEPENDS
                 ${shader}
                 ${modules}
+                ${includes}
             COMMAND
                 lesh
                 ${DXIL_OPTION}

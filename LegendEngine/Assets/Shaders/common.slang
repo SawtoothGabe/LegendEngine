@@ -40,6 +40,7 @@ struct Scene
 };
 
 #define OBJECT_DATA [[vk::push_constant]]
-#define CAMERA_SET [[vk::set(0)]]
-#define SCENE_SET [[vk::set(1)]]
-#define MATERIAL_SET [[vk::set(2)]]
+#define CAMERA_SET [[vk::binding(0, 0)]]
+#define SCENE_SET [[vk::binding(0, 1)]]
+#define SCENE_LIGHTS [[vk::binding(1, 1)]]
+#define MATERIAL_SET [[vk::binding(0, 2)]]

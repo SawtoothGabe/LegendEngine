@@ -1,12 +1,12 @@
-import common;
+#include "common.slang"
 
-[[vk::push_constant]]
+OBJECT_DATA
 Object obj;
 
-[[vk::binding(0, 0)]]
+CAMERA_SET
 ParameterBlock<Camera> cam;
 
-[[vk::binding(0, 2)]]
+MATERIAL_SET
 ParameterBlock<Material> mat;
 
 [shader("vertex")]

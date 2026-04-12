@@ -1,18 +1,18 @@
-import common;
+#include "common.slang"
 
-[[vk::push_constant]]
+OBJECT_DATA
 Object obj;
 
-[[vk::binding(0, 0)]]
+CAMERA_SET
 ParameterBlock<Camera> cam;
 
-[[vk::binding(0, 1)]]
+SCENE_SET
 ParameterBlock<Scene> scene;
 
-[[vk::binding(1, 1)]]
+SCENE_LIGHTS
 StructuredBuffer<Light> lights;
 
-[[vk::binding(0, 2)]]
+MATERIAL_SET
 ParameterBlock<Material> mat;
 
 struct VSOutput
