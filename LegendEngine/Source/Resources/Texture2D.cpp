@@ -8,14 +8,15 @@ namespace le
         :
         m_Width(loader.GetWidth()),
         m_Height(loader.GetHeight()),
-        m_Channels(loader.GetChannels())
+        m_Channels(loader.GetChannels()),
+        m_renderer(Application::Get().GetGraphicsContext().GetRenderer())
     {
-        m_impl = Application::Get().GetGraphicsContext().GetRenderer().CreateTexture2D(loader);
+        m_impl = m_renderer.CreateTexture2D(loader);
     }
 
     Texture2D::~Texture2D()
     {
-        Application::Get().GetGraphicsContext().GetRenderer().DestroyTexture2D(m_impl);
+        m_renderer.DestroyTexture2D(m_impl);
     }
 
     uint64_t Texture2D::GetWidth() const
@@ -31,6 +32,16 @@ namespace le
     uint8_t Texture2D::GetChannels() const
     {
         return m_Channels;
+    }
+
+    ImageID Texture2D::GetImage() const
+    {
+        return m_renderer.GetTexture2DImage(m_impl);
+    }
+
+    ImageViewID Texture2D::GetImageView() const
+    {
+        return m_renderer.GetTexture2DImageView(m_impl);
     }
 
     Ref<Texture2D> Texture2D::Create(const TextureData& loader)

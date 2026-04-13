@@ -20,8 +20,13 @@ namespace le
 		[[nodiscard]] uint64_t GetHeight() const;
 		[[nodiscard]] uint8_t GetChannels() const;
 
+		[[nodiscard]] ImageID GetImage() const override;
+		[[nodiscard]] ImageViewID GetImageView() const override;
+
 		static Ref<Texture2D> Create(const TextureData& loader);
 	private:
+		Renderer& m_renderer;
+
 		uint64_t m_Width;
 		uint64_t m_Height;
 		uint8_t m_Channels;

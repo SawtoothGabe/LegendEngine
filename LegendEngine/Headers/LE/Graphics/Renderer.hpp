@@ -12,12 +12,13 @@ namespace le
     public:
         virtual ~Renderer() = default;
 
-        virtual MaterialID CreateMaterial() = 0;
-        virtual MeshID CreateMesh() = 0;
-        virtual ShaderID CreateShader() = 0;
-        virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
-        virtual Texture2DArrayID CreateTexture2DArray() = 0;
-        virtual RenderTargetID CreateRenderTarget(Window& window) = 0;
+        [[nodiscard]] virtual MaterialID CreateMaterial() = 0;
+        [[nodiscard]] virtual MeshID CreateMesh() = 0;
+        [[nodiscard]] virtual ShaderID CreateShader() = 0;
+        [[nodiscard]] virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
+        [[nodiscard]] virtual Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
+            const std::span<TextureData*>& textureData) = 0;
+        [[nodiscard]] virtual RenderTargetID CreateRenderTarget(Window& window) = 0;
 
         virtual void DestroyMaterial(MaterialID id) = 0;
         virtual void DestroyMesh(MeshID id) = 0;
@@ -25,6 +26,11 @@ namespace le
         virtual void DestroyTexture2D(Texture2DID id) = 0;
         virtual void DestroyTexture2DArray(Texture2DArrayID id) = 0;
         virtual void DestroyRenderTarget(RenderTargetID id) = 0;
+
+        virtual ImageID GetTexture2DImage(Texture2DID texture) = 0;
+        virtual ImageViewID GetTexture2DImageView(Texture2DID texture) = 0;
+        virtual ImageID GetTexture2DArrayImage(Texture2DArrayID texture) = 0;
+        virtual ImageViewID GetTexture2DArrayImageView(Texture2DArrayID texture) = 0;
 
         virtual void StartFrame() = 0;
         virtual void RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) = 0;

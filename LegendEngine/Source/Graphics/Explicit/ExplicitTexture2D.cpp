@@ -12,7 +12,6 @@ namespace le
             case 1: format = Format::R8_UNORM; break;
             case 2: format = Format::R8G8_UNORM; break;
             case 3: format = Format::R8G8B8_UNORM; break;
-            case 4: format = Format::R8G8B8A8_UNORM; break;
             default: format = Format::R8G8B8A8_UNORM; break;
         }
 
@@ -72,13 +71,14 @@ namespace le
         }
         m_driver.EndCommandBuffer(cmdBuffer);
 
-        const FenceID fence = m_driver.CreateFence(true);
+        FenceID fence = m_driver.CreateFence(true);
 
         SubmitInfo info;
         info.commandBuffer = cmdBuffer;
         info.fence = fence;
 
         m_driver.QueueSubmit(queue, info);
+        m_driver.WaitForFences(1, &fence);
         m_driver.DestroyFence(fence);
         m_driver.FreeCommandBuffers(commandPool, 1, &cmdBuffer);
         m_driver.DestroyBuffer(stagingBuffer);
