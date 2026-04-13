@@ -17,7 +17,7 @@ namespace le
         );
 
         for (size_t i = 0; i < m_uniformBuffers.size(); ++i)
-            m_uniformBuffers[i] = m_driver.CreateBuffer(BufferUsageFlags::UNIFORM_BUFFER,
+            m_uniformBuffers[i] = m_driver.CreateBuffer(BufferUsageFlagBits::UNIFORM_BUFFER,
                 sizeof(Uniforms), true);
     }
 

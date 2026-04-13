@@ -27,9 +27,9 @@ namespace le
 
             const CommandBufferID c = buffers.front();
 
-            const BufferID vertexStager = driver.CreateBuffer(BufferUsageFlags::TRANSFER_SRC,
+            const BufferID vertexStager = driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC,
                 vertexSize, true);
-            const BufferID indexStager = driver.CreateBuffer(BufferUsageFlags::TRANSFER_SRC,
+            const BufferID indexStager = driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC,
                 indexSize, true);
 
             memcpy(driver.GetMappedBufferData(vertexStager), vertices.data(), vertexSize);
@@ -124,24 +124,24 @@ namespace le
             case UpdateFrequency::UPDATES_ONCE:
             {
                 m_vertexBuffer = std::make_unique<SimpleBuffer>(renderer,
-                    BufferUsageFlags::VERTEX_BUFFER | BufferUsageFlags::TRANSFER_DST, vertexSize);
+                    BufferUsageFlagBits::VERTEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
                 m_indexBuffer = std::make_unique<SimpleBuffer>(renderer,
-                    BufferUsageFlags::INDEX_BUFFER | BufferUsageFlags::TRANSFER_DST, vertexSize);
+                    BufferUsageFlagBits::INDEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
             }
             break;
 
             case UpdateFrequency::UPDATES_OCCASIONALLY:
             {
-                m_vertexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlags::VERTEX_BUFFER);
-                m_indexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlags::INDEX_BUFFER);
+                m_vertexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlagBits::VERTEX_BUFFER);
+                m_indexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlagBits::INDEX_BUFFER);
             }
             break;
 
             case UpdateFrequency::UPDATES_OFTEN:
             {
-                m_vertexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlags::VERTEX_BUFFER,
+                m_vertexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlagBits::VERTEX_BUFFER,
                     vertexSize);
-                m_indexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlags::INDEX_BUFFER,
+                m_indexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlagBits::INDEX_BUFFER,
                     indexSize);
             }
             break;

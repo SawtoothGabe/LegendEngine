@@ -19,7 +19,7 @@ namespace le
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
         CommandBufferID AllocateCommandBuffer(CommandPoolID pool) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) override;
-        BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
+        BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
         PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) override;
         FenceID CreateFence(bool signaled) override;
@@ -66,6 +66,7 @@ namespace le
         void* GetMappedBufferData(BufferID buffer) override;
         size_t GetBufferSize(BufferID buffer) override;
         bool IsFenceSignaled(FenceID fence) override;
+        SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
@@ -80,7 +81,7 @@ namespace le
             PipelineID pipeline) override;
         void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) override;
         void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
-            ShaderStageFlags stage, size_t offset, size_t size, void* values) override;
+            ShaderStageFlagBits stage, size_t offset, size_t size, void* values) override;
         void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) override;
         void CmdBindVertexBuffers(CommandBufferID buffer, uint32_t firstBinding, std::span<BufferID> buffers) override;

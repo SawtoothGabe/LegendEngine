@@ -16,7 +16,7 @@ namespace le
         virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
         virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
         virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
-        virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
+        virtual BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) = 0;
         virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
         virtual FenceID CreateFence(bool signaled) = 0;
@@ -63,6 +63,8 @@ namespace le
         virtual void* GetMappedBufferData(BufferID buffer) = 0;
         virtual size_t GetBufferSize(BufferID buffer) = 0;
         virtual bool IsFenceSignaled(FenceID fence) = 0;
+        virtual SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) = 0;
+        virtual FormatProperties GetFormatProperties() = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
@@ -77,7 +79,7 @@ namespace le
             PipelineID pipeline) = 0;
         virtual void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) = 0;
         virtual void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
-            ShaderStageFlags stage, size_t offset, size_t size, void* values) = 0;
+            ShaderStageFlagBits stage, size_t offset, size_t size, void* values) = 0;
         virtual void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) = 0;
         virtual void CmdBindVertexBuffers(CommandBufferID buffer, uint32_t firstBinding, std::span<BufferID> buffers) = 0;

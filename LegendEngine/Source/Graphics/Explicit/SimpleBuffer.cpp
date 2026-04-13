@@ -2,7 +2,7 @@
 
 namespace le
 {
-    SimpleBuffer::SimpleBuffer(const ExplicitRenderer& renderer, const BufferUsageFlags usage, const size_t size)
+    SimpleBuffer::SimpleBuffer(const ExplicitRenderer& renderer, const BufferUsageFlagBits usage, const size_t size)
         :
         m_driver(renderer.GetDriver()),
         m_usage(usage)

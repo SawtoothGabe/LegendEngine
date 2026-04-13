@@ -8,7 +8,7 @@ namespace le
     class SimpleBuffer : public Buffer
     {
     public:
-        SimpleBuffer(const ExplicitRenderer& renderer, BufferUsageFlags usage, size_t size);
+        SimpleBuffer(const ExplicitRenderer& renderer, BufferUsageFlagBits usage, size_t size);
         ~SimpleBuffer() override;
 
         void Update(std::size_t size, std::size_t offset, const void* data) override;
@@ -19,6 +19,6 @@ namespace le
         ExplicitDriver& m_driver;
 
         BufferID m_buffer;
-        BufferUsageFlags m_usage;
+        BufferUsageFlagBits m_usage;
     };
 }

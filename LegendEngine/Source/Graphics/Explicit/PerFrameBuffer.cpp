@@ -3,7 +3,7 @@
 
 namespace le
 {
-    PerFrameBuffer::PerFrameBuffer(const ExplicitRenderer& renderer, const BufferUsageFlags usage, const size_t size)
+    PerFrameBuffer::PerFrameBuffer(const ExplicitRenderer& renderer, const BufferUsageFlagBits usage, const size_t size)
         :
         m_driver(renderer.GetDriver()),
         m_size(size),

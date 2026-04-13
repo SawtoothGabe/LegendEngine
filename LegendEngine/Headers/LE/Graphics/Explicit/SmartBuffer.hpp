@@ -10,7 +10,7 @@ namespace le
     class SmartBuffer : public Buffer
     {
     public:
-        SmartBuffer(const ExplicitRenderer& renderer, BufferUsageFlags usage);
+        SmartBuffer(const ExplicitRenderer& renderer, BufferUsageFlagBits usage);
         ~SmartBuffer() override;
 
         void Update(std::size_t size, std::size_t offset, const void* data) override;
@@ -30,7 +30,7 @@ namespace le
 
         ExplicitDriver& m_driver;
         QueueID m_queue;
-        BufferUsageFlags m_usage;
+        BufferUsageFlagBits m_usage;
 
         BufferDesc m_buffer1;
         BufferDesc m_buffer2;

@@ -2,14 +2,14 @@
 
 namespace le
 {
-    VmaAllocationCreateFlags VulkanTypes::GetVmaFlags(const BufferUsageFlags usage, const bool mapped)
+    VmaAllocationCreateFlags VulkanTypes::GetVmaFlags(const BufferUsageFlagBits usage, const bool mapped)
     {
         VmaAllocationCreateFlags flags;
         switch (usage)
         {
-            case BufferUsageFlags::TRANSFER_SRC:
-            case BufferUsageFlags::UNIFORM_BUFFER:
-            case BufferUsageFlags::STORAGE_BUFFER:
+            case BufferUsageFlagBits::TRANSFER_SRC:
+            case BufferUsageFlagBits::UNIFORM_BUFFER:
+            case BufferUsageFlagBits::STORAGE_BUFFER:
             {
                 flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
             }
@@ -26,17 +26,7 @@ namespace le
 
     VkFormat VulkanTypes::GetFormat(const Format format)
     {
-        switch (format)
-        {
-            case Format::R8: return VK_FORMAT_R8_SRGB;
-            case Format::R8G8: return VK_FORMAT_R8G8_SRGB;
-            case Format::R8G8B8: return VK_FORMAT_R8G8B8_SRGB;
-            case Format::R8G8B8A8: return VK_FORMAT_R8G8B8A8_SRGB;
-            case Format::R32G32B32_FLOAT: return VK_FORMAT_R32G32B32_SFLOAT;
-        }
-
-        LE_ASSERT(false, "Unknown image format");
-        return VK_FORMAT_UNDEFINED;
+        return static_cast<VkFormat>(format);
     }
 
     vk::Format VulkanTypes::GetVkFormat(const Format format)
@@ -44,20 +34,20 @@ namespace le
         return static_cast<vk::Format>(GetFormat(format));
     }
 
-    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlag(ShaderStageFlags stage)
+    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlag(ShaderStageFlagBits stage)
     {
         switch (stage)
         {
-            case ShaderStageFlags::VERTEX: return vk::ShaderStageFlagBits::eVertex;
-            case ShaderStageFlags::FRAGMENT: return vk::ShaderStageFlagBits::eFragment;
-            case ShaderStageFlags::ALL: return vk::ShaderStageFlagBits::eAll;
+            case ShaderStageFlagBits::VERTEX: return vk::ShaderStageFlagBits::eVertex;
+            case ShaderStageFlagBits::FRAGMENT: return vk::ShaderStageFlagBits::eFragment;
+            case ShaderStageFlagBits::ALL: return vk::ShaderStageFlagBits::eAll;
         }
 
         LE_ASSERT(false, "Unknown shader stage");
         return vk::ShaderStageFlagBits::eAll;
     }
 
-    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlags(ShaderStageFlags stage)
+    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlags(ShaderStageFlagBits stage)
     {
         return static_cast<vk::ShaderStageFlagBits>(stage);
     }
@@ -133,6 +123,8 @@ namespace le
             case PipelineStage::TOP_OF_PIPE: return vk::PipelineStageFlagBits::eTopOfPipe;
             case PipelineStage::TRANSFER: return vk::PipelineStageFlagBits::eTransfer;
             case PipelineStage::FRAGMENT_SHADER: return vk::PipelineStageFlagBits::eFragmentShader;
+            case PipelineStage::BOTTOM_OF_PIPE: return vk::PipelineStageFlagBits::eBottomOfPipe;
+            case PipelineStage::COLOR_ATTACHMENT_OUTPUT: return vk::PipelineStageFlagBits::eColorAttachmentOutput;
         }
 
         LE_ASSERT(false, "Unknown pipeline stage");
@@ -164,6 +156,7 @@ namespace le
             case ImageLayout::TRANSFER_DST_OPTIMAL: return vk::ImageLayout::eTransferDstOptimal;
             case ImageLayout::READ_ONLY_OPTIMAL: return vk::ImageLayout::eReadOnlyOptimal;
             case ImageLayout::PRESENT_SRC: return vk::ImageLayout::ePresentSrcKHR;
+            case ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
         }
 
         LE_ASSERT(false, "Unknown image layout");
@@ -193,5 +186,19 @@ namespace le
 
         LE_ASSERT(false, "Unknown cull mode");
         return vk::CullModeFlagBits::eNone;
+    }
+
+    vk::AccessFlags VulkanTypes::GetAccessFlags(AccessFlags accessFlags)
+    {
+        vk::AccessFlags accessFlag;
+
+        if (accessFlags & AccessFlagBits::COLOR_ATTACHMENT_WRITE)
+            accessFlag |= vk::AccessFlagBits::eColorAttachmentWrite;
+        if (accessFlags & AccessFlagBits::SHADER_READ_BIT)
+            accessFlag |= vk::AccessFlagBits::eShaderRead;
+        if (accessFlags & AccessFlagBits::TRANSFER_WRITE_BIT)
+            accessFlag |= vk::AccessFlagBits::eTransferWrite;
+
+        return accessFlag;
     }
 }

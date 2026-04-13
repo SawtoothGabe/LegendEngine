@@ -10,6 +10,8 @@ namespace le
     public:
         explicit ExplicitMaterial(ExplicitRenderer& renderer);
         ~ExplicitMaterial() override;
+
+
     private:
         ExplicitRenderer& m_renderer;
         ExplicitDriver& m_driver;

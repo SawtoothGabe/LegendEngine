@@ -4,7 +4,7 @@
 
 namespace le
 {
-    SmartBuffer::SmartBuffer(const ExplicitRenderer& renderer, const BufferUsageFlags usage)
+    SmartBuffer::SmartBuffer(const ExplicitRenderer& renderer, const BufferUsageFlagBits usage)
         :
         m_driver(renderer.GetDriver()),
         m_queue(renderer.GetTransferQueue()),
@@ -113,7 +113,7 @@ namespace le
     BufferID SmartBuffer::CreateBuffer(BufferDesc& target, const size_t size) const
     {
         const BufferID buffer = m_driver.CreateBuffer(
-            m_usage | BufferUsageFlags::TRANSFER_DST, size, false);
+            m_usage | BufferUsageFlagBits::TRANSFER_DST, size, false);
 
         target.buffer = buffer.id;
         target.size = size;

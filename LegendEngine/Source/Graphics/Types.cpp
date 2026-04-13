@@ -2,8 +2,8 @@
 
 namespace le
 {
-    BufferUsageFlags operator|(BufferUsageFlags lhs, BufferUsageFlags rhs)
+    BufferUsageFlagBits operator|(BufferUsageFlagBits lhs, BufferUsageFlagBits rhs)
     {
-        return static_cast<BufferUsageFlags>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
+        return static_cast<BufferUsageFlagBits>(static_cast<uint32_t>(lhs) | static_cast<uint32_t>(rhs));
     }
 }

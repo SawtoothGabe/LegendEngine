@@ -103,7 +103,7 @@ namespace le
 	    return pManager->Allocate(outPool, count);
     }
 
-    BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
+    BufferID VulkanDriver::CreateBuffer(BufferUsageFlagBits flags, const std::size_t size, const bool createMapped)
     {
 	    VkBufferCreateInfo bufferInfo{};
 	    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -304,9 +304,9 @@ namespace le
 		    vk::ShaderStageFlags vkStage;
 		    switch (stage)
 		    {
-			    case ShaderStageFlags::VERTEX: vkStage = vk::ShaderStageFlagBits::eVertex; break;
-			    case ShaderStageFlags::FRAGMENT: vkStage = vk::ShaderStageFlagBits::eFragment; break;
-			    case ShaderStageFlags::ALL: vkStage = vk::ShaderStageFlagBits::eAll; break;
+			    case ShaderStageFlagBits::VERTEX: vkStage = vk::ShaderStageFlagBits::eVertex; break;
+			    case ShaderStageFlagBits::FRAGMENT: vkStage = vk::ShaderStageFlagBits::eFragment; break;
+			    case ShaderStageFlagBits::ALL: vkStage = vk::ShaderStageFlagBits::eAll; break;
 		    }
 
 		    vkRanges.emplace_back(
@@ -627,6 +627,19 @@ namespace le
 	    return m_device.getFenceStatus(VULKAN_CAST(Fence, fence)) == vk::Result::eSuccess;
     }
 
+    SurfaceCapabilities VulkanDriver::GetSurfaceCapabilities(SurfaceID surface)
+    {
+    	const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
+    		m_physicalDevice.getSurfaceCapabilitiesKHR(VULKAN_CAST(SurfaceKHR, surface));
+
+    	return {
+    		.currentExtent = {
+    			surfaceCapabilities.currentExtent.width,
+    			surfaceCapabilities.currentExtent.height,
+    		}
+    	};
+    }
+
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
 	    std::vector<vk::BufferCopy> vkRegions(regions.size());
@@ -661,7 +674,7 @@ namespace le
 		    regionCopy.bufferRowLength = region.bufferRowLength;
 		    regionCopy.bufferImageHeight = region.bufferImageHeight;
 		    regionCopy.imageSubresource.aspectMask     = VulkanTypes::GetImageAspectFlags(region.imageSubresource.aspect);
-		    regionCopy.imageSubresource.mipLevel       = region.imageSubresource.mipLevel;
+		    regionCopy.imageSubresource.mipLevel       = region.imageSubresource.baseMipLevel;
 		    regionCopy.imageSubresource.baseArrayLayer = region.imageSubresource.baseArrayLayer;
 		    regionCopy.imageSubresource.layerCount     = region.imageSubresource.layerCount;
 		    regionCopy.imageOffset.x = region.imageOffset.x;
@@ -692,13 +705,17 @@ namespace le
 		    const ImageMemoryBarrier& barrier = imageMemoryBarriers[i];
 		    vk::ImageMemoryBarrier& vkBarrier = vkImageMemoryBarriers[i];
 
+	    	ImageSubresourceRange
+
 		    vkBarrier.oldLayout = VulkanTypes::GetImageLayout(barrier.oldLayout);
 		    vkBarrier.newLayout = VulkanTypes::GetImageLayout(barrier.newLayout);
+	    	vkBarrier.srcAccessMask = VulkanTypes::GetAccessFlags(barrier.srcAccessMask);
+	    	vkBarrier.dstAccessMask = VulkanTypes::GetAccessFlags(barrier.dstAccessMask);
 		    vkBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		    vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		    vkBarrier.image = VULKAN_CAST(Image, barrier.image);
 		    vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
-		    vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.mipLevel;
+		    vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.baseMipLevel;
 		    vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
 		    vkBarrier.subresourceRange.layerCount = barrier.subresourceRange.layerCount;
 	    }
@@ -799,7 +816,7 @@ namespace le
     }
 
     void VulkanDriver::CmdPushConstants(const CommandBufferID buffer, const PipelineLayoutID layout,
-                                        const ShaderStageFlags stage, const size_t offset, const size_t size, void* values)
+                                        const ShaderStageFlagBits stage, const size_t offset, const size_t size, void* values)
     {
 	    VULKAN_CAST(CommandBuffer, buffer).pushConstants(
 		    VULKAN_CAST(PipelineLayout, layout),
