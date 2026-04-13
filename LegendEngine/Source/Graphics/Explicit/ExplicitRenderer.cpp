@@ -1,9 +1,8 @@
 #include <LE/Application.hpp>
 #include <LE/Graphics/Explicit/ExplicitMaterial.hpp>
-#include <LE/Graphics/Explicit/ExplicitMeshData.hpp>
+#include <LE/Graphics/Explicit/ExplicitMesh.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
-#include <LE/Graphics/Explicit/ExplicitShader.hpp>
 #include <LE/Graphics/Explicit/ExplicitTexture2D.hpp>
 #include <LE/Graphics/Explicit/ExplicitTexture2DArray.hpp>
 
@@ -16,6 +15,7 @@ namespace le
         LE_INFO("Creating ExplicitRenderer");
 
         m_gfxPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
+        m_depthFormat = m_driver->FindDepthFormat();
 
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
@@ -46,6 +46,7 @@ namespace le
         }
 
         m_driver->DestroyCommandPool(m_gfxPool);
+        m_driver->DestroyPipelineLayout(m_pipelineLayout);
 
         LE_INFO("Destroyed ExplicitRenderer");
     }
@@ -57,13 +58,44 @@ namespace le
 
     MeshID ExplicitRenderer::CreateMesh()
     {
-        return MeshID(new ExplicitMeshData());
+        return MeshID(new ExplicitMesh());
     }
 
-    ShaderID ExplicitRenderer::CreateShader()
+    ShaderID ExplicitRenderer::CreateShader(const sh::ShaderInfo& shaderInfo)
     {
+        std::vector<VertexBinding> bindings;
+        std::vector<VertexAttribute> attributes;
+
+        // Vertex3
+        {
+            bindings.push_back({
+                .binding = 0,
+                .stride = sizeof(MeshData::Vertex3),
+                .inputRate = InputRate::VERTEX
+            });
+
+            attributes.push_back({
+                .location = 0,
+                .binding = 0,
+                .offset = offsetof(MeshData::Vertex3, position),
+                .format = Format::R32G32B32_SFLOAT,
+            });
+
+            attributes.push_back({
+                .location = 1,
+                .binding = 0,
+                .offset = offsetof(MeshData::Vertex3, texcoord),
+                .format = Format::R32G32_SFLOAT,
+            });
+        }
+
         PipelineInfo info;
-        // TODO: info
+        info.colorAttachmentFormats = std::span(&COLOR_FORMAT, 1);
+        info.depthFormat = m_depthFormat;
+        info.layout = m_pipelineLayout;
+        info.shaderInfo = shaderInfo;
+        info.vertexBindings = bindings;
+        info.vertexAttributes = attributes;
 
         return ShaderID(m_driver->CreatePipeline(info).id);
     }
@@ -90,7 +122,7 @@ namespace le
 
     void ExplicitRenderer::DestroyMesh(MeshID id)
     {
-        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitMeshData*>(id.id); });
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitMesh*>(id.id); });
     }
 
     void ExplicitRenderer::DestroyShader(ShaderID id)

@@ -14,7 +14,7 @@ namespace le
 
         [[nodiscard]] virtual MaterialID CreateMaterial() = 0;
         [[nodiscard]] virtual MeshID CreateMesh() = 0;
-        [[nodiscard]] virtual ShaderID CreateShader() = 0;
+        [[nodiscard]] virtual ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) = 0;
         [[nodiscard]] virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
         [[nodiscard]] virtual Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData) = 0;

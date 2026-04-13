@@ -11,7 +11,7 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(const ExplicitRenderer& renderer, Format depthFormat, Window& window);
+        explicit ExplicitRenderTarget(const ExplicitRenderer& renderer, Format colorFormat, Format depthFormat, Window& window);
         ~ExplicitRenderTarget() override;
 
         void SetClearColor(Color clearColor);
@@ -50,6 +50,7 @@ namespace le
         SwapchainID m_swapchain;
         Extent2D m_extent;
 
+        Format m_colorFormat;
         Format m_depthFormat;
 
         uint32_t m_imageIndex = 0;

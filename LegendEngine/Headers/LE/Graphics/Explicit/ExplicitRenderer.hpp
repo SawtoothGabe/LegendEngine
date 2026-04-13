@@ -12,12 +12,13 @@ namespace le
         explicit ExplicitRenderer(Scope<ExplicitDriver> driver);
         ~ExplicitRenderer() override;
 
-        MaterialID CreateMaterial() override;
-        MeshID CreateMesh() override;
-        ShaderID CreateShader() override;
-        Texture2DID CreateTexture2D() override;
-        Texture2DArrayID CreateTexture2DArray() override;
-        RenderTargetID CreateRenderTarget(Window& window) override;
+        [[nodiscard]] MaterialID CreateMaterial() override;
+        [[nodiscard]] MeshID CreateMesh() override;
+        [[nodiscard]] ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) override;
+        [[nodiscard]] Texture2DID CreateTexture2D(const TextureData& loader) override;
+        [[nodiscard]] Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
+            const std::span<TextureData*>& textureData) override;
+        [[nodiscard]] RenderTargetID CreateRenderTarget(Window& window) override;
 
         void DestroyMaterial(MaterialID id) override;
         void DestroyMesh(MeshID id) override;
@@ -31,20 +32,28 @@ namespace le
         void EndFrame() override;
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
-        PoolManagerID& GetMaterialPoolManager() const;
+        [[nodiscard]] PoolManagerID& GetMaterialPoolManager() const;
 
-        CommandPoolID GetGraphicsPool() const;
-        CommandPoolID GetTransferPool() const;
+        [[nodiscard]] CommandPoolID GetGraphicsPool() const;
+        [[nodiscard]] CommandPoolID GetTransferPool() const;
 
-        QueueID GetGraphicsQueue() const;
-        QueueID GetTransferQueue() const;
-        std::mutex& GetGraphicsMutex() const;
-        std::mutex& GetTransferMutex() const;
+        [[nodiscard]] QueueID GetGraphicsQueue() const;
+        [[nodiscard]] QueueID GetTransferQueue() const;
+        [[nodiscard]] std::mutex& GetGraphicsMutex() const;
+        [[nodiscard]] std::mutex& GetTransferMutex() const;
 
-        ExplicitDriver& GetDriver() const;
+        ImageID GetTexture2DImage(Texture2DID texture) override;
+        ImageViewID GetTexture2DImageView(Texture2DID texture) override;
+        ImageID GetTexture2DArrayImage(Texture2DArrayID texture) override;
+        ImageViewID GetTexture2DArrayImageView(Texture2DArrayID texture) override;
+
+        [[nodiscard]] ExplicitDriver& GetDriver() const;
     private:
+        static constexpr auto COLOR_FORMAT = Format::B8G8R8A8_SRGB;
+
         void CreateCommandBuffers();
         void CreateSyncObjects();
+        void CreatePipelineLayout();
 
         void ProcessDeletionQueue();
 
@@ -54,8 +63,11 @@ namespace le
 
         Scope<ExplicitDriver> m_driver;
         CommandPoolID m_gfxPool;
+        Format m_depthFormat;
 
         bool m_vsync = false;
+
+        PipelineLayoutID m_pipelineLayout;
 
         std::vector<CommandBufferID> m_commandBuffers;
         std::vector<FenceID> m_inFlightFences;

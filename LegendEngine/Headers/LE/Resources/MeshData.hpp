@@ -20,7 +20,7 @@ namespace le
         struct Vertex3
         {
             float position[3];
-            float texcoord[3];
+            float texcoord[2];
         };
 
         MeshData();

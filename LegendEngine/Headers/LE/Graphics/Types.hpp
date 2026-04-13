@@ -1,40 +1,41 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
-#include <string>
 #include <span>
+#include <string>
+#include <LE/Common/Enums.hpp>
 #include <LE/Math/Types.hpp>
+#include <lesh/Shader.hpp>
 
 namespace le
 {
 #define LE_GRAPHICS_RESOURCE_ID(name) \
-    struct name##ID \
-    { \
-        uint64_t id = 0; \
-        name##ID() = default; \
-        explicit name##ID(uint64_t id) : id(id) {} \
-        explicit name##ID(void* ptr) : id(reinterpret_cast<uint64_t>(ptr)) {} \
-        name##ID(const name##ID& other) : id(other.id) {} \
-        explicit operator bool() const \
-        { \
-            return id != 0; \
-        } \
-        name##ID& operator=(const name##ID& other) \
-        { \
-            id = other.id; \
-            return *this; \
-        } \
-        bool operator==(const name##ID& other) \
-        { \
-            return id == other.id; \
-        }\
-        bool operator!=(const name##ID& other) \
-        { \
-            return id != other.id; \
-        } \
-        \
-    }
+struct name##ID \
+{ \
+uint64_t id = 0; \
+name##ID() = default; \
+explicit name##ID(uint64_t id) : id(id) {} \
+explicit name##ID(void* ptr) : id(reinterpret_cast<uint64_t>(ptr)) {} \
+name##ID(const name##ID& other) : id(other.id) {} \
+explicit operator bool() const \
+{ \
+return id != 0; \
+} \
+name##ID& operator=(const name##ID& other) \
+{ \
+id = other.id; \
+return *this; \
+} \
+bool operator==(const name##ID& other) \
+{ \
+return id == other.id; \
+}\
+bool operator!=(const name##ID& other) \
+{ \
+return id != other.id; \
+} \
+\
+}
 
     // Graphics Resources
     LE_GRAPHICS_RESOURCE_ID(Material);
@@ -483,9 +484,9 @@ namespace le
     struct PipelineInfo
     {
         PipelineLayoutID layout;
-        std::span<Format> colorAttachmentFormats;
+        std::span<const Format> colorAttachmentFormats;
         Format depthFormat;
-        std::span<StageInfo> stages;
+        sh::ShaderInfo shaderInfo;
         std::span<VertexBinding> vertexBindings;
         std::span<VertexAttribute> vertexAttributes;
     };
@@ -496,14 +497,6 @@ namespace le
         Extent2D extent;
         SurfaceID surface;
         Format format;
-    };
-
-    struct ShaderModuleInfo
-    {
-        size_t spirvSize = 0;
-        uint8_t* spirvCode = nullptr;
-        size_t dxcSize = 0;
-        uint8_t* dxcCode = nullptr;
     };
 
     struct DescriptorSetLayoutBinding
@@ -604,12 +597,12 @@ namespace le
 
     struct BufferImageCopy
     {
-        size_t bufferOffset;
-        uint32_t bufferRowLength;
-        uint32_t bufferImageHeight;
+        size_t bufferOffset{};
+        uint32_t bufferRowLength{};
+        uint32_t bufferImageHeight{};
         ImageSubresource imageSubresource;
-        Offset3D imageOffset;
-        Extent3D imageExtent;
+        Offset3D imageOffset{};
+        Extent3D imageExtent{};
     };
 
     struct ImageMemoryBarrier
@@ -633,7 +626,7 @@ namespace le
     {
         std::span<RenderingAttachmentInfo> colorAttachments;
         RenderingAttachmentInfo depthAttachment;
-        Extent2D extent;
+        Extent2D extent{};
     };
 
     struct Rect2D
@@ -665,78 +658,9 @@ namespace le
 
     };
 
-    template <typename BitType>
-    class Flags
-    {
-    public:
-        using MaskType = std::underlying_type_t<BitType>;
-
-        constexpr Flags() noexcept = default;
-        constexpr Flags(const Flags& rhs) noexcept = default;
-
-        constexpr Flags(BitType bit) noexcept
-            :
-            m_mask(static_cast<MaskType>(bit))
-        {}
-
-        constexpr explicit Flags(MaskType flags) noexcept
-            :
-            m_mask(flags)
-        {}
-
-        auto operator<=>(const Flags&) const = default;
-
-        constexpr bool operator!() const noexcept
-        {
-            return !m_mask;
-        }
-
-        constexpr Flags operator&(const Flags& rhs) noexcept
-        {
-            return Flags(m_mask & rhs.m_mask);
-        }
-
-        constexpr Flags operator|(const Flags& rhs) const noexcept
-        {
-            return Flags(m_mask | rhs.m_mask);
-        }
-
-        constexpr Flags operator^(const Flags& rhs) const noexcept
-        {
-            return Flags(m_mask ^ rhs.m_mask);
-        }
-
-        constexpr Flags & operator=(const Flags& rhs) noexcept = default;
-        constexpr Flags & operator|=(const Flags& rhs) noexcept
-        {
-            m_mask |= rhs.m_mask;
-            return *this;
-        }
-
-        constexpr Flags & operator&=(const Flags& rhs) noexcept
-        {
-            m_mask &= rhs.m_mask;
-            return *this;
-        }
-
-        constexpr Flags & operator^=(const Flags& rhs) noexcept
-        {
-            m_mask ^= rhs.m_mask;
-            return *this;
-        }
-
-        explicit constexpr operator bool() const noexcept
-        {
-            return !!m_mask;
-        }
-
-        explicit constexpr operator MaskType() const noexcept
-        {
-            return m_mask;
-        }
-    private:
-        MaskType m_mask = 0;
-    };
+    LE_DEFINE_BITMASK(AccessFlagBits);
+    LE_DEFINE_BITMASK(BufferUsageFlagBits);
+    LE_DEFINE_BITMASK(ShaderStageFlagBits);
 
     using AccessFlags = Flags<AccessFlagBits>;
     using BufferUsageFlags = Flags<BufferUsageFlagBits>;

@@ -16,7 +16,7 @@ namespace le
         [[nodiscard]] virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
         [[nodiscard]] virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
         [[nodiscard]] virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
-        [[nodiscard]] virtual BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) = 0;
+        [[nodiscard]] virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         [[nodiscard]] virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
         [[nodiscard]] virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
         [[nodiscard]] virtual FenceID CreateFence(bool signaled) = 0;
@@ -65,6 +65,7 @@ namespace le
         virtual bool IsFenceSignaled(FenceID fence) = 0;
         virtual SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) = 0;
         virtual FormatProperties GetFormatProperties() = 0;
+        virtual Format FindDepthFormat() = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

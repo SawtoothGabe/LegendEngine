@@ -1,17 +1,17 @@
-#include <LE/Graphics/Explicit/ExplicitMeshData.hpp>
+#include <LE/Graphics/Explicit/ExplicitMesh.hpp>
 #include <LE/Graphics/Explicit/PerFrameBuffer.hpp>
 #include <LE/Graphics/Explicit/SimpleBuffer.hpp>
 #include <LE/Graphics/Explicit/SmartBuffer.hpp>
 
 namespace le
 {
-    ExplicitMeshData::ExplicitMeshData(ExplicitRenderer& renderer, const std::span<Vertex3> vertices,
+    ExplicitMesh::ExplicitMesh(ExplicitRenderer& renderer, const std::span<MeshData::Vertex3> vertices,
         const std::span<uint32_t> indices, const UpdateFrequency frequency)
         :
         m_vertexCount(vertices.size()),
         m_indexCount(indices.size())
     {
-        const size_t vertexSize = m_vertexCount * sizeof(Vertex3);
+        const size_t vertexSize = m_vertexCount * sizeof(MeshData::Vertex3);
         const size_t indexSize = m_indexCount * sizeof(uint32_t);
 
         CreateBuffer(renderer, vertexSize, indexSize, frequency);
@@ -20,12 +20,7 @@ namespace le
         {
             ExplicitDriver& driver = renderer.GetDriver();
 
-            const std::vector<CommandBufferID> buffers =
-                driver.AllocateCommandBuffers(renderer.GetTransferPool(), 1);
-            if (buffers.empty())
-                return;
-
-            const CommandBufferID c = buffers.front();
+            CommandBufferID c = driver.AllocateCommandBuffer(renderer.GetTransferPool());
 
             const BufferID vertexStager = driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC,
                 vertexSize, true);
@@ -39,23 +34,34 @@ namespace le
             {
                 BufferCopy vertexCopy;
                 vertexCopy.size = vertexSize;
-                driver.CmdCopyBuffer(c, vertexStager, m_vertexBuffer->GetBuffer(),
+                driver.CmdCopyBuffer(c, vertexStager, m_vertexBuffer->GetDesc().buffer,
                     std::span(&vertexCopy, 1));
 
                 BufferCopy indexCopy;
                 indexCopy.size = indexSize;
-                driver.CmdCopyBuffer(c, indexStager, m_indexBuffer->GetBuffer(),
+                driver.CmdCopyBuffer(c, indexStager, m_indexBuffer->GetDesc().buffer,
                     std::span(&indexCopy, 1));
             }
             driver.EndCommandBuffer(c);
 
+            FenceID fence = driver.CreateFence(true);
+
+            SubmitInfo info;
+            info.commandBuffer = c;
+            info.fence = fence;
+
             {
                 std::scoped_lock lock(renderer.GetTransferMutex());
-                driver.QueueSubmit(renderer.GetTransferQueue(), { .commandBuffer = c });
+                driver.QueueSubmit(renderer.GetTransferQueue(), info);
             }
+
+            driver.WaitForFences(1, &fence);
 
             driver.DestroyBuffer(vertexStager);
             driver.DestroyBuffer(indexStager);
+
+            driver.FreeCommandBuffers(renderer.GetTransferPool(), 1, &c);
+            driver.DestroyFence(fence);
         }
         else
         {
@@ -64,13 +70,13 @@ namespace le
         }
     }
 
-    ExplicitMeshData::ExplicitMeshData(ExplicitRenderer& renderer, const size_t initialVertexCount,
+    ExplicitMesh::ExplicitMesh(ExplicitRenderer& renderer, const size_t initialVertexCount,
         const size_t initialIndexCount, const UpdateFrequency frequency)
         :
         m_vertexCount(initialVertexCount),
         m_indexCount(initialIndexCount)
     {
-        const size_t vertexSize = m_vertexCount * sizeof(Vertex3);
+        const size_t vertexSize = m_vertexCount * sizeof(MeshData::Vertex3);
         const size_t indexSize = m_indexCount * sizeof(uint32_t);
 
         LE_ASSERT(frequency != UpdateFrequency::UPDATES_ONCE, "ExplicitMeshData made with UpdateFrequency::UPDATES_ONCE must specify vertex data");
@@ -78,45 +84,45 @@ namespace le
         CreateBuffer(renderer, vertexSize, indexSize, frequency);
     }
 
-    void ExplicitMeshData::Update(const std::span<Vertex3> vertices, const std::span<uint32_t> indices)
+    void ExplicitMesh::Update(const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices)
     {
-        m_vertexBuffer->Update(vertices.size() * sizeof(Vertex3), 0, vertices.data());
+        m_vertexBuffer->Update(vertices.size() * sizeof(MeshData::Vertex3), 0, vertices.data());
         m_indexBuffer->Update(indices.size() * sizeof(uint32_t), 0, indices.data());
 
         m_vertexCount = vertices.size();
         m_indexCount = indices.size();
     }
 
-    void ExplicitMeshData::Resize(const size_t vertexCount, const size_t indexCount)
+    void ExplicitMesh::Resize(const size_t vertexCount, const size_t indexCount)
     {
-        m_vertexBuffer->Resize(vertexCount * sizeof(Vertex3));
+        m_vertexBuffer->Resize(vertexCount * sizeof(MeshData::Vertex3));
         m_indexBuffer->Resize(indexCount * sizeof(uint32_t));
 
         m_vertexCount = vertexCount;
         m_indexCount = indexCount;
     }
 
-    size_t ExplicitMeshData::GetVertexCount() const
+    size_t ExplicitMesh::GetVertexCount() const
     {
         return m_vertexCount;
     }
 
-    size_t ExplicitMeshData::GetIndexCount() const
+    size_t ExplicitMesh::GetIndexCount() const
     {
         return m_indexCount;
     }
 
-    Buffer& ExplicitMeshData::GetVertexBuffer() const
+    Buffer& ExplicitMesh::GetVertexBuffer() const
     {
         return *m_vertexBuffer;
     }
 
-    Buffer& ExplicitMeshData::GetIndexBuffer() const
+    Buffer& ExplicitMesh::GetIndexBuffer() const
     {
         return *m_indexBuffer;
     }
 
-    void ExplicitMeshData::CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize,
+    void ExplicitMesh::CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize,
         const UpdateFrequency frequency)
     {
         switch (frequency)

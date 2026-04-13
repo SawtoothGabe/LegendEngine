@@ -4,13 +4,15 @@
 
 namespace le
 {
-    ExplicitRenderTarget::ExplicitRenderTarget(const ExplicitRenderer& renderer, Format depthFormat, Window& window)
+    ExplicitRenderTarget::ExplicitRenderTarget(const ExplicitRenderer& renderer, Format colorFormat,
+        const Format depthFormat, Window& window)
         :
         m_driver(renderer.GetDriver()),
         m_window(window),
         m_mutex(renderer.GetGraphicsMutex()),
         m_queue(renderer.GetGraphicsQueue()),
         m_commandPool(renderer.GetGraphicsPool()),
+        m_colorFormat(colorFormat),
         m_depthFormat(depthFormat)
     {
         m_frames.resize(Application::FRAMES_IN_FLIGHT);
@@ -131,7 +133,7 @@ namespace le
     void ExplicitRenderTarget::CreateSwapchain(const SurfaceCapabilities& capabilities)
     {
         SwapchainInfo info;
-        info.format = Format::B8G8R8A8_SRGB;
+        info.format = m_colorFormat;
         info.extent = m_extent = capabilities.currentExtent;
         info.surface = m_surface;
         info.vsync = m_vsync;
