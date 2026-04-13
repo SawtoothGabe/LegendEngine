@@ -174,6 +174,12 @@ namespace le
         m_driver.FreeCommandBuffers(m_commandPool, 1, &c);
     }
 
+    void ExplicitRenderTarget::CreateSemaphores()
+    {
+        for (PerFrameData& frame : m_frames)
+            frame.imageAvailableSemaphore = m_driver.CreateSemaphore();
+    }
+
     void ExplicitRenderTarget::RecreateSwapchain()
     {
         // The m_Device might still have work. Wait for it to finish before recreating the swapchain.
