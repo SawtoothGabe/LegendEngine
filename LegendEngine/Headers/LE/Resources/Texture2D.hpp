@@ -12,8 +12,8 @@ namespace le
 	class Texture2D : public Texture
 	{
 	public:
-		 Texture2D();
-	    ~Texture2D() override = default;
+		explicit Texture2D(const TextureData& loader);
+	    ~Texture2D() override;
 		LE_NO_COPY(Texture2D);
 
 		[[nodiscard]] uint64_t GetWidth() const;
@@ -25,5 +25,7 @@ namespace le
 		uint64_t m_Width;
 		uint64_t m_Height;
 		uint8_t m_Channels;
+
+		Texture2DID m_impl;
 	};
 }

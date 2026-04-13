@@ -2,6 +2,7 @@
 
 #include <LE/TetherBindings.hpp>
 #include <LE/Graphics/Types.hpp>
+#include <LE/IO/TextureData.hpp>
 #include <LE/World/Scene.hpp>
 
 namespace le
@@ -14,7 +15,7 @@ namespace le
         virtual MaterialID CreateMaterial() = 0;
         virtual MeshID CreateMesh() = 0;
         virtual ShaderID CreateShader() = 0;
-        virtual Texture2DID CreateTexture2D() = 0;
+        virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
         virtual Texture2DArrayID CreateTexture2DArray() = 0;
         virtual RenderTargetID CreateRenderTarget(Window& window) = 0;
 

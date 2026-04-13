@@ -13,25 +13,25 @@ namespace le
     public:
         virtual ~ExplicitDriver() = default;
 
-        virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
-        virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
-        virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
-        virtual BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) = 0;
-        virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
-        virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
-        virtual FenceID CreateFence(bool signaled) = 0;
-        virtual ImageID CreateImage(const ImageInfo& info) = 0;
-        virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
-        virtual PipelineID CreatePipeline(const PipelineInfo& info) = 0;
-        virtual PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
+        [[nodiscard]] virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
+        [[nodiscard]] virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
+        [[nodiscard]] virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
+        [[nodiscard]] virtual BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) = 0;
+        [[nodiscard]] virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
+        [[nodiscard]] virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
+        [[nodiscard]] virtual FenceID CreateFence(bool signaled) = 0;
+        [[nodiscard]] virtual ImageID CreateImage(const ImageInfo& info) = 0;
+        [[nodiscard]] virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;
+        [[nodiscard]] virtual PipelineID CreatePipeline(const PipelineInfo& info) = 0;
+        [[nodiscard]] virtual PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
             std::span<DescriptorSetLayoutID> layouts) = 0;
-        virtual SemaphoreID CreateSemaphore() = 0;
-        virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
-        virtual SurfaceID CreateSurface(Window& window) = 0;
-        virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
-        virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
-        virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
-        virtual QueueID GetQueue(QueueFamily family) = 0;
+        [[nodiscard]] virtual SemaphoreID CreateSemaphore() = 0;
+        [[nodiscard]] virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
+        [[nodiscard]] virtual SurfaceID CreateSurface(Window& window) = 0;
+        [[nodiscard]] virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
+        [[nodiscard]] virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
+        [[nodiscard]] virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
+        [[nodiscard]] virtual QueueID GetQueue(QueueFamily family) = 0;
 
         virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
         virtual void FreeDescriptorSets(PoolManagerID manager, DescriptorPoolID pool, size_t count, DescriptorSetID* sets) = 0;
