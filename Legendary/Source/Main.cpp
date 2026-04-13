@@ -1,6 +1,5 @@
 #include <chrono>
 #include <random>
-#include <thread>
 
 #include <LE/LegendEngine.hpp>
 
