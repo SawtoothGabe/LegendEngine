@@ -26,7 +26,7 @@ namespace le
 
         Wait();
         m_driver.DestroyBuffer(m_stagingBuffer);
-        m_driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC, targetSize, true);
+        m_stagingBuffer = m_driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC, targetSize, true);
 
         RecordCommandBuffer(target, targetSize);
     }

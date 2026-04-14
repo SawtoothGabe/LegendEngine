@@ -39,8 +39,18 @@ namespace le
         m_driver.DestroyImageView(m_view);
     }
 
+    ImageID ExplicitTexture2D::GetImage() const
+    {
+        return m_image;
+    }
+
+    ImageViewID ExplicitTexture2D::GetImageView() const
+    {
+        return m_view;
+    }
+
     void ExplicitTexture2D::Upload(const void* data, const size_t size, Extent3D extent,
-        const QueueID& queue, const CommandPoolID& commandPool) const
+                                   const QueueID& queue, const CommandPoolID& commandPool) const
     {
         const BufferID stagingBuffer = m_driver.CreateBuffer(
             BufferUsageFlagBits::TRANSFER_SRC, size, true);

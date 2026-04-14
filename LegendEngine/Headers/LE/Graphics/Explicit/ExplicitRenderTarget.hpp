@@ -1,5 +1,6 @@
 #pragma once
 
+#include <LE/Components/Camera.hpp>
 #include <LE/Graphics/RenderTarget.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
@@ -19,8 +20,10 @@ namespace le
         void InvalidateSwapchain() override;
 
         void StartRendering(const CommandBufferID& c, size_t currentFrame) const;
-        void EndRendering(const CommandBufferID& c, size_t currentFrame) const;
+        void EndRendering(const CommandBufferID& c) const;
         void EndFrame(SemaphoreID waitSemaphore);
+
+        void UpdateCameraUniforms(const Camera& camera);
 
         DescriptorSetID GetCameraSet(size_t currentFrame);
         SemaphoreID GetImageAvailableSemaphore(size_t currentFrame);
@@ -48,7 +51,7 @@ namespace le
 
         SurfaceID m_surface;
         SwapchainID m_swapchain;
-        Extent2D m_extent;
+        Extent2D m_extent{};
 
         Format m_colorFormat;
         Format m_depthFormat;

@@ -3,7 +3,7 @@
 namespace le
 {
     ExplicitTexture2DArray::ExplicitTexture2DArray(const ExplicitRenderer& renderer,
-        size_t width, size_t height, uint8_t channels,
+        const size_t width, const size_t height, const uint8_t channels,
         const std::span<TextureData*>& textureData)
         :
         m_driver(renderer.GetDriver())
@@ -40,8 +40,18 @@ namespace le
         m_driver.DestroyImageView(m_view);
     }
 
+    ImageID ExplicitTexture2DArray::GetImage() const
+    {
+        return m_image;
+    }
+
+    ImageViewID ExplicitTexture2DArray::GetImageView() const
+    {
+        return m_view;
+    }
+
     void ExplicitTexture2DArray::Upload(const std::span<TextureData*>& textureData,
-        const Extent3D extent, const QueueID& queue, const CommandPoolID& commandPool) const
+                                        const Extent3D extent, const QueueID& queue, const CommandPoolID& commandPool) const
     {
         const size_t size = extent.width * extent.height * extent.depth;
 

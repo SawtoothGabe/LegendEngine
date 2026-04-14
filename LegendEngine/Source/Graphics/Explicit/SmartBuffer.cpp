@@ -24,7 +24,7 @@ namespace le
         DestroyBuffer(m_buffer2);
     }
 
-    void SmartBuffer::Update(std::size_t size, std::size_t offset, const void* data)
+    void SmartBuffer::Update(const std::size_t size, const std::size_t offset, const void* data)
     {
         if (size == 0 || data == nullptr)
             return;

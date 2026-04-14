@@ -86,7 +86,7 @@ namespace le
         m_driver.CmdSetScissor(c, {{}, m_extent});
     }
 
-    void ExplicitRenderTarget::EndRendering(const CommandBufferID& c, const size_t currentFrame) const
+    void ExplicitRenderTarget::EndRendering(const CommandBufferID& c) const
     {
         m_driver.CmdEndRendering(c);
 
@@ -187,7 +187,7 @@ namespace le
         // The m_Device might still have work. Wait for it to finish before recreating the swapchain.
         m_driver.WaitIdle();
 
-        SurfaceCapabilities capabilities = m_driver.GetSurfaceCapabilities(m_surface);
+        const SurfaceCapabilities capabilities = m_driver.GetSurfaceCapabilities(m_surface);
         if (capabilities.currentExtent.width == 0 || capabilities.currentExtent.height == 0)
         {
             m_shouldRecreateSwapchain = false;

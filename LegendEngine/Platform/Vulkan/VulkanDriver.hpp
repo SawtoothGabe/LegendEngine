@@ -82,7 +82,7 @@ namespace le
             PipelineID pipeline) override;
         void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) override;
         void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
-            ShaderStageFlagBits stage, size_t offset, size_t size, void* values) override;
+            ShaderStageFlagBits stage, size_t offset, size_t size, const void* values) override;
         void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) override;
         void CmdBindVertexBuffers(CommandBufferID buffer, uint32_t firstBinding, std::span<BufferID> buffers) override;

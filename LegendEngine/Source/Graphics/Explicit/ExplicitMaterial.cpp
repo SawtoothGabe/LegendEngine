@@ -33,4 +33,9 @@ namespace le
         for (const auto & m_uniformBuffer : m_uniformBuffers)
             m_driver.DestroyBuffer(m_uniformBuffer);
     }
+
+    DescriptorSetID ExplicitMaterial::GetSet(const size_t frame) const
+    {
+        return m_sets[frame];
+    }
 }

@@ -12,7 +12,7 @@ namespace le
         m_CullMode = cullMode;
     }
 
-    Shader::CullMode Shader::GetCullMode() const
+    CullMode Shader::GetCullMode() const
     {
         return m_CullMode;
     }

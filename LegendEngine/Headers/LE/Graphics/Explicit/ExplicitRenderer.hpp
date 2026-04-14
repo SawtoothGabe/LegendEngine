@@ -2,6 +2,8 @@
 
 #include <LE/Graphics/Renderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
+#include <LE/Resources/Material.hpp>
+#include <LE/Resources/MeshData.hpp>
 #include <LE/Resources/Shader.hpp>
 
 namespace le
@@ -13,7 +15,10 @@ namespace le
         ~ExplicitRenderer() override;
 
         [[nodiscard]] MaterialID CreateMaterial() override;
-        [[nodiscard]] MeshID CreateMesh() override;
+        [[nodiscard]] MeshID CreateMesh(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
+            MeshData::UpdateFrequency frequency) override;
+        [[nodiscard]] MeshID CreateMesh(size_t initialVertexCount, size_t initialIndexCount,
+            MeshData::UpdateFrequency frequency) override;
         [[nodiscard]] ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) override;
         [[nodiscard]] Texture2DID CreateTexture2D(const TextureData& loader) override;
         [[nodiscard]] Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
@@ -57,9 +62,11 @@ namespace le
 
         void ProcessDeletionQueue();
 
-        void BeginScene();
-        void UseMaterial();
-        void DrawMesh();
+        void UseMaterial(const Ref<Material>& material);
+        void RenderScene(Scene& scene);
+        void BeginScene(Scene& scene);
+        static void UpdateCamera(Scene& scene, UID cameraID);
+        void DrawMesh(const Mesh& mesh, const Transform& transform);
 
         Scope<ExplicitDriver> m_driver;
         CommandPoolID m_gfxPool;
@@ -72,12 +79,15 @@ namespace le
         std::vector<CommandBufferID> m_commandBuffers;
         std::vector<FenceID> m_inFlightFences;
         std::vector<SemaphoreID> m_renderFinishedSemaphores;
+        std::vector<RenderTargetID> m_targetsRendered;
 
         std::vector<std::vector<std::function<void()>>> m_deletionQueues;
 
         DescriptorSetID m_sets[3] = {};
         bool m_haveSetsChanged = true;
         Ref<Shader> m_currentShader = nullptr;
+
+        Ref<Material> m_defaultMaterial;
 
         size_t m_currentFrame = 0;
     };

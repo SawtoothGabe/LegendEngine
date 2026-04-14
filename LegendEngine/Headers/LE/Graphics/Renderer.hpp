@@ -3,6 +3,7 @@
 #include <LE/TetherBindings.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/IO/TextureData.hpp>
+#include <LE/Resources/MeshData.hpp>
 #include <LE/World/Scene.hpp>
 
 namespace le
@@ -13,7 +14,10 @@ namespace le
         virtual ~Renderer() = default;
 
         [[nodiscard]] virtual MaterialID CreateMaterial() = 0;
-        [[nodiscard]] virtual MeshID CreateMesh() = 0;
+        [[nodiscard]] virtual MeshID CreateMesh(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
+            MeshData::UpdateFrequency frequency) = 0;
+        [[nodiscard]] virtual MeshID CreateMesh(size_t initialVertexCount, size_t initialIndexCount,
+            MeshData::UpdateFrequency frequency) = 0;
         [[nodiscard]] virtual ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) = 0;
         [[nodiscard]] virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
         [[nodiscard]] virtual Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,

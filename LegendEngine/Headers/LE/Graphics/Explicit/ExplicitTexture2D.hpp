@@ -11,6 +11,9 @@ namespace le
     public:
         ExplicitTexture2D(const ExplicitRenderer& renderer, const TextureData& loader);
         ~ExplicitTexture2D();
+
+        [[nodiscard]] ImageID GetImage() const;
+        [[nodiscard]] ImageViewID GetImageView() const;
     private:
         void Upload(const void* data, size_t size, Extent3D extent, const QueueID& queue, const CommandPoolID& commandPool) const;
 

@@ -78,7 +78,7 @@ namespace le
             PipelineID pipeline) = 0;
         virtual void CmdSetCullMode(CommandBufferID buffer, CullMode cullMode) = 0;
         virtual void CmdPushConstants(CommandBufferID buffer, PipelineLayoutID layout,
-            ShaderStageFlagBits stage, size_t offset, size_t size, void* values) = 0;
+            ShaderStageFlagBits stage, size_t offset, size_t size, const void* values) = 0;
         virtual void CmdBindDescriptorSets(CommandBufferID buffer, PipelineBindPoint bindPoint,
             PipelineLayoutID layout, size_t firstSet, std::span<DescriptorSetID> sets) = 0;
         virtual void CmdBindVertexBuffers(CommandBufferID buffer, uint32_t firstBinding, std::span<BufferID> buffers) = 0;

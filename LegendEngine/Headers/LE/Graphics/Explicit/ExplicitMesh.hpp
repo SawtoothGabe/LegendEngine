@@ -9,17 +9,10 @@ namespace le
     class ExplicitMesh final
     {
     public:
-        enum class UpdateFrequency
-        {
-            UPDATES_ONCE,
-            UPDATES_OCCASIONALLY,
-            UPDATES_OFTEN,
-        };
-
         ExplicitMesh(ExplicitRenderer& renderer, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
-            UpdateFrequency frequency);
+            MeshData::UpdateFrequency frequency);
         ExplicitMesh(ExplicitRenderer& renderer, size_t initialVertexCount, size_t initialIndexCount,
-            UpdateFrequency frequency);
+            MeshData::UpdateFrequency frequency);
 
         void Update(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices);
         void Resize(size_t vertexCount, size_t indexCount);
@@ -30,7 +23,7 @@ namespace le
         [[nodiscard]] Buffer& GetVertexBuffer() const;
         [[nodiscard]] Buffer& GetIndexBuffer() const;
     private:
-        void CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize, UpdateFrequency frequency);
+        void CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize, MeshData::UpdateFrequency frequency);
 
         Scope<Buffer> m_vertexBuffer;
         Scope<Buffer> m_indexBuffer;

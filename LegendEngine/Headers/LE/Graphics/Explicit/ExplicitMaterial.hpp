@@ -11,7 +11,7 @@ namespace le
         explicit ExplicitMaterial(ExplicitRenderer& renderer);
         ~ExplicitMaterial() override;
 
-
+        DescriptorSetID GetSet(size_t frame) const;
     private:
         ExplicitRenderer& m_renderer;
         ExplicitDriver& m_driver;

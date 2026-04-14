@@ -14,6 +14,9 @@ namespace le
             size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData);
         ~ExplicitTexture2DArray();
+
+        [[nodiscard]] ImageID GetImage() const;
+        [[nodiscard]] ImageViewID GetImageView() const;
     private:
         void Upload(const std::span<TextureData*>& textureData, Extent3D extent, const QueueID& queue,
             const CommandPoolID& commandPool) const;

@@ -814,7 +814,7 @@ namespace le
     }
 
     void VulkanDriver::CmdPushConstants(const CommandBufferID buffer, const PipelineLayoutID layout,
-                                        const ShaderStageFlagBits stage, const size_t offset, const size_t size, void* values)
+                                        const ShaderStageFlagBits stage, const size_t offset, const size_t size, const void* values)
     {
 	    VULKAN_CAST(CommandBuffer, buffer).pushConstants(
 		    VULKAN_CAST(PipelineLayout, layout),

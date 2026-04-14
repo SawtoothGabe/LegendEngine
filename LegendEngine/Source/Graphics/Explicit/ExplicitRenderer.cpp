@@ -1,4 +1,7 @@
 #include <LE/Application.hpp>
+#include <LE/Components/Camera.hpp>
+#include <LE/Components/Mesh.hpp>
+#include <LE/Components/Transform.hpp>
 #include <LE/Graphics/Explicit/ExplicitMaterial.hpp>
 #include <LE/Graphics/Explicit/ExplicitMesh.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
@@ -23,6 +26,8 @@ namespace le
 
         CreateCommandBuffers();
         CreateSyncObjects();
+
+        m_defaultMaterial = Material::Create();
 
         LE_INFO("Created ExplicitRenderer");
     }
@@ -56,9 +61,16 @@ namespace le
         return MaterialID(new ExplicitMaterial(*this));
     }
 
-    MeshID ExplicitRenderer::CreateMesh()
+    MeshID ExplicitRenderer::CreateMesh(const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices,
+        const MeshData::UpdateFrequency frequency)
     {
-        return MeshID(new ExplicitMesh());
+        return MeshID(new ExplicitMesh(*this, vertices, indices, frequency));
+    }
+
+    MeshID ExplicitRenderer::CreateMesh(const size_t initialVertexCount, const size_t initialIndexCount,
+        const MeshData::UpdateFrequency frequency)
+    {
+        return MeshID(new ExplicitMesh(*this, initialVertexCount, initialIndexCount, frequency));
     }
 
     ShaderID ExplicitRenderer::CreateShader(const sh::ShaderInfo& shaderInfo)
@@ -100,19 +112,72 @@ namespace le
         return ShaderID(m_driver->CreatePipeline(info).id);
     }
 
-    Texture2DID ExplicitRenderer::CreateTexture2D()
+    Texture2DID ExplicitRenderer::CreateTexture2D(const TextureData& loader)
     {
-        return Texture2DID(new ExplicitTexture2D());
+        return Texture2DID(new ExplicitTexture2D(*this, loader));
     }
 
-    Texture2DArrayID ExplicitRenderer::CreateTexture2DArray()
+    Texture2DArrayID ExplicitRenderer::CreateTexture2DArray(const size_t width, const size_t height,
+        const uint8_t channels, const std::span<TextureData*>& textureData)
     {
-        return Texture2DArrayID(new ExplicitTexture2DArray());
+        return Texture2DArrayID(new ExplicitTexture2DArray(*this, width, height, channels, textureData));
+    }
+
+    PoolManagerID& ExplicitRenderer::GetMaterialPoolManager() const
+    {
+
+    }
+
+    CommandPoolID ExplicitRenderer::GetGraphicsPool() const
+    {
+        return m_gfxPool;
+    }
+
+    CommandPoolID ExplicitRenderer::GetTransferPool() const {}
+    QueueID ExplicitRenderer::GetGraphicsQueue() const {}
+    QueueID ExplicitRenderer::GetTransferQueue() const {}
+    std::mutex& ExplicitRenderer::GetGraphicsMutex() const {}
+    std::mutex& ExplicitRenderer::GetTransferMutex() const {}
+
+    ImageID ExplicitRenderer::GetTexture2DImage(const Texture2DID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImage();
+    }
+
+    ImageViewID ExplicitRenderer::GetTexture2DImageView(const Texture2DID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImageView();
+    }
+
+    ImageID ExplicitRenderer::GetTexture2DArrayImage(const Texture2DArrayID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImage();
+    }
+
+    ImageViewID ExplicitRenderer::GetTexture2DArrayImageView(const Texture2DArrayID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImageView();
+    }
+
+    void ExplicitRenderer::CreatePipelineLayout()
+    {
+        PushConstantRange ranges[] = {
+            {
+                .size = sizeof(Transform),
+                .offset = 0,
+                .stage = ShaderStageFlagBits::VERTEX
+            }
+        };
+
+
+
+        m_pipelineLayout = m_driver->CreatePipelineLayout(ranges, layouts);
     }
 
     RenderTargetID ExplicitRenderer::CreateRenderTarget(Window& window)
     {
-        return RenderTargetID(new ExplicitRenderTarget(*m_driver, window));
+        constexpr auto color = Format::B8G8R8A8_SRGB;
+        return RenderTargetID(new ExplicitRenderTarget(*this, color, m_depthFormat, window));
     }
 
     void ExplicitRenderer::DestroyMaterial(MaterialID id)
@@ -127,7 +192,7 @@ namespace le
 
     void ExplicitRenderer::DestroyShader(ShaderID id)
     {
-        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitShader*>(id.id); });
+        EnqueueDeletionFunc([this, id] { m_driver->DestroyPipeline(PipelineID(id.id)); });
     }
 
     void ExplicitRenderer::DestroyTexture2D(Texture2DID id)
@@ -137,7 +202,7 @@ namespace le
 
     void ExplicitRenderer::DestroyTexture2DArray(Texture2DArrayID id)
     {
-        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2D*>(id.id); });
+        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2DArray*>(id.id); });
     }
 
     void ExplicitRenderer::DestroyRenderTarget(RenderTargetID id)
@@ -165,41 +230,56 @@ namespace le
 
         m_driver->ResetCommandBuffer(buffer);
         m_driver->BeginCommandBuffer(buffer, false);
-
-        m_driver->CmdBeginRendering(buffer);
-
-        // TODO: camera uniforms
     }
 
     void ExplicitRenderer::RenderFrame(RenderTargetID& target, std::span<Scene*> scenes)
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
+        auto& explicitTarget = reinterpret_cast<ExplicitRenderTarget&>(target.id);
 
-        // TODO: acquire image
-        // if (m_ShouldRecreateSwapchain)
-        //     RecreateSwapchain();
-        // // The swapchain has one more than the minimum images, so the index
-        // // might not be the same as m_CurrentFrame
-        // const VkResult acquireResult = vkAcquireNextImageKHR(
-        //     m_Device, m_Swapchain->Get(),
-        //     UINT64_MAX,
-        //     m_ImageAvailableSemaphores[m_CurrentFrame],
-        //     VK_NULL_HANDLE,
-        //     &m_CurrentImageIndex
-        // );
-        // if (acquireResult != VK_SUCCESS)
-        // {
-        //     m_ShouldRecreateSwapchain = true;
-        //     return false;
-        // }
+        const UID cameraID = explicitTarget.GetActiveCameraID();
+        if (cameraID == 0)
+        {
+            LE_WARN("Camera was not set. Skipping render target.");
+            return;
+        }
 
-        m_driver->CmdSetViewport(buffer);
-        m_driver->CmdSetScissor(buffer);
+        explicitTarget.StartRendering(buffer, m_currentFrame);
+        {
+            Scene* sceneWithCamera = nullptr;
+            for (Scene* scene : scenes)
+            {
+                if (!scene || !scene->HasEntity(cameraID))
+                    continue;
+
+                sceneWithCamera = scene;
+            }
+
+            if (!sceneWithCamera)
+            {
+                LE_WARN("Camera not found. Skipping render target.");
+                explicitTarget.EndRendering(buffer);
+                return;
+            }
+
+            UseMaterial(m_defaultMaterial);
+            UpdateCamera(*sceneWithCamera, cameraID);
+            explicitTarget.UpdateCameraUniforms(sceneWithCamera->GetComponentData<Camera>(cameraID));
+
+            for (Scene* pScene : scenes)
+                if (pScene)
+                    RenderScene(*pScene);
+        }
+        explicitTarget.EndRendering(buffer);
+        m_targetsRendered.push_back(target);
     }
 
     void ExplicitRenderer::EndFrame()
     {
+        for (RenderTargetID& target : m_targetsRendered)
+            reinterpret_cast<ExplicitRenderTarget&>(target.id).EndFrame(m_renderFinishedSemaphores[m_currentFrame]);
 
+        m_targetsRendered.clear();
     }
 
     void ExplicitRenderer::ProcessDeletionQueue()
@@ -210,105 +290,132 @@ namespace le
         m_deletionQueues[m_currentFrame].clear();
     }
 
-    void ExplicitRenderer::BeginScene()
+    void ExplicitRenderer::BeginScene(Scene& scene)
     {
         // TODO: scene uniforms
 
         // const auto& vkUniforms = static_cast<DynamicUniforms&>(scene.GetUniforms());
         // m_Sets[1] = vkUniforms.GetDescriptorSet();
+        m_haveSetsChanged = true;
     }
 
-    void ExplicitRenderer::UseMaterial()
+    void ExplicitRenderer::UseMaterial(const Ref<Material>& material)
     {
-    //     const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
-    //     const le::DynamicUniforms& dynamicUniforms = material.GetUniforms();
-    //     const auto& vkUniforms = static_cast<const DynamicUniforms&>(
-    //         dynamicUniforms);
-    //
-    //     m_Sets[2] = vkUniforms.GetDescriptorSet();
-    //     m_HaveSetsChanged = true;
-    //
-    //     if (material.GetShader() == m_currentShaderID)
-    //         return;
-    //
-    //     const le::Pipeline& pipeline = shader->GetPipeline();
-    //     const auto& vkPipeline = static_cast<const Pipeline&>(pipeline);
-    //
-    //     VkCullModeFlags cullMode;
-    //     switch (shader->GetCullMode())
-    //     {
-    //         case Shader::CullMode::BACK: cullMode = VK_CULL_MODE_BACK_BIT; break;
-    //         case Shader::CullMode::FRONT: cullMode = VK_CULL_MODE_FRONT_BIT; break;
-    //         default: cullMode = VK_CULL_MODE_NONE;
-    //     }
-    //
-    //     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //         vkPipeline.Get());
-    //     vkCmdSetCullMode(buffer, cullMode);
-    //
-    //     m_currentPipelineLayout = vkPipeline.GetPipelineLayout();
-    //     m_currentShaderID = material.GetShader();
+        const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
+
+        auto& explicitMaterial = *reinterpret_cast<ExplicitMaterial*>(material->GetHandle().id);
+        m_sets[2] = explicitMaterial.GetSet(m_currentFrame);
+        m_haveSetsChanged = true;
+
+        const Ref<Shader> shader = material->GetShader();
+        if (shader == m_currentShader)
+            return;
+
+        const auto pipeline = PipelineID(shader->GetHandle().id);
+
+        m_driver->CmdBindPipeline(buffer, PipelineBindPoint::GRAPHICS, pipeline);
+        m_driver->CmdSetCullMode(buffer, shader->GetCullMode());
+
+        m_currentShader = shader;
+    }
+
+    void ExplicitRenderer::RenderScene(Scene& scene)
+    {
+        // scene.UpdateUniforms();
+        BeginScene(scene);
+
+        Ref<Material> lastMaterial = nullptr;
+        scene.QueryComponents<Mesh, Transform>(
+        [&](const Mesh& mesh, const Transform& transform)
+        {
+            if (!mesh.enabled)
+                return;
+
+            mesh.material->UpdateUniforms();
+
+            if (mesh.material != lastMaterial)
+            {
+                UseMaterial(mesh.material);
+                lastMaterial = mesh.material;
+            }
+
+            DrawMesh(mesh, transform);
+        });
+    }
+
+    void ExplicitRenderer::UpdateCamera(Scene& scene, const UID cameraID)
+    {
+        scene.QueryEntityComponents<Camera, Transform>(cameraID, [&](Camera& camera, Transform& transform)
+        {
+            if (camera.IsCameraDirty())
+            {
+                camera.CalculateProjectionMatrix();
+            }
+
+            if (transform.dirty)
+            {
+                camera.CalculateViewMatrix(transform);
+                transform.dirty = false;
+            }
+        });
+    }
+
+    void ExplicitRenderer::DrawMesh(const Mesh& mesh, const Transform& transform)
+    {
+        //     auto& vertexBuffer = static_cast<Buffer&>(meshData->GetVertexBuffer());
+        //     auto& indexBuffer  = static_cast<Buffer&>(meshData->GetIndexBuffer());
+        //
+        //     if (!vertexBuffer.GetDesc().buffer || !indexBuffer.GetDesc().buffer)
+        //         return;
+        //
+        //     const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
+        //
+        //     Pipeline::ObjectTransform objectTransform;
+        //     objectTransform.transform = transform.transformMat;
+        //
+        //     vkCmdPushConstants(buffer, m_currentPipelineLayout,
+        //         VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(objectTransform),
+        //         &objectTransform);
+        //
+        //     if (m_HaveSetsChanged)
+        //     {
+        //         vkCmdBindDescriptorSets(
+        //             buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+        //             m_currentPipelineLayout,
+        //             0, std::size(m_Sets),
+        //             m_Sets,
+        //             0, nullptr
+        //         );
+        //         m_HaveSetsChanged = false;
+        //     }
+        //
+        //     const VkBuffer vBuffers[] = { vertexBuffer.GetDesc().buffer };
+        //     constexpr VkDeviceSize offsets[] = { 0 };
+        //     vkCmdBindVertexBuffers(buffer, 0, 1, vBuffers, offsets);
+        //
+        //     vkCmdBindIndexBuffer(
+        //         buffer,
+        //         indexBuffer.GetDesc().buffer,
+        //         0,
+        //         VK_INDEX_TYPE_UINT32
+        //     );
+        //
+        //     vkCmdDrawIndexed(buffer, meshData->GetIndexCount(),
+        //         1, 0, 0, 0);
 
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
-        m_driver->CmdBindPipeline(buffer);
-        m_driver->CmdSetCullMode(buffer);
-    }
-
-    void ExplicitRenderer::DrawMesh()
-    {
-    //     auto& vertexBuffer = static_cast<Buffer&>(meshData->GetVertexBuffer());
-    //     auto& indexBuffer  = static_cast<Buffer&>(meshData->GetIndexBuffer());
-    //
-    //     if (!vertexBuffer.GetDesc().buffer || !indexBuffer.GetDesc().buffer)
-    //         return;
-    //
-    //     const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
-    //
-    //     Pipeline::ObjectTransform objectTransform;
-    //     objectTransform.transform = transform.transformMat;
-    //
-    //     vkCmdPushConstants(buffer, m_currentPipelineLayout,
-    //         VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(objectTransform),
-    //         &objectTransform);
-    //
-    //     if (m_HaveSetsChanged)
-    //     {
-    //         vkCmdBindDescriptorSets(
-    //             buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-    //             m_currentPipelineLayout,
-    //             0, std::size(m_Sets),
-    //             m_Sets,
-    //             0, nullptr
-    //         );
-    //         m_HaveSetsChanged = false;
-    //     }
-    //
-    //     const VkBuffer vBuffers[] = { vertexBuffer.GetDesc().buffer };
-    //     constexpr VkDeviceSize offsets[] = { 0 };
-    //     vkCmdBindVertexBuffers(buffer, 0, 1, vBuffers, offsets);
-    //
-    //     vkCmdBindIndexBuffer(
-    //         buffer,
-    //         indexBuffer.GetDesc().buffer,
-    //         0,
-    //         VK_INDEX_TYPE_UINT32
-    //     );
-    //
-    //     vkCmdDrawIndexed(buffer, meshData->GetIndexCount(),
-    //         1, 0, 0, 0);
-
-        const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
-
-        m_driver->CmdPushConstants(buffer);
+        m_driver->CmdPushConstants(buffer, m_pipelineLayout, ShaderStageFlagBits::VERTEX,
+            0, sizeof(Transform), &transform);
 
         if (m_haveSetsChanged)
         {
-            m_driver->CmdBindDescriptorSets(buffer);
+            m_driver->CmdBindDescriptorSets(buffer, PipelineBindPoint::GRAPHICS,
+                m_pipelineLayout, 0, m_sets);
             m_haveSetsChanged = false;
         }
 
-        m_driver->CmdBindVertexBuffers(buffer);
+        m_driver->CmdBindVertexBuffers(buffer, 0, );
         m_driver->CmdBindIndexBuffer(buffer);
 
         m_driver->CmdDrawIndexed(buffer);
