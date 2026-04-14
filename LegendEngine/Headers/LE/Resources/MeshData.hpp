@@ -28,6 +28,8 @@ namespace le
         [[nodiscard]] virtual size_t GetVertexCount() const;
         [[nodiscard]] virtual size_t GetIndexCount() const;
 
+        MeshID GetHandle() const;
+
         static Ref<MeshData> Create(std::span<Vertex3> vertices, std::span<uint32_t> indices,
             UpdateFrequency frequency);
     private:

@@ -68,6 +68,7 @@ namespace le
         bool IsFenceSignaled(FenceID fence) override;
         SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) override;
         Format FindDepthFormat() override;
+        bool HasTransferQueue() override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

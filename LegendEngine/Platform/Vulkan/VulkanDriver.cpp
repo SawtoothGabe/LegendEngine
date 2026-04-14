@@ -640,6 +640,11 @@ namespace le
     	return VulkanTypes::ToFormat(candidates[0]);
     }
 
+    bool VulkanDriver::HasTransferQueue()
+    {
+	    return m_indices.hasTransferFamily;
+    }
+
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
 	    std::vector<vk::BufferCopy> vkRegions(regions.size());

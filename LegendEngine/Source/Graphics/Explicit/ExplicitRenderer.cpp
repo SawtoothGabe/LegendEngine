@@ -17,15 +17,17 @@ namespace le
     {
         LE_INFO("Creating ExplicitRenderer");
 
-        m_gfxPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
         m_depthFormat = m_driver->FindDepthFormat();
 
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
         m_deletionQueues.resize(Application::FRAMES_IN_FLIGHT);
 
+        CreateQueues();
         CreateCommandBuffers();
         CreateSyncObjects();
+        CreateDescriptorSetLayouts();
+        CreatePipelineLayout();
 
         m_defaultMaterial = Material::Create();
 
@@ -42,7 +44,7 @@ namespace le
             for (auto& deletionFunc : queue)
                 deletionFunc();
 
-        m_driver->FreeCommandBuffers(m_gfxPool, m_commandBuffers.size(), m_commandBuffers.data());
+        m_driver->FreeCommandBuffers(m_graphicsPool, m_commandBuffers.size(), m_commandBuffers.data());
 
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
@@ -50,8 +52,12 @@ namespace le
             m_driver->DestroySemaphore(m_renderFinishedSemaphores[i]);
         }
 
-        m_driver->DestroyCommandPool(m_gfxPool);
+        m_driver->DestroyCommandPool(m_graphicsPool);
         m_driver->DestroyPipelineLayout(m_pipelineLayout);
+
+        m_driver->DestroyLayoutPoolManager(m_materialPool);
+        for (const DescriptorSetLayoutID& layout : m_descriptorSetLayouts)
+            m_driver->DestroyDescriptorSetLayout(layout);
 
         LE_INFO("Destroyed ExplicitRenderer");
     }
@@ -62,13 +68,13 @@ namespace le
     }
 
     MeshID ExplicitRenderer::CreateMesh(const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices,
-        const MeshData::UpdateFrequency frequency)
+                                        const MeshData::UpdateFrequency frequency)
     {
         return MeshID(new ExplicitMesh(*this, vertices, indices, frequency));
     }
 
     MeshID ExplicitRenderer::CreateMesh(const size_t initialVertexCount, const size_t initialIndexCount,
-        const MeshData::UpdateFrequency frequency)
+                                        const MeshData::UpdateFrequency frequency)
     {
         return MeshID(new ExplicitMesh(*this, initialVertexCount, initialIndexCount, frequency));
     }
@@ -118,60 +124,9 @@ namespace le
     }
 
     Texture2DArrayID ExplicitRenderer::CreateTexture2DArray(const size_t width, const size_t height,
-        const uint8_t channels, const std::span<TextureData*>& textureData)
+                                                            const uint8_t channels, const std::span<TextureData*>& textureData)
     {
         return Texture2DArrayID(new ExplicitTexture2DArray(*this, width, height, channels, textureData));
-    }
-
-    PoolManagerID& ExplicitRenderer::GetMaterialPoolManager() const
-    {
-
-    }
-
-    CommandPoolID ExplicitRenderer::GetGraphicsPool() const
-    {
-        return m_gfxPool;
-    }
-
-    CommandPoolID ExplicitRenderer::GetTransferPool() const {}
-    QueueID ExplicitRenderer::GetGraphicsQueue() const {}
-    QueueID ExplicitRenderer::GetTransferQueue() const {}
-    std::mutex& ExplicitRenderer::GetGraphicsMutex() const {}
-    std::mutex& ExplicitRenderer::GetTransferMutex() const {}
-
-    ImageID ExplicitRenderer::GetTexture2DImage(const Texture2DID texture)
-    {
-        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImage();
-    }
-
-    ImageViewID ExplicitRenderer::GetTexture2DImageView(const Texture2DID texture)
-    {
-        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImageView();
-    }
-
-    ImageID ExplicitRenderer::GetTexture2DArrayImage(const Texture2DArrayID texture)
-    {
-        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImage();
-    }
-
-    ImageViewID ExplicitRenderer::GetTexture2DArrayImageView(const Texture2DArrayID texture)
-    {
-        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImageView();
-    }
-
-    void ExplicitRenderer::CreatePipelineLayout()
-    {
-        PushConstantRange ranges[] = {
-            {
-                .size = sizeof(Transform),
-                .offset = 0,
-                .stage = ShaderStageFlagBits::VERTEX
-            }
-        };
-
-
-
-        m_pipelineLayout = m_driver->CreatePipelineLayout(ranges, layouts);
     }
 
     RenderTargetID ExplicitRenderer::CreateRenderTarget(Window& window)
@@ -189,35 +144,21 @@ namespace le
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitMesh*>(id.id); });
     }
-
     void ExplicitRenderer::DestroyShader(ShaderID id)
     {
         EnqueueDeletionFunc([this, id] { m_driver->DestroyPipeline(PipelineID(id.id)); });
     }
-
     void ExplicitRenderer::DestroyTexture2D(Texture2DID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2D*>(id.id); });
     }
-
     void ExplicitRenderer::DestroyTexture2DArray(Texture2DArrayID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2DArray*>(id.id); });
     }
-
     void ExplicitRenderer::DestroyRenderTarget(RenderTargetID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitRenderTarget*>(id.id); });
-    }
-
-    void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
-    {
-        m_deletionQueues[m_currentFrame].push_back(func);
-    }
-
-    ExplicitDriver& ExplicitRenderer::GetDriver() const
-    {
-        return *m_driver;
     }
 
     void ExplicitRenderer::StartFrame()
@@ -276,10 +217,204 @@ namespace le
 
     void ExplicitRenderer::EndFrame()
     {
-        for (RenderTargetID& target : m_targetsRendered)
-            reinterpret_cast<ExplicitRenderTarget&>(target.id).EndFrame(m_renderFinishedSemaphores[m_currentFrame]);
+        std::vector<SemaphoreID> waitSemaphores;
+        for (const RenderTargetID& target : m_targetsRendered)
+        {
+            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
+            waitSemaphores.emplace_back(explicitTarget.GetImageAvailableSemaphore(m_currentFrame));
+        }
+
+        PipelineStage stageMask[] = { PipelineStage::COLOR_ATTACHMENT_OUTPUT };
+        SemaphoreID signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
+
+        SubmitInfo info;
+        info.commandBuffer = m_commandBuffers[m_currentFrame];
+        info.fence = m_inFlightFences[m_currentFrame];
+        info.waitDstStageMask = stageMask;
+        info.waitSemaphores = waitSemaphores;
+        info.signalSemaphores = signalSemaphores;
+
+        m_driver->QueueSubmit(m_graphicsQueue, info);
+
+        for (const RenderTargetID& target : m_targetsRendered)
+        {
+            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
+            explicitTarget.EndFrame(m_renderFinishedSemaphores[m_currentFrame]);
+        }
 
         m_targetsRendered.clear();
+    }
+
+    void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
+    {
+        m_deletionQueues[m_currentFrame].push_back(func);
+    }
+
+    PoolManagerID ExplicitRenderer::GetMaterialPoolManager() const
+    {
+        return m_materialPool;
+    }
+
+    CommandPoolID ExplicitRenderer::GetGraphicsPool() const
+    {
+        return m_graphicsPool;
+    }
+
+    CommandPoolID ExplicitRenderer::GetTransferPool() const
+    {
+        return *m_pTransferPool;
+    }
+
+    QueueID ExplicitRenderer::GetGraphicsQueue() const
+    {
+        return m_graphicsQueue;
+    }
+
+    QueueID ExplicitRenderer::GetTransferQueue() const
+    {
+        return *m_pTransferQueue;
+    }
+
+    std::mutex& ExplicitRenderer::GetGraphicsMutex()
+    {
+        return m_graphicsMutex;
+    }
+
+    std::mutex& ExplicitRenderer::GetTransferMutex() const
+    {
+        return *m_pTransferMutex;
+    }
+
+    ImageID ExplicitRenderer::GetTexture2DImage(const Texture2DID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImage();
+    }
+
+    ImageViewID ExplicitRenderer::GetTexture2DImageView(const Texture2DID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2D*>(texture.id)->GetImageView();
+    }
+
+    ImageID ExplicitRenderer::GetTexture2DArrayImage(const Texture2DArrayID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImage();
+    }
+
+    ImageViewID ExplicitRenderer::GetTexture2DArrayImageView(const Texture2DArrayID texture)
+    {
+        return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImageView();
+    }
+
+    ExplicitDriver& ExplicitRenderer::GetDriver() const
+    {
+        return *m_driver;
+    }
+
+    void ExplicitRenderer::CreateQueues()
+    {
+        m_graphicsPool = m_driver->CreateCommandPool(QueueFamily::GRAPHICS);
+        m_graphicsQueue = m_driver->GetQueue(QueueFamily::GRAPHICS);
+        m_pTransferPool = &m_graphicsPool;
+        m_pTransferQueue = &m_graphicsQueue;
+        m_pTransferMutex = &m_graphicsMutex;
+
+        if (m_driver->HasTransferQueue())
+        {
+            m_transferPool = m_driver->CreateCommandPool(QueueFamily::TRANSFER);
+            m_transferQueue = m_driver->GetQueue(QueueFamily::TRANSFER);
+            m_pTransferPool = &m_transferPool;
+            m_pTransferQueue = &m_transferQueue;
+            m_pTransferMutex = &m_transferMutex;
+        }
+    }
+
+    void ExplicitRenderer::CreateCommandBuffers()
+    {
+        m_commandBuffers = m_driver->AllocateCommandBuffers(m_graphicsPool, Application::FRAMES_IN_FLIGHT);
+    }
+
+    void ExplicitRenderer::CreateSyncObjects()
+    {
+        for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
+        {
+            m_inFlightFences[i] = m_driver->CreateFence(true);
+            m_renderFinishedSemaphores[i] = m_driver->CreateSemaphore();
+        }
+    }
+
+    void ExplicitRenderer::CreateDescriptorSetLayouts()
+    {
+        // Camera
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::VERTEX
+                }
+            };
+
+            m_descriptorSetLayouts.emplace_back(m_driver->CreateDescriptorSetLayout(bindings));
+        }
+
+        // Scene
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                },
+                DescriptorSetLayoutBinding {
+                    .binding = 1,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::STORAGE_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                }
+            };
+
+            m_descriptorSetLayouts.emplace_back(m_driver->CreateDescriptorSetLayout(bindings));
+        }
+
+        // Material
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                },
+                DescriptorSetLayoutBinding {
+                    .binding = 1,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                }
+            };
+
+            DescriptorSetLayoutID layout = m_driver->CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_materialPool = m_driver->CreateLayoutPoolManager(layout);
+        }
+    }
+
+    void ExplicitRenderer::CreatePipelineLayout()
+    {
+        PushConstantRange ranges[] = {
+            {
+                .size = sizeof(Transform),
+                .offset = 0,
+                .stage = ShaderStageFlagBits::VERTEX
+            }
+        };
+
+        m_pipelineLayout = m_driver->CreatePipelineLayout(ranges, m_descriptorSetLayouts);
     }
 
     void ExplicitRenderer::ProcessDeletionQueue()
@@ -288,15 +423,6 @@ namespace le
             func();
 
         m_deletionQueues[m_currentFrame].clear();
-    }
-
-    void ExplicitRenderer::BeginScene(Scene& scene)
-    {
-        // TODO: scene uniforms
-
-        // const auto& vkUniforms = static_cast<DynamicUniforms&>(scene.GetUniforms());
-        // m_Sets[1] = vkUniforms.GetDescriptorSet();
-        m_haveSetsChanged = true;
     }
 
     void ExplicitRenderer::UseMaterial(const Ref<Material>& material)
@@ -326,21 +452,31 @@ namespace le
 
         Ref<Material> lastMaterial = nullptr;
         scene.QueryComponents<Mesh, Transform>(
-        [&](const Mesh& mesh, const Transform& transform)
-        {
-            if (!mesh.enabled)
-                return;
-
-            mesh.material->UpdateUniforms();
-
-            if (mesh.material != lastMaterial)
+            [&](const Mesh& mesh, const Transform& transform)
             {
-                UseMaterial(mesh.material);
-                lastMaterial = mesh.material;
-            }
+                if (!mesh.enabled)
+                    return;
 
-            DrawMesh(mesh, transform);
-        });
+                ExplicitMaterial& mat = *reinterpret_cast<ExplicitMaterial*>(mesh.material->GetHandle().id);
+                mat.UpdateUniforms(m_currentFrame);
+
+                if (mesh.material != lastMaterial)
+                {
+                    UseMaterial(mesh.material);
+                    lastMaterial = mesh.material;
+                }
+
+                DrawMesh(mesh, transform);
+            });
+    }
+
+    void ExplicitRenderer::BeginScene(Scene& scene)
+    {
+        // TODO: scene uniforms
+
+        // const auto& vkUniforms = static_cast<DynamicUniforms&>(scene.GetUniforms());
+        // m_Sets[1] = vkUniforms.GetDescriptorSet();
+        m_haveSetsChanged = true;
     }
 
     void ExplicitRenderer::UpdateCamera(Scene& scene, const UID cameraID)
@@ -362,76 +498,28 @@ namespace le
 
     void ExplicitRenderer::DrawMesh(const Mesh& mesh, const Transform& transform)
     {
-        //     auto& vertexBuffer = static_cast<Buffer&>(meshData->GetVertexBuffer());
-        //     auto& indexBuffer  = static_cast<Buffer&>(meshData->GetIndexBuffer());
-        //
-        //     if (!vertexBuffer.GetDesc().buffer || !indexBuffer.GetDesc().buffer)
-        //         return;
-        //
-        //     const VkCommandBuffer buffer = m_CommandBuffers[m_CurrentFrame];
-        //
-        //     Pipeline::ObjectTransform objectTransform;
-        //     objectTransform.transform = transform.transformMat;
-        //
-        //     vkCmdPushConstants(buffer, m_currentPipelineLayout,
-        //         VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(objectTransform),
-        //         &objectTransform);
-        //
-        //     if (m_HaveSetsChanged)
-        //     {
-        //         vkCmdBindDescriptorSets(
-        //             buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-        //             m_currentPipelineLayout,
-        //             0, std::size(m_Sets),
-        //             m_Sets,
-        //             0, nullptr
-        //         );
-        //         m_HaveSetsChanged = false;
-        //     }
-        //
-        //     const VkBuffer vBuffers[] = { vertexBuffer.GetDesc().buffer };
-        //     constexpr VkDeviceSize offsets[] = { 0 };
-        //     vkCmdBindVertexBuffers(buffer, 0, 1, vBuffers, offsets);
-        //
-        //     vkCmdBindIndexBuffer(
-        //         buffer,
-        //         indexBuffer.GetDesc().buffer,
-        //         0,
-        //         VK_INDEX_TYPE_UINT32
-        //     );
-        //
-        //     vkCmdDrawIndexed(buffer, meshData->GetIndexCount(),
-        //         1, 0, 0, 0);
-
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
+        const ExplicitMesh& explicitMesh = *reinterpret_cast<ExplicitMesh*>(mesh.data->GetHandle().id);
+        const BufferID vertex = explicitMesh.GetVertexBuffer().GetDesc().buffer;
+        const BufferID index = explicitMesh.GetIndexBuffer().GetDesc().buffer;
+
+        if (!vertex || !index)
+            return;
 
         m_driver->CmdPushConstants(buffer, m_pipelineLayout, ShaderStageFlagBits::VERTEX,
-            0, sizeof(Transform), &transform);
+                                   0, sizeof(Transform), &transform);
 
         if (m_haveSetsChanged)
         {
             m_driver->CmdBindDescriptorSets(buffer, PipelineBindPoint::GRAPHICS,
-                m_pipelineLayout, 0, m_sets);
+                                            m_pipelineLayout, 0, m_sets);
             m_haveSetsChanged = false;
         }
 
-        m_driver->CmdBindVertexBuffers(buffer, 0, );
-        m_driver->CmdBindIndexBuffer(buffer);
+        BufferID buffers[] = { vertex };
+        m_driver->CmdBindVertexBuffers(buffer, 0, buffers);
+        m_driver->CmdBindIndexBuffer(buffer, index, 0);
 
-        m_driver->CmdDrawIndexed(buffer);
-    }
-
-    void ExplicitRenderer::CreateCommandBuffers()
-    {
-        m_commandBuffers = m_driver->AllocateCommandBuffers(m_gfxPool, Application::FRAMES_IN_FLIGHT);
-    }
-
-    void ExplicitRenderer::CreateSyncObjects()
-    {
-        for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
-        {
-            m_inFlightFences[i] = m_driver->CreateFence(true);
-            m_renderFinishedSemaphores[i] = m_driver->CreateSemaphore();
-        }
+        m_driver->CmdDrawIndexed(buffer, explicitMesh.GetIndexCount(), 1, 0, 0, 0);
     }
 }

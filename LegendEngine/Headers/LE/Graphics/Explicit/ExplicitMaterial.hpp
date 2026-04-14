@@ -11,6 +11,7 @@ namespace le
         explicit ExplicitMaterial(ExplicitRenderer& renderer);
         ~ExplicitMaterial() override;
 
+        void UpdateUniforms(size_t frame);
         DescriptorSetID GetSet(size_t frame) const;
     private:
         ExplicitRenderer& m_renderer;

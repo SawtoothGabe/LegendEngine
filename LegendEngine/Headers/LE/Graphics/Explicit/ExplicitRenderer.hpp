@@ -37,14 +37,14 @@ namespace le
         void EndFrame() override;
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
-        [[nodiscard]] PoolManagerID& GetMaterialPoolManager() const;
+        [[nodiscard]] PoolManagerID GetMaterialPoolManager() const;
 
         [[nodiscard]] CommandPoolID GetGraphicsPool() const;
         [[nodiscard]] CommandPoolID GetTransferPool() const;
 
         [[nodiscard]] QueueID GetGraphicsQueue() const;
         [[nodiscard]] QueueID GetTransferQueue() const;
-        [[nodiscard]] std::mutex& GetGraphicsMutex() const;
+        [[nodiscard]] std::mutex& GetGraphicsMutex();
         [[nodiscard]] std::mutex& GetTransferMutex() const;
 
         ImageID GetTexture2DImage(Texture2DID texture) override;
@@ -56,8 +56,10 @@ namespace le
     private:
         static constexpr auto COLOR_FORMAT = Format::B8G8R8A8_SRGB;
 
+        void CreateQueues();
         void CreateCommandBuffers();
         void CreateSyncObjects();
+        void CreateDescriptorSetLayouts();
         void CreatePipelineLayout();
 
         void ProcessDeletionQueue();
@@ -69,7 +71,18 @@ namespace le
         void DrawMesh(const Mesh& mesh, const Transform& transform);
 
         Scope<ExplicitDriver> m_driver;
-        CommandPoolID m_gfxPool;
+
+        QueueID m_graphicsQueue;
+        QueueID m_transferQueue;
+        CommandPoolID m_graphicsPool;
+        CommandPoolID m_transferPool;
+        std::mutex m_graphicsMutex;
+        std::mutex m_transferMutex;
+
+        QueueID* m_pTransferQueue = nullptr;
+        CommandPoolID* m_pTransferPool = nullptr;
+        std::mutex* m_pTransferMutex = nullptr;
+
         Format m_depthFormat;
 
         bool m_vsync = false;
@@ -82,6 +95,9 @@ namespace le
         std::vector<RenderTargetID> m_targetsRendered;
 
         std::vector<std::vector<std::function<void()>>> m_deletionQueues;
+        std::vector<DescriptorSetLayoutID> m_descriptorSetLayouts;
+
+        PoolManagerID m_materialPool;
 
         DescriptorSetID m_sets[3] = {};
         bool m_haveSetsChanged = true;
