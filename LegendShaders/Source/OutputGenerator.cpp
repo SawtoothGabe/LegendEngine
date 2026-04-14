@@ -87,7 +87,7 @@ static std::string GetStageName(const SlangStage stage)
         case SLANG_STAGE_NONE: return "le::sh::ShaderStage::NONE";
         case SLANG_STAGE_VERTEX: return "le::sh::ShaderStage::VERTEX";
         case SLANG_STAGE_HULL: return "le::sh::ShaderStage::HULL";
-        case SLANG_STAGE_DOMAIN: return "le::sh::ShaderStage::DOMAIN";
+        case SLANG_STAGE_DOMAIN: return "le::sh::ShaderStage::DOMAIN_STAGE";
         case SLANG_STAGE_GEOMETRY: return "le::sh::ShaderStage::GEOMETRY";
         case SLANG_STAGE_FRAGMENT: return "le::sh::ShaderStage::FRAGMENT";
         case SLANG_STAGE_COMPUTE: return "le::sh::ShaderStage::COMPUTE";

@@ -67,7 +67,7 @@ void SortFiles(const Options& options, std::vector<JsonFile>& jsonFiles,
 }
 
 std::vector<Program> CompilePrograms(ModuleRegistry& registry, std::vector<JsonFile>& jsonFiles,
-    std::vector<std::string>& slangFiles)
+    const std::vector<std::string>& slangFiles)
 {
     ondemand::parser p;
     std::vector<Program> programs;
@@ -82,7 +82,7 @@ std::vector<Program> CompilePrograms(ModuleRegistry& registry, std::vector<JsonF
     return programs;
 }
 
-Slang::ComPtr<slang::ISession> CreateSession(const Options& options, Slang::ComPtr<slang::IGlobalSession> globalSession)
+Slang::ComPtr<slang::ISession> CreateSession(const Options& options, const Slang::ComPtr<slang::IGlobalSession>& globalSession)
 {
     std::vector<slang::TargetDesc> targets;
     std::vector<slang::CompilerOptionEntry> compilerOptions;
