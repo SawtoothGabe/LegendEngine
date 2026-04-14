@@ -9,7 +9,7 @@ namespace le::sh
         NONE,
         VERTEX,
         HULL,
-        DOMAIN,
+        DOMAIN_STAGE, // Called DOMAIN_STAGE and not DOMAIN because MSVC #defines that
         GEOMETRY,
         FRAGMENT,
         COMPUTE,

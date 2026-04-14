@@ -103,7 +103,7 @@ namespace le
 	    return pManager->Allocate(outPool, count);
     }
 
-    BufferID VulkanDriver::CreateBuffer(BufferUsageFlagBits flags, const std::size_t size, const bool createMapped)
+    BufferID VulkanDriver::CreateBuffer(BufferUsageFlags flags, const std::size_t size, const bool createMapped)
     {
 	    VkBufferCreateInfo bufferInfo{};
 	    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -197,16 +197,31 @@ namespace le
 	    std::vector<vk::VertexInputBindingDescription> bindings;
 	    std::vector<vk::VertexInputAttributeDescription> attributes;
 	    formats.reserve(info.colorAttachmentFormats.size());
-	    stages.reserve(info.stages.size());
 	    bindings.reserve(info.vertexBindings.size());
 	    attributes.reserve(info.vertexAttributes.size());
 
 	    for (const Format format : info.colorAttachmentFormats)
 		    formats.push_back(VulkanTypes::GetVkFormat(format));
 
-	    for (const auto& [name, module, stage] : info.stages)
-		    stages.push_back({{}, VulkanTypes::GetShaderStageFlag(stage),
-			    VULKAN_CAST(ShaderModule, module), name.c_str()});
+    	vk::ShaderModuleCreateInfo moduleInfo(
+    		{}, info.shaderInfo.spirvCodeSize, reinterpret_cast<uint32_t*>(info.shaderInfo.pSpirvCode)
+    	);
+
+    	vk::ShaderModule module = m_device.createShaderModule(moduleInfo);
+
+	    for (size_t i = 0; i < info.shaderInfo.entrypointCount; i++)
+	    {
+		    const sh::Entrypoint& entrypoint = info.shaderInfo.pEntrypoints[i];
+
+	    	vk::PipelineShaderStageCreateInfo stage = {
+	    		{},
+	    		VulkanTypes::GetShaderStageFlag(entrypoint.stage),
+	    		module,
+	    		entrypoint.pName
+	    	};
+
+	    	stages.push_back(stage);
+	    }
 
 	    for (auto [binding, stride, inputRate] : info.vertexBindings)
 	    {
@@ -288,16 +303,18 @@ namespace le
 		    nullptr, 0, &rendering
 	    );
 
-	    return PipelineID(m_device.createGraphicsPipeline({}, createInfo).value);
+    	vk::Pipeline pipeline = m_device.createGraphicsPipeline({}, createInfo).value;
+
+    	m_device.destroyShaderModule(module);
+
+	    return PipelineID(pipeline);
     }
 
     PipelineLayoutID VulkanDriver::CreatePipelineLayout(std::span<PushConstantRange> ranges,
                                                         const std::span<DescriptorSetLayoutID> layouts)
     {
 	    std::vector<vk::PushConstantRange> vkRanges;
-	    std::vector<vk::DescriptorSetLayout> vkLayouts;
 	    vkRanges.reserve(ranges.size());
-	    vkLayouts.reserve(layouts.size());
 
 	    for (auto [size, offset, stage] : ranges)
 	    {
@@ -316,12 +333,9 @@ namespace le
 		    );
 	    }
 
-	    for (const DescriptorSetLayoutID& setLayout : layouts)
-		    vkLayouts.emplace_back(RAW_CAST(DescriptorSetLayout, setLayout));
-
 	    const vk::PipelineLayoutCreateInfo createInfo(
 		    {},
-		    vkLayouts.size(), vkLayouts.data(),
+		    layouts.size(), reinterpret_cast<vk::DescriptorSetLayout*>(layouts.data()),
 		    vkRanges.size(), vkRanges.data()
 	    );
 
@@ -365,15 +379,6 @@ namespace le
 	    return SurfaceID(PlatformUtils::CreateSurface(m_instance, window));
     }
 
-    ShaderModuleID VulkanDriver::CreateShaderModule(const ShaderModuleInfo& info)
-    {
-	    const vk::ShaderModuleCreateInfo createInfo(
-		    {}, info.spirvSize, reinterpret_cast<const uint32_t*>(info.spirvCode)
-	    );
-
-	    return ShaderModuleID(m_device.createShaderModule(createInfo));
-    }
-
     DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings)
     {
 	    return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
@@ -414,11 +419,8 @@ namespace le
 
     void VulkanDriver::FreeCommandBuffers(const CommandPoolID pool, const size_t count, CommandBufferID* buffers)
     {
-	    for (size_t i = 0; i < count; i++)
-	    {
-		    const auto buffer = VULKAN_CAST(CommandBuffer, buffers[i]);
-		    m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), 1, &buffer);
-	    }
+    	m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), count,
+    		reinterpret_cast<vk::CommandBuffer*>(buffers));
     }
 
     void VulkanDriver::FreeDescriptorSets(const PoolManagerID manager, const DescriptorPoolID pool, const size_t count,
@@ -510,11 +512,8 @@ namespace le
 
     void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
     {
-	    for (size_t i = 0; i < count; i++)
-	    {
-		    const auto fence = VULKAN_CAST(Fence, fences[i]);
-		    LE_CHECK_RESULT(m_device.waitForFences(1, &fence, true, UINT64_MAX));
-	    }
+    	LE_CHECK_RESULT(m_device.waitForFences(count, reinterpret_cast<vk::Fence*>(fences), true,
+    		UINT64_MAX));
     }
 
     void VulkanDriver::WaitIdle()
@@ -524,11 +523,7 @@ namespace le
 
     void VulkanDriver::ResetFences(const size_t count, FenceID* fences)
     {
-	    for (size_t i = 0; i < count; i++)
-	    {
-		    const auto fence = VULKAN_CAST(Fence, fences[i]);
-		    m_device.resetFences(fence);
-	    }
+	    LE_CHECK_RESULT(m_device.resetFences(count, reinterpret_cast<vk::Fence*>(fences)));
     }
 
     void VulkanDriver::QueueSubmit(const QueueID queue, const SubmitInfo& info)
@@ -536,18 +531,8 @@ namespace le
 	    const auto vkQueue = VULKAN_CAST(Queue, queue);
 	    const auto vkFence = VULKAN_CAST(Fence, info.fence);
 
-	    std::vector<vk::Semaphore> waitSemaphores;
-	    std::vector<vk::Semaphore> signalSemaphores;
 	    std::vector<vk::PipelineStageFlags> waitStages;
-	    waitSemaphores.reserve(info.waitSemaphores.size());
-	    waitStages.reserve(waitSemaphores.size());
-	    signalSemaphores.reserve(info.signalSemaphores.size());
-
-	    for (const SemaphoreID& semaphore : info.waitSemaphores)
-		    waitSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
-
-	    for (const SemaphoreID& semaphore : info.signalSemaphores)
-		    signalSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
+	    waitStages.reserve(info.waitSemaphores.size());
 
 	    for (const PipelineStage stage : info.waitDstStageMask)
 		    waitStages.emplace_back(VulkanTypes::GetPipelineStage(stage));
@@ -555,10 +540,12 @@ namespace le
 	    const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
 
 	    const vk::SubmitInfo submit(
-		    waitSemaphores.size(), waitSemaphores.data(),
+		    info.waitSemaphores.size(),
+		    reinterpret_cast<const vk::Semaphore*>(info.waitSemaphores.data()),
 		    waitStages.data(),
 		    1, &commandBuffer,
-		    signalSemaphores.size(), signalSemaphores.data()
+		    info.signalSemaphores.size(),
+		    reinterpret_cast<const vk::Semaphore*>(info.signalSemaphores.data())
 	    );
 
 	    LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
@@ -568,20 +555,11 @@ namespace le
     {
 	    const auto vkQueue = VULKAN_CAST(Queue, queue);
 
-	    std::vector<vk::Semaphore> waitSemaphores;
-	    std::vector<vk::SwapchainKHR> swapchains;
-	    waitSemaphores.reserve(info.waitSemaphores.size());
-	    swapchains.reserve(info.swapchains.size());
-
-	    for (const SemaphoreID& semaphore : info.waitSemaphores)
-		    waitSemaphores.emplace_back(RAW_CAST(Semaphore, semaphore));
-
-	    for (const SwapchainID& swapchain : info.swapchains)
-		    swapchains.emplace_back(RAW_CAST(SwapchainKHR, swapchain));
-
 	    const vk::PresentInfoKHR presentInfo(
-		    waitSemaphores.size(), waitSemaphores.data(),
-		    swapchains.size(), swapchains.data(),
+		    info.waitSemaphores.size(),
+		    reinterpret_cast<const vk::Semaphore*>(info.waitSemaphores.data()),
+		    info.swapchains.size(),
+		    reinterpret_cast<vk::SwapchainKHR*>(info.swapchains.data()),
 		    info.imageIndices.data()
 	    );
 
@@ -638,6 +616,28 @@ namespace le
     			surfaceCapabilities.currentExtent.height,
     		}
     	};
+    }
+
+    Format VulkanDriver::FindDepthFormat()
+    {
+    	constexpr vk::Format candidates[] = {
+    		vk::Format::eD32Sfloat,
+			vk::Format::eD32SfloatS8Uint,
+			vk::Format::eD24UnormS8Uint,
+		};
+
+    	constexpr vk::FormatFeatureFlags features = vk::FormatFeatureFlagBits::eDepthStencilAttachment;
+
+    	for (const vk::Format format : candidates)
+    	{
+    		vk::FormatProperties props;
+    		m_physicalDevice.getFormatProperties(format, &props);
+
+    		if ((props.optimalTilingFeatures & features) == features)
+    			return VulkanTypes::ToFormat(format);
+    	}
+
+    	return VulkanTypes::ToFormat(candidates[0]);
     }
 
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
@@ -704,8 +704,6 @@ namespace le
 	    {
 		    const ImageMemoryBarrier& barrier = imageMemoryBarriers[i];
 		    vk::ImageMemoryBarrier& vkBarrier = vkImageMemoryBarriers[i];
-
-	    	ImageSubresourceRange
 
 		    vkBarrier.oldLayout = VulkanTypes::GetImageLayout(barrier.oldLayout);
 		    vkBarrier.newLayout = VulkanTypes::GetImageLayout(barrier.newLayout);

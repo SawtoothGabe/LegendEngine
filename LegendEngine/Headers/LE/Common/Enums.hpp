@@ -29,7 +29,7 @@ namespace le
             return !m_mask;
         }
 
-        constexpr Flags operator&(const Flags& rhs) noexcept
+        constexpr Flags operator&(const Flags& rhs) const noexcept
         {
             return Flags(m_mask & rhs.m_mask);
         }

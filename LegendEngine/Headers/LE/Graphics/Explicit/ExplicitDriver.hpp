@@ -28,7 +28,6 @@ namespace le
         [[nodiscard]] virtual SemaphoreID CreateSemaphore() = 0;
         [[nodiscard]] virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
         [[nodiscard]] virtual SurfaceID CreateSurface(Window& window) = 0;
-        [[nodiscard]] virtual ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) = 0;
         [[nodiscard]] virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
         [[nodiscard]] virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
         [[nodiscard]] virtual QueueID GetQueue(QueueFamily family) = 0;
@@ -64,7 +63,6 @@ namespace le
         virtual size_t GetBufferSize(BufferID buffer) = 0;
         virtual bool IsFenceSignaled(FenceID fence) = 0;
         virtual SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) = 0;
-        virtual FormatProperties GetFormatProperties() = 0;
         virtual Format FindDepthFormat() = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;

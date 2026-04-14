@@ -19,7 +19,7 @@ namespace le
     {
         m_textureId = toSet;
 
-        if (toSet != 0)
+        if (toSet != nullptr)
             m_shaderId = m_ShaderManager.GetByID("textured");
         else
             m_shaderId = m_ShaderManager.GetByID("solid");

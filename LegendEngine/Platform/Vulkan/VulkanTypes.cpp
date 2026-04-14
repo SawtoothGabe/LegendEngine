@@ -2,21 +2,13 @@
 
 namespace le
 {
-    VmaAllocationCreateFlags VulkanTypes::GetVmaFlags(const BufferUsageFlagBits usage, const bool mapped)
+    VmaAllocationCreateFlags VulkanTypes::GetVmaFlags(const BufferUsageFlags usage, const bool mapped)
     {
-        VmaAllocationCreateFlags flags;
-        switch (usage)
-        {
-            case BufferUsageFlagBits::TRANSFER_SRC:
-            case BufferUsageFlagBits::UNIFORM_BUFFER:
-            case BufferUsageFlagBits::STORAGE_BUFFER:
-            {
-                flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
-            }
-                break;
-
-            default: flags = 0;
-        }
+        VmaAllocationCreateFlags flags{};
+        if (usage & BufferUsageFlagBits::TRANSFER_SRC
+            || usage & BufferUsageFlagBits::UNIFORM_BUFFER
+            || usage & BufferUsageFlagBits::STORAGE_BUFFER)
+            flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT;
 
         if (mapped)
             flags |= VMA_ALLOCATION_CREATE_MAPPED_BIT;
@@ -200,5 +192,36 @@ namespace le
             accessFlag |= vk::AccessFlagBits::eTransferWrite;
 
         return accessFlag;
+    }
+
+    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlag(const sh::ShaderStage stage)
+    {
+        switch (stage)
+        {
+            case sh::ShaderStage::VERTEX: return vk::ShaderStageFlagBits::eVertex;
+            case sh::ShaderStage::HULL: return vk::ShaderStageFlagBits::eTessellationEvaluation;
+            case sh::ShaderStage::DOMAIN_STAGE: return vk::ShaderStageFlagBits::eTessellationControl;
+            case sh::ShaderStage::GEOMETRY: return vk::ShaderStageFlagBits::eGeometry;
+            case sh::ShaderStage::FRAGMENT: return vk::ShaderStageFlagBits::eFragment;
+            case sh::ShaderStage::COMPUTE: return vk::ShaderStageFlagBits::eCompute;
+            case sh::ShaderStage::RAY_GENERATION: return vk::ShaderStageFlagBits::eRaygenKHR;
+            case sh::ShaderStage::INTERSECTION: return vk::ShaderStageFlagBits::eIntersectionKHR;
+            case sh::ShaderStage::ANY_HIT: return vk::ShaderStageFlagBits::eAnyHitKHR;
+            case sh::ShaderStage::CLOSEST_HIT: return vk::ShaderStageFlagBits::eClosestHitKHR;
+            case sh::ShaderStage::MISS: return vk::ShaderStageFlagBits::eMissKHR;
+            case sh::ShaderStage::CALLABLE: return vk::ShaderStageFlagBits::eCallableKHR;
+            case sh::ShaderStage::MESH: return vk::ShaderStageFlagBits::eMeshEXT;
+            case sh::ShaderStage::AMPLIFICATION: return vk::ShaderStageFlagBits::eTaskEXT;
+
+            default:;
+        }
+
+        LE_ASSERT(false, "Unknown shader stage");
+        return vk::ShaderStageFlagBits::eAll;
+    }
+
+    Format VulkanTypes::ToFormat(vk::Format format)
+    {
+        return static_cast<Format>(format);
     }
 }

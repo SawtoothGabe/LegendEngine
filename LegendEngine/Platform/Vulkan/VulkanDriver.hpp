@@ -19,7 +19,7 @@ namespace le
         std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) override;
         CommandBufferID AllocateCommandBuffer(CommandPoolID pool) override;
         std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) override;
-        BufferID CreateBuffer(BufferUsageFlagBits flags, std::size_t size, bool createMapped) override;
+        [[nodiscard]] BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
         PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) override;
         FenceID CreateFence(bool signaled) override;
@@ -67,6 +67,7 @@ namespace le
         size_t GetBufferSize(BufferID buffer) override;
         bool IsFenceSignaled(FenceID fence) override;
         SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) override;
+        Format FindDepthFormat() override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
@@ -93,7 +94,7 @@ namespace le
         void CmdEndRendering(CommandBufferID buffer) override;
 
         void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
-            ImageLayout newLayout, ImageAspect aspect) override;
+                                   ImageLayout newLayout, ImageAspect aspect) override;
     private:
         struct QueueFamilyIndices
         {

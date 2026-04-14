@@ -16,8 +16,8 @@ namespace le
             Application::FRAMES_IN_FLIGHT
         );
 
-        for (size_t i = 0; i < m_uniformBuffers.size(); ++i)
-            m_uniformBuffers[i] = m_driver.CreateBuffer(BufferUsageFlagBits::UNIFORM_BUFFER,
+        for (auto & m_uniformBuffer : m_uniformBuffers)
+            m_uniformBuffer = m_driver.CreateBuffer(BufferUsageFlagBits::UNIFORM_BUFFER,
                 sizeof(Uniforms), true);
     }
 
@@ -30,7 +30,7 @@ namespace le
             m_sets.data()
         );
 
-        for (size_t i = 0; i < m_uniformBuffers.size(); ++i)
-            m_driver.DestroyBuffer(m_uniformBuffers[i]);
+        for (const auto & m_uniformBuffer : m_uniformBuffers)
+            m_driver.DestroyBuffer(m_uniformBuffer);
     }
 }
