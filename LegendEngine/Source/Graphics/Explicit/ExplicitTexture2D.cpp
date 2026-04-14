@@ -4,7 +4,8 @@ namespace le
 {
     ExplicitTexture2D::ExplicitTexture2D(const ExplicitRenderer& renderer, const TextureData& loader)
         :
-        m_driver(renderer.GetDriver())
+        m_driver(renderer.GetDriver()),
+        m_mutex(renderer.GetTransferMutex())
     {
         Format format;
         switch (loader.GetChannels())
@@ -87,7 +88,11 @@ namespace le
         info.commandBuffer = cmdBuffer;
         info.fence = fence;
 
-        m_driver.QueueSubmit(queue, info);
+        {
+            std::scoped_lock lock(m_mutex);
+            m_driver.QueueSubmit(queue, info);
+        }
+
         m_driver.WaitForFences(1, &fence);
         m_driver.DestroyFence(fence);
         m_driver.FreeCommandBuffers(commandPool, 1, &cmdBuffer);

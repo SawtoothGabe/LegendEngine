@@ -21,13 +21,13 @@ namespace le
 
     PerFrameBuffer::~PerFrameBuffer()
     {
-        for (size_t i = 0; i < m_buffers.size(); ++i)
-            m_driver.DestroyBuffer(m_buffers[i]);
+        for (const auto & m_buffer : m_buffers)
+            m_driver.DestroyBuffer(m_buffer);
     }
 
-    void PerFrameBuffer::Update(const std::size_t size, const std::size_t offset, const void* data)
+    void PerFrameBuffer::Update(const std::size_t size, const std::size_t offset, const void* data,
+        const size_t currentFrame)
     {
-        const size_t currentFrame = Application::Get().GetCurrentFrame();
         const size_t allocSize = m_sizes[currentFrame];
 
         if (allocSize != m_size)
@@ -47,11 +47,11 @@ namespace le
         m_size = newSize;
     }
 
-    Buffer::Desc PerFrameBuffer::GetDesc() const
+    Buffer::Desc PerFrameBuffer::GetDesc(const size_t currentFrame) const
     {
         return {
-            m_buffers[Application::Get().GetCurrentFrame()],
-            m_sizes[Application::Get().GetCurrentFrame()],
+            m_buffers[currentFrame],
+            m_sizes[currentFrame],
         };
     }
 

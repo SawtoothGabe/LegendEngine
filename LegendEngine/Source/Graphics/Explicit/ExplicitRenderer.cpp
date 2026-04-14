@@ -55,6 +55,8 @@ namespace le
         m_driver->DestroyCommandPool(m_graphicsPool);
         m_driver->DestroyPipelineLayout(m_pipelineLayout);
 
+        m_driver->DestroyLayoutPoolManager(m_cameraPool);
+        m_driver->DestroyLayoutPoolManager(m_scenePool);
         m_driver->DestroyLayoutPoolManager(m_materialPool);
         for (const DescriptorSetLayoutID& layout : m_descriptorSetLayouts)
             m_driver->DestroyDescriptorSetLayout(layout);
@@ -234,7 +236,10 @@ namespace le
         info.waitSemaphores = waitSemaphores;
         info.signalSemaphores = signalSemaphores;
 
-        m_driver->QueueSubmit(m_graphicsQueue, info);
+        {
+            std::scoped_lock lock(m_graphicsMutex);
+            m_driver->QueueSubmit(m_graphicsQueue, info);
+        }
 
         for (const RenderTargetID& target : m_targetsRendered)
         {
@@ -248,6 +253,16 @@ namespace le
     void ExplicitRenderer::EnqueueDeletionFunc(const std::function<void()>& func)
     {
         m_deletionQueues[m_currentFrame].push_back(func);
+    }
+
+    PoolManagerID ExplicitRenderer::GetCameraPoolManager() const
+    {
+        return m_cameraPool;
+    }
+
+    PoolManagerID ExplicitRenderer::GetScenePoolManager() const
+    {
+        return m_scenePool;
     }
 
     PoolManagerID ExplicitRenderer::GetMaterialPoolManager() const
@@ -356,7 +371,9 @@ namespace le
                 }
             };
 
-            m_descriptorSetLayouts.emplace_back(m_driver->CreateDescriptorSetLayout(bindings));
+            DescriptorSetLayoutID layout = m_driver->CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_scenePool = m_driver->CreateLayoutPoolManager(layout);
         }
 
         // Scene
@@ -377,7 +394,9 @@ namespace le
                 }
             };
 
-            m_descriptorSetLayouts.emplace_back(m_driver->CreateDescriptorSetLayout(bindings));
+            DescriptorSetLayoutID layout = m_driver->CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_scenePool = m_driver->CreateLayoutPoolManager(layout);
         }
 
         // Material
@@ -429,7 +448,7 @@ namespace le
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
 
-        auto& explicitMaterial = *reinterpret_cast<ExplicitMaterial*>(material->GetHandle().id);
+        const auto& explicitMaterial = *reinterpret_cast<ExplicitMaterial*>(material->GetHandle().id);
         m_sets[2] = explicitMaterial.GetSet(m_currentFrame);
         m_haveSetsChanged = true;
 

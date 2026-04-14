@@ -68,6 +68,8 @@ return id != other.id; \
 
     static_assert(sizeof(void*) == sizeof(BufferID));
 
+    static constexpr size_t WHOLE_SIZE = (~0ULL);
+
     struct Offset3D
     {
         int32_t x;
@@ -653,9 +655,21 @@ return id != other.id; \
         Extent2D currentExtent;
     };
 
-    struct FormatProperties
+    struct DescriptorBufferInfo
     {
+        BufferID buffer;
+        size_t offset = 0;
+        size_t range = 0;
+    };
 
+    struct WriteDescriptorSet
+    {
+        DescriptorSetID dstSet;
+        uint32_t dstBinding = 0;
+        uint32_t dstArrayElement = 0;
+        uint32_t descriptorCount = 1;
+        DescriptorType descriptorType = DescriptorType::UNIFORM_BUFFER;
+        DescriptorBufferInfo* pBufferInfo = nullptr;
     };
 
     LE_DEFINE_BITMASK(AccessFlagBits);

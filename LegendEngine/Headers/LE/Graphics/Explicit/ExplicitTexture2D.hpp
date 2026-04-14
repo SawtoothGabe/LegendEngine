@@ -18,6 +18,7 @@ namespace le
         void Upload(const void* data, size_t size, Extent3D extent, const QueueID& queue, const CommandPoolID& commandPool) const;
 
         ExplicitDriver& m_driver;
+        std::mutex& m_mutex;
 
         ImageID m_image;
         ImageViewID m_view;

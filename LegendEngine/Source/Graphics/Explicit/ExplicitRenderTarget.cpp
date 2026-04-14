@@ -1,24 +1,28 @@
 #include <LE/Application.hpp>
+#include <LE/Components/Camera.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
 
 namespace le
 {
-    ExplicitRenderTarget::ExplicitRenderTarget(const ExplicitRenderer& renderer, Format colorFormat,
+    ExplicitRenderTarget::ExplicitRenderTarget(ExplicitRenderer& renderer, const Format colorFormat,
         const Format depthFormat, Window& window)
         :
         m_driver(renderer.GetDriver()),
+        m_cameraPoolManager(renderer.GetCameraPoolManager()),
         m_window(window),
         m_mutex(renderer.GetGraphicsMutex()),
         m_queue(renderer.GetGraphicsQueue()),
         m_commandPool(renderer.GetGraphicsPool()),
         m_colorFormat(colorFormat),
-        m_depthFormat(depthFormat)
+        m_depthFormat(depthFormat),
+        m_cameraUniforms(renderer, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Camera::CameraUniforms))
     {
         m_frames.resize(Application::FRAMES_IN_FLIGHT);
         m_surface = m_driver.CreateSurface(window);
 
         CreateSwapchain(m_driver.GetSurfaceCapabilities(m_surface));
+        CreateCameraUniforms();
         CreateDepthImages();
         CreateSemaphores();
     }
@@ -26,6 +30,9 @@ namespace le
     ExplicitRenderTarget::~ExplicitRenderTarget()
     {
         m_driver.WaitIdle();
+
+        m_driver.FreeDescriptorSets(m_cameraPoolManager, m_cameraPool,
+            m_cameraSets.size(), m_cameraSets.data());
 
         DestroySwapchain();
 
@@ -115,9 +122,19 @@ namespace le
         m_driver.QueuePresent(m_queue, info);
     }
 
-    DescriptorSetID ExplicitRenderTarget::GetCameraSet(size_t currentFrame)
+    void ExplicitRenderTarget::UpdateCameraUniforms(const size_t currentFrame, const Camera& camera) const
     {
+        Camera::CameraUniforms uniforms;
+        uniforms.cameraMatrix = camera.GetCameraMatrix();
 
+        const BufferID buffer = m_cameraUniforms.GetDesc(currentFrame).buffer;
+        void* data = m_driver.GetMappedBufferData(buffer);
+        memcpy(data, &uniforms, sizeof(uniforms));
+    }
+
+    DescriptorSetID ExplicitRenderTarget::GetCameraSet(const size_t currentFrame)
+    {
+        return m_cameraSets[currentFrame];
     }
 
     SemaphoreID ExplicitRenderTarget::GetImageAvailableSemaphore(const size_t currentFrame)
@@ -170,7 +187,11 @@ namespace le
         info.commandBuffer = c;
         info.fence = fence;
 
-        m_driver.QueueSubmit(m_queue, info);
+        {
+            std::scoped_lock lock(m_mutex);
+            m_driver.QueueSubmit(m_queue, info);
+        }
+
         m_driver.WaitForFences(1, &fence);
         m_driver.DestroyFence(fence);
         m_driver.FreeCommandBuffers(m_commandPool, 1, &c);
@@ -180,6 +201,27 @@ namespace le
     {
         for (PerFrameData& frame : m_frames)
             frame.imageAvailableSemaphore = m_driver.CreateSemaphore();
+    }
+
+    void ExplicitRenderTarget::CreateCameraUniforms()
+    {
+        m_cameraSets = m_driver.AllocateDescriptorSets(m_cameraPoolManager, m_cameraPool,
+            Application::FRAMES_IN_FLIGHT);
+
+        for (size_t i = 0; i < m_cameraSets.size(); ++i)
+        {
+            DescriptorBufferInfo bufferInfo {
+                .buffer = m_cameraUniforms.GetDesc(i).buffer,
+                .range = sizeof(Camera::CameraUniforms),
+            };
+
+            WriteDescriptorSet write {
+                .dstSet = m_cameraSets[i],
+                .pBufferInfo = &bufferInfo,
+            };
+
+            m_driver.UpdateDescriptorSets(std::span(&write, 1));
+        }
     }
 
     void ExplicitRenderTarget::RecreateSwapchain()

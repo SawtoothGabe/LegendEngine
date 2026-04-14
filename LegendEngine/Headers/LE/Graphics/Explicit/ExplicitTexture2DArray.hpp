@@ -23,6 +23,7 @@ namespace le
         static void CopyImagesToBuffer(uint8_t* data, size_t size, const std::span<TextureData*>& textureData);
 
         ExplicitDriver& m_driver;
+        std::mutex& m_mutex;
 
         ImageID m_image;
         ImageViewID m_view;

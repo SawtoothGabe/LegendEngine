@@ -6,7 +6,8 @@ namespace le
         const size_t width, const size_t height, const uint8_t channels,
         const std::span<TextureData*>& textureData)
         :
-        m_driver(renderer.GetDriver())
+        m_driver(renderer.GetDriver()),
+        m_mutex(renderer.GetTransferMutex())
     {
         Format format;
         switch (channels)
@@ -105,7 +106,11 @@ namespace le
         info.commandBuffer = c;
         info.fence = fence;
 
-        m_driver.QueueSubmit(queue, info);
+        {
+            std::scoped_lock lock(m_mutex);
+            m_driver.QueueSubmit(queue, info);
+        }
+
         m_driver.WaitForFences(1, &fence);
         m_driver.FreeCommandBuffers(commandPool, 1, &c);
         m_driver.DestroyFence(fence);

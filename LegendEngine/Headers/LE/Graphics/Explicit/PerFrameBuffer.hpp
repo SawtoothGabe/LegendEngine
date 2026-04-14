@@ -11,10 +11,10 @@ namespace le
         PerFrameBuffer(const ExplicitRenderer& renderer, BufferUsageFlagBits usage, size_t size);
         ~PerFrameBuffer() override;
 
-        void Update(std::size_t size, std::size_t offset, const void* data) override;
+        void Update(std::size_t size, std::size_t offset, const void* data, size_t currentFrame) override;
         void Resize(std::size_t newSize) override;
 
-        Desc GetDesc() const override;
+        [[nodiscard]] Desc GetDesc(size_t currentFrame) const override;
     private:
         void CreateBuffer(BufferID& buffer) const;
         void RecreateBuffer(size_t currentFrame);

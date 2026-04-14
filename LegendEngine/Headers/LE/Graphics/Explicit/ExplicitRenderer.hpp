@@ -37,6 +37,9 @@ namespace le
         void EndFrame() override;
 
         void EnqueueDeletionFunc(const std::function<void()>& func);
+
+        [[nodiscard]] PoolManagerID GetCameraPoolManager() const;
+        [[nodiscard]] PoolManagerID GetScenePoolManager() const;
         [[nodiscard]] PoolManagerID GetMaterialPoolManager() const;
 
         [[nodiscard]] CommandPoolID GetGraphicsPool() const;
@@ -97,6 +100,8 @@ namespace le
         std::vector<std::vector<std::function<void()>>> m_deletionQueues;
         std::vector<DescriptorSetLayoutID> m_descriptorSetLayouts;
 
+        PoolManagerID m_cameraPool;
+        PoolManagerID m_scenePool;
         PoolManagerID m_materialPool;
 
         DescriptorSetID m_sets[3] = {};

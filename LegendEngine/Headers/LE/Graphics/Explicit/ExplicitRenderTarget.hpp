@@ -4,6 +4,7 @@
 #include <LE/Graphics/RenderTarget.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
+#include <LE/Graphics/Explicit/PerFrameBuffer.hpp>
 
 namespace le
 {
@@ -12,7 +13,7 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(const ExplicitRenderer& renderer, Format colorFormat, Format depthFormat, Window& window);
+        explicit ExplicitRenderTarget(ExplicitRenderer& renderer, Format colorFormat, Format depthFormat, Window& window);
         ~ExplicitRenderTarget() override;
 
         void SetClearColor(Color clearColor);
@@ -23,7 +24,7 @@ namespace le
         void EndRendering(const CommandBufferID& c) const;
         void EndFrame(SemaphoreID waitSemaphore);
 
-        void UpdateCameraUniforms(const Camera& camera);
+        void UpdateCameraUniforms(size_t currentFrame, const Camera& camera) const;
 
         DescriptorSetID GetCameraSet(size_t currentFrame);
         SemaphoreID GetImageAvailableSemaphore(size_t currentFrame);
@@ -39,10 +40,13 @@ namespace le
         void CreateSwapchain(const SurfaceCapabilities& capabilities);
         void CreateDepthImages();
         void CreateSemaphores();
+        void CreateCameraUniforms();
         void RecreateSwapchain();
         void DestroySwapchain() const;
 
         ExplicitDriver& m_driver;
+        DescriptorPoolID m_cameraPool;
+        PoolManagerID m_cameraPoolManager;
         Window& m_window;
 
         std::mutex& m_mutex;
@@ -61,6 +65,9 @@ namespace le
         std::vector<PerFrameData> m_frames;
         std::vector<ImageID> m_images;
         std::vector<ImageViewID> m_imageViews;
+
+        std::vector<DescriptorSetID> m_cameraSets;
+        PerFrameBuffer m_cameraUniforms;
 
         Color m_clearColor;
         bool m_vsync = false;

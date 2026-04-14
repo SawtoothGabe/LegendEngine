@@ -65,6 +65,7 @@ namespace le
         virtual SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) = 0;
         virtual Format FindDepthFormat() = 0;
         virtual bool HasTransferQueue() = 0;
+        virtual void UpdateDescriptorSets(std::span<WriteDescriptorSet> writes) = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,
