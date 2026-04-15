@@ -7,18 +7,14 @@ namespace le
     ExplicitMaterial::ExplicitMaterial(ExplicitRenderer& renderer)
         :
         m_renderer(renderer),
-        m_driver(renderer.GetDriver())
+        m_driver(renderer.GetDriver()),
+        m_uniformBuffer(renderer, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Material::Uniforms))
     {
-        m_uniformBuffers.resize(Application::FRAMES_IN_FLIGHT);
         m_sets = m_driver.AllocateDescriptorSets(
             renderer.GetMaterialPoolManager(),
             m_descriptorPool,
             Application::FRAMES_IN_FLIGHT
         );
-
-        for (auto & m_uniformBuffer : m_uniformBuffers)
-            m_uniformBuffer = m_driver.CreateBuffer(BufferUsageFlagBits::UNIFORM_BUFFER,
-                sizeof(Uniforms), true);
     }
 
     ExplicitMaterial::~ExplicitMaterial()
@@ -29,9 +25,11 @@ namespace le
             m_sets.size(),
             m_sets.data()
         );
+    }
 
-        for (const auto & m_uniformBuffer : m_uniformBuffers)
-            m_driver.DestroyBuffer(m_uniformBuffer);
+    void ExplicitMaterial::UpdateUniforms(size_t frame)
+    {
+
     }
 
     DescriptorSetID ExplicitMaterial::GetSet(const size_t frame) const
