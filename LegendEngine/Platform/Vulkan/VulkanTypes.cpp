@@ -56,7 +56,7 @@ namespace le
         return vk::VertexInputRate::eVertex;
     }
 
-    vk::DescriptorType VulkanTypes::GetDescriptorType(DescriptorType type)
+    vk::DescriptorType VulkanTypes::GetDescriptorType(const DescriptorType type)
     {
         switch (type)
         {

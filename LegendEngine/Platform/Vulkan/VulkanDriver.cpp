@@ -162,11 +162,11 @@ namespace le
 	    VkImageCreateInfo imageInfo{};
 	    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	    imageInfo.extent.width = info.width;
-	    imageInfo.extent.height = info.height;
+	    imageInfo.extent.width  = static_cast<uint32_t>(info.width);
+	    imageInfo.extent.height = static_cast<uint32_t>(info.height);
 	    imageInfo.extent.depth = 1;
 	    imageInfo.mipLevels = 1;
-	    imageInfo.arrayLayers = info.arrayLayers;
+	    imageInfo.arrayLayers = static_cast<uint32_t>(info.arrayLayers);
 	    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	    imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -255,8 +255,8 @@ namespace le
 
 	    const vk::PipelineVertexInputStateCreateInfo vertexInput(
 		    {},
-		    bindings.size(), bindings.data(),
-		    attributes.size(), attributes.data()
+		    static_cast<uint32_t>(bindings.size()), bindings.data(),
+		    static_cast<uint32_t>(attributes.size()), attributes.data()
 	    );
 
 	    constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssembly(
@@ -307,7 +307,7 @@ namespace le
 	    );
 
 	    const vk::GraphicsPipelineCreateInfo createInfo(
-		    {}, stages.size(), stages.data(), &vertexInput, &inputAssembly,
+		    {}, static_cast<uint32_t>(stages.size()), stages.data(), &vertexInput, &inputAssembly,
 		    nullptr, &viewportState, &rasterizerState, &multisampleState,
 		    &depthStencilState, &colorBlendState, &dynamicState,
 		    VULKAN_CAST(PipelineLayout, info.layout), nullptr, 0,
@@ -346,8 +346,8 @@ namespace le
 
 	    const vk::PipelineLayoutCreateInfo createInfo(
 		    {},
-		    layouts.size(), reinterpret_cast<vk::DescriptorSetLayout*>(layouts.data()),
-		    vkRanges.size(), vkRanges.data()
+		    static_cast<uint32_t>(layouts.size()), reinterpret_cast<vk::DescriptorSetLayout*>(layouts.data()),
+		    static_cast<uint32_t>(vkRanges.size()), vkRanges.data()
 	    );
 
 	    return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
@@ -430,7 +430,7 @@ namespace le
 
     void VulkanDriver::FreeCommandBuffers(const CommandPoolID pool, const size_t count, CommandBufferID* buffers)
     {
-    	m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), count,
+    	m_device.freeCommandBuffers(VULKAN_CAST(CommandPool, pool), static_cast<uint32_t>(count),
     		reinterpret_cast<vk::CommandBuffer*>(buffers));
     }
 
@@ -523,7 +523,7 @@ namespace le
 
     void VulkanDriver::WaitForFences(const size_t count, FenceID* fences)
     {
-    	LE_CHECK_RESULT(m_device.waitForFences(count, reinterpret_cast<vk::Fence*>(fences), true,
+    	LE_CHECK_RESULT(m_device.waitForFences(static_cast<uint32_t>(count), reinterpret_cast<vk::Fence*>(fences), true,
     		UINT64_MAX));
     }
 
@@ -534,7 +534,7 @@ namespace le
 
     void VulkanDriver::ResetFences(const size_t count, FenceID* fences)
     {
-	    LE_CHECK_RESULT(m_device.resetFences(count, reinterpret_cast<vk::Fence*>(fences)));
+	    LE_CHECK_RESULT(m_device.resetFences(static_cast<uint32_t>(count), reinterpret_cast<vk::Fence*>(fences)));
     }
 
     void VulkanDriver::QueueSubmit(const QueueID queue, const SubmitInfo& info)
@@ -551,11 +551,11 @@ namespace le
 	    const auto commandBuffer = VULKAN_CAST(CommandBuffer, info.commandBuffer);
 
 	    const vk::SubmitInfo submit(
-		    info.waitSemaphores.size(),
+		    static_cast<uint32_t>(info.waitSemaphores.size()),
 		    reinterpret_cast<const vk::Semaphore*>(info.waitSemaphores.data()),
 		    waitStages.data(),
 		    1, &commandBuffer,
-		    info.signalSemaphores.size(),
+		    static_cast<uint32_t>(info.signalSemaphores.size()),
 		    reinterpret_cast<const vk::Semaphore*>(info.signalSemaphores.data())
 	    );
 
@@ -567,9 +567,9 @@ namespace le
 	    const auto vkQueue = VULKAN_CAST(Queue, queue);
 
 	    const vk::PresentInfoKHR presentInfo(
-		    info.waitSemaphores.size(),
+		    static_cast<uint32_t>(info.waitSemaphores.size()),
 		    reinterpret_cast<const vk::Semaphore*>(info.waitSemaphores.data()),
-		    info.swapchains.size(),
+		    static_cast<uint32_t>(info.swapchains.size()),
 		    reinterpret_cast<vk::SwapchainKHR*>(info.swapchains.data()),
 		    info.imageIndices.data()
 	    );
@@ -678,7 +678,7 @@ namespace le
 
 	    const auto vkSrc = VULKAN_CAST(Buffer, src);
 	    const auto vkDst = VULKAN_CAST(Buffer, dst);
-	    VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, vkRegions.size(), vkRegions.data());
+	    VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, static_cast<uint32_t>(vkRegions.size()), vkRegions.data());
     }
 
     void VulkanDriver::CmdCopyBufferToImage(const CommandBufferID buffer, const BufferID src,
@@ -710,7 +710,7 @@ namespace le
 	    const auto vkImage = VULKAN_CAST(Image, dst);
 	    const vk::ImageLayout vkLayout = VulkanTypes::GetImageLayout(layout);
 	    VULKAN_CAST(CommandBuffer, buffer).copyBufferToImage(vkBuffer, vkImage, vkLayout,
-	                                                         vkRegions.size(), vkRegions.data());
+	                                                         static_cast<uint32_t>(vkRegions.size()), vkRegions.data());
     }
 
     void VulkanDriver::CmdPipelineBarrier(const CommandBufferID buffer,
@@ -743,7 +743,7 @@ namespace le
 		    srcStageMask, dstStageMask,
 		    {}, 0, nullptr,
 		    0, nullptr,
-		    vkImageMemoryBarriers.size(), vkImageMemoryBarriers.data()
+		    static_cast<uint32_t>(vkImageMemoryBarriers.size()), vkImageMemoryBarriers.data()
 	    );
     }
 
@@ -783,15 +783,18 @@ namespace le
 	    depth.loadOp = vk::AttachmentLoadOp::eClear;
 	    depth.storeOp = vk::AttachmentStoreOp::eStore;
 
-	    const vk::Rect2D extent =
-	    {
-		    static_cast<int32_t>(info.extent.width),
-		    static_cast<int32_t>(info.extent.height)
-	    };
+	    const vk::Rect2D extent(
+	    	{},
+	    	{
+	    		static_cast<uint32_t>(info.extent.width),
+				static_cast<uint32_t>(info.extent.height)
+	    	}
+	    );
 
 	    const vk::RenderingInfoKHR renderingInfo(
 		    {}, extent,
-		    1, {}, attachments.size(), attachments.data(),
+		    1, {},
+		    static_cast<uint32_t>(attachments.size()), attachments.data(),
 		    &depth
 	    );
 
@@ -840,7 +843,7 @@ namespace le
 	    VULKAN_CAST(CommandBuffer, buffer).pushConstants(
 		    VULKAN_CAST(PipelineLayout, layout),
 		    VulkanTypes::GetShaderStageFlags(stage),
-		    offset, size, values
+		    static_cast<uint32_t>(offset), static_cast<uint32_t>(size), values
 	    );
     }
 
@@ -849,7 +852,8 @@ namespace le
     {
 	    VULKAN_CAST(CommandBuffer, buffer).bindDescriptorSets(
 		    VulkanTypes::GetPipelineBindPoint(bindPoint), VULKAN_CAST(PipelineLayout, layout),
-		    static_cast<uint32_t>(firstSet), sets.size(), reinterpret_cast<vk::DescriptorSet*>(sets.data()),
+		    static_cast<uint32_t>(firstSet),
+		    static_cast<uint32_t>(sets.size()), reinterpret_cast<vk::DescriptorSet*>(sets.data()),
 		    0, nullptr
 	    );
     }
@@ -970,11 +974,12 @@ namespace le
 	    const vk::InstanceCreateInfo instanceCreateInfo(
 		    {}, &appInfo,
 #ifndef NDEBUG
-		    VALIDATION_LAYERS.size(), VALIDATION_LAYERS.data(),
+		    static_cast<uint32_t>(VALIDATION_LAYERS.size()), VALIDATION_LAYERS.data(),
 #else
 		    0, nullptr,
 #endif
-		    extensions.size(), extensions.data()
+		    static_cast<uint32_t>(extensions.size()),
+		    extensions.data()
 	    );
 	    m_instance = vk::createInstance(instanceCreateInfo);
 	    PlatformUtils::LoadVulkanFuncs(m_instance);

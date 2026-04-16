@@ -11,8 +11,8 @@ namespace le
         for (DescriptorSetLayoutBinding& binding : bindings)
         {
             vk::DescriptorSetLayoutBinding vkBinding{};
-            vkBinding.binding = binding.binding;
-            vkBinding.descriptorCount = binding.descriptorCount;
+            vkBinding.binding = static_cast<uint32_t>(binding.binding);
+            vkBinding.descriptorCount = static_cast<uint32_t>(binding.descriptorCount);
             vkBinding.descriptorType = VulkanTypes::GetDescriptorType(binding.descriptorType);
             vkBinding.stageFlags = VulkanTypes::GetShaderStageFlags(binding.stageFlags);
 
@@ -21,7 +21,7 @@ namespace le
         }
 
         vk::DescriptorSetLayoutCreateInfo info(
-            {}, vkBindings.size(), vkBindings.data()
+            {}, static_cast<uint32_t>(vkBindings.size()), vkBindings.data()
         );
 
         layout = device.createDescriptorSetLayout(info);

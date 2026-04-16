@@ -6,23 +6,23 @@
 
 namespace le::VulkanTypes
 {
-    static VmaAllocationCreateFlags GetVmaFlags(BufferUsageFlags usage, bool mapped);
-    static VkFormat GetFormat(Format format);
-    static vk::Format GetVkFormat(Format format);
-    static vk::ShaderStageFlagBits GetShaderStageFlag(ShaderStageFlagBits stage);
-    static vk::ShaderStageFlagBits GetShaderStageFlags(ShaderStageFlagBits stage);
-    static vk::VertexInputRate GetVertexInputRate(InputRate inputRate);
-    static vk::DescriptorType GetDescriptorType(DescriptorType type);
-    static vk::Filter GetFilter(Filter filter);
-    static vk::SamplerAddressMode GetSamplerAddressMode(AddressMode addressMode);
-    static vk::BorderColor GetBorderColor(BorderColor borderColor);
-    static vk::PipelineStageFlags GetPipelineStage(PipelineStage stage);
-    static vk::ImageAspectFlags GetImageAspectFlags(ImageAspect aspect);
-    static vk::ImageLayout GetImageLayout(ImageLayout layout);
-    static vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
-    static vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
-    static vk::AccessFlags GetAccessFlags(AccessFlags accessFlags);
-    static vk::ShaderStageFlagBits GetShaderStageFlag(sh::ShaderStage stage);
+    VmaAllocationCreateFlags GetVmaFlags(BufferUsageFlags usage, bool mapped);
+    VkFormat GetFormat(Format format);
+    vk::Format GetVkFormat(Format format);
+    vk::ShaderStageFlagBits GetShaderStageFlag(ShaderStageFlagBits stage);
+    vk::ShaderStageFlagBits GetShaderStageFlags(ShaderStageFlagBits stage);
+    vk::VertexInputRate GetVertexInputRate(InputRate inputRate);
+    vk::DescriptorType GetDescriptorType(DescriptorType type);
+    vk::Filter GetFilter(Filter filter);
+    vk::SamplerAddressMode GetSamplerAddressMode(AddressMode addressMode);
+    vk::BorderColor GetBorderColor(BorderColor borderColor);
+    vk::PipelineStageFlags GetPipelineStage(PipelineStage stage);
+    vk::ImageAspectFlags GetImageAspectFlags(ImageAspect aspect);
+    vk::ImageLayout GetImageLayout(ImageLayout layout);
+    vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
+    vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
+    vk::AccessFlags GetAccessFlags(AccessFlags accessFlags);
+    vk::ShaderStageFlagBits GetShaderStageFlag(sh::ShaderStage stage);
 
-    static Format ToFormat(vk::Format format);
+    Format ToFormat(vk::Format format);
 }
