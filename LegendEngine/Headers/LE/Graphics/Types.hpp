@@ -16,15 +16,10 @@ uint64_t id = 0; \
 name##ID() = default; \
 explicit name##ID(uint64_t id) : id(id) {} \
 explicit name##ID(void* ptr) : id(reinterpret_cast<uint64_t>(ptr)) {} \
-name##ID(const name##ID& other) : id(other.id) {} \
+name##ID(const name##ID& other) noexcept = default; \
 explicit operator bool() const \
 { \
 return id != 0; \
-} \
-name##ID& operator=(const name##ID& other) \
-{ \
-id = other.id; \
-return *this; \
 } \
 bool operator==(const name##ID& other) \
 { \

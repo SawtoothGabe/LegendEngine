@@ -4,11 +4,13 @@
 #include <LE/Resources/Resource.hpp>
 
 #include <span>
+#include <LE/Graphics/GraphicsResources.hpp>
 
 namespace le
 {
     class MeshData : public Resource
     {
+        struct Passkey {};
     public:
         enum class UpdateFrequency
         {
@@ -23,17 +25,20 @@ namespace le
             float texcoord[2];
         };
 
-        MeshData();
+        MeshData(GraphicsResources& resources, const MeshID& handle, Passkey);
+        ~MeshData() override;
 
-        [[nodiscard]] virtual size_t GetVertexCount() const;
-        [[nodiscard]] virtual size_t GetIndexCount() const;
+        void Update(std::span<Vertex3> vertices, std::span<uint32_t> indices);
+        void Resize(size_t vertexCount, size_t indexCount) const;
 
-        MeshID GetHandle() const;
+        [[nodiscard]] MeshID GetHandle() const;
 
         static Ref<MeshData> Create(std::span<Vertex3> vertices, std::span<uint32_t> indices,
             UpdateFrequency frequency);
+        static Ref<MeshData> Create(size_t initialVertexCount, size_t initialIndexCount,
+            UpdateFrequency frequency);
     private:
-        size_t m_vertexCount;
-        size_t m_indexCount;
+        GraphicsResources& m_resources;
+        MeshID m_handle;
     };
 }

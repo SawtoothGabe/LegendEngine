@@ -188,7 +188,7 @@ namespace le
         reinterpret_cast<ExplicitMaterial*>(id.id)->SetColor(color);
     }
 
-    void ExplicitResources::SetMaterialShader(const MaterialID id, const ShaderID shader)
+    void ExplicitResources::SetMaterialShader(const MaterialID id, const Ref<Shader> shader)
     {
         reinterpret_cast<ExplicitMaterial*>(id.id)->SetShader(shader);
     }

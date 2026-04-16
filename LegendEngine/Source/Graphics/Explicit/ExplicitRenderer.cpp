@@ -59,10 +59,10 @@ namespace le
         m_driver.BeginCommandBuffer(buffer, false);
     }
 
-    void ExplicitRenderer::RenderFrame(RenderTargetID& target, std::span<Scene*> scenes)
+    void ExplicitRenderer::RenderFrame(RenderTargetID& target, const std::span<Scene*> scenes)
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
-        const auto& explicitTarget = reinterpret_cast<ExplicitRenderTarget&>(target.id);
+        auto& explicitTarget = reinterpret_cast<ExplicitRenderTarget&>(target.id);
 
         const UID cameraID = explicitTarget.GetActiveCameraID();
         if (cameraID == 0)
@@ -161,7 +161,7 @@ namespace le
         m_sets[2] = explicitMaterial.GetSet(m_currentFrame);
         m_haveSetsChanged = true;
 
-        const Ref<Shader> shader = material->GetShader();
+        const Ref<Shader> shader = explicitMaterial.GetShader();
         if (shader == m_currentShader)
             return;
 
@@ -206,7 +206,7 @@ namespace le
         m_haveSetsChanged = true;
     }
 
-    void ExplicitRenderer::UpdateSceneUniforms(Scene& scene)
+    void ExplicitRenderer::UpdateSceneUniforms(Scene& scene) const
     {
         size_t count = 0;
         scene.QueryComponents<Transform, Light>([&count](const Transform&, Light&)
@@ -215,7 +215,7 @@ namespace le
         });
 
         auto& explicitScene = *reinterpret_cast<ExplicitScene*>(scene.GetHandle().id);
-        explicitScene.StartFrame(count);
+        explicitScene.StartFrame(m_currentFrame, count);
 
         size_t index = 0;
         scene.QueryComponents<Transform, Light>([&](const Transform& transform, Light& light)
@@ -226,10 +226,10 @@ namespace le
                 .type = static_cast<uint32_t>(light.type),
             };
 
-            explicitScene.UpdateLightData(index++, lightData);
+            explicitScene.UpdateLightData(m_currentFrame, index++, lightData);
         });
 
-        explicitScene.UpdateUniforms();
+        explicitScene.UpdateUniforms(m_currentFrame);
     }
 
     void ExplicitRenderer::UpdateCamera(Scene& scene, const UID cameraID)

@@ -17,9 +17,9 @@ namespace le
 
         void SetTexture(const Ref<Texture>& texture);
         void SetColor(Color color);
-        void SetShader(const ShaderID& shader);
+        void SetShader(const Ref<Shader>& shader);
 
-        ShaderID GetShader() const;
+        [[nodiscard]] Ref<Shader> GetShader() const;
     private:
         Material::Uniforms m_uniforms;
         size_t m_framesUntilValid = 0;
@@ -29,11 +29,10 @@ namespace le
 
         DescriptorPoolID m_descriptorPool;
 
-
         PerFrameBuffer m_uniformBuffer;
         std::vector<DescriptorSetID> m_sets;
 
         Ref<Texture> m_texture;
-        ShaderID m_customShader;
+        Ref<Shader> m_customShader;
     };
 }

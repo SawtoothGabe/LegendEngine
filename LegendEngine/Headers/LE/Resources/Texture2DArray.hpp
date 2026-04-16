@@ -22,12 +22,11 @@ namespace le
 		static Ref<Texture2DArray> Create(size_t width, size_t height, uint8_t channels,
 		                                  const std::span<TextureData*>& textureData);
 	private:
-		Renderer& m_renderer;
+		GraphicsResources& m_resources;
+		Texture2DArrayID m_handle;
 
 		size_t m_Width;
 		size_t m_Height;
 		uint8_t m_Channels;
-
-		Texture2DArrayID m_impl;
 	};
 }

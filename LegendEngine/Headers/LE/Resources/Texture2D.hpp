@@ -25,12 +25,11 @@ namespace le
 
 		static Ref<Texture2D> Create(const TextureData& loader);
 	private:
-		Renderer& m_renderer;
+		GraphicsResources& m_resources;
+		Texture2DID m_handle;
 
 		uint64_t m_Width;
 		uint64_t m_Height;
 		uint8_t m_Channels;
-
-		Texture2DID m_impl;
 	};
 }

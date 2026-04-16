@@ -28,7 +28,7 @@ namespace le
         void BeginScene(const Scene& scene);
         void DrawMesh(const Mesh& mesh, const Transform& transform);
 
-        static void UpdateSceneUniforms(Scene& scene);
+        void UpdateSceneUniforms(Scene& scene) const;
         static void UpdateCamera(Scene& scene, UID cameraID);
 
         ExplicitResources& m_resources;

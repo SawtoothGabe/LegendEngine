@@ -1,5 +1,4 @@
 #include <LE/Application.hpp>
-#include <LE/Graphics/ShaderManager.hpp>
 #include <LE/Math/Types.hpp>
 #include <LE/Resources/Material.hpp>
 #include <LE/Resources/Texture.hpp>
@@ -8,45 +7,50 @@ namespace le
 {
     class Shader;
 
-    Material::Material()
+    Material::Material(Passkey)
         :
-        m_ShaderManager(Application::Get().GetGraphicsContext().GetShaderManager()),
-        m_shaderId(m_ShaderManager.GetByID("solid"))
+        Material(Application::Get().GetGraphicsContext().GetResources(), Passkey{})
+    {}
+
+    Material::Material(GraphicsResources& resources, Passkey)
+        :
+        m_resources(resources)
     {
+        m_handle = m_resources.CreateMaterial();
     }
 
-    void Material::SetTexture(const Ref<Texture>& toSet)
+    Material::~Material()
     {
-        m_textureId = toSet;
-
-        if (toSet != nullptr)
-            m_shaderId = m_ShaderManager.GetByID("textured");
-        else
-            m_shaderId = m_ShaderManager.GetByID("solid");
+        m_resources.DestroyMaterial(m_handle);
     }
 
-    void Material::SetColor(const Color& toSet)
+    void Material::SetTexture(const Ref<Texture>& toSet) const
     {
-        m_uniformData.color = toSet;
+        m_resources.SetMaterialTexture(m_handle, toSet);
     }
 
-    Ref<Texture> Material::GetTexture() const
+    void Material::SetColor(const Color& toSet) const
     {
-        return m_textureId;
+        m_resources.SetMaterialColor(m_handle, toSet);
     }
 
-    Ref<Shader> Material::GetShader() const
+    void Material::SetShader(const Ref<Shader>& toSet) const
     {
-        return m_shaderId;
+        m_resources.SetMaterialShader(m_handle, toSet);
     }
 
-    Color Material::GetColor() const
+    MaterialID Material::GetHandle() const
     {
-        return m_uniformData.color;
+        return m_handle;
     }
 
     Ref<Material> Material::Create()
     {
-        return std::make_shared<Material>();
+        return std::make_shared<Material>(Passkey{});
+    }
+
+    Ref<Material> Material::Create(GraphicsResources& resources)
+    {
+        return std::make_shared<Material>(resources, Passkey{});
     }
 }

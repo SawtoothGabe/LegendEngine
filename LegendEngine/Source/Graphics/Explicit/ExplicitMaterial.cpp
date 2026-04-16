@@ -84,12 +84,12 @@ namespace le
         m_uniforms.color = color;
     }
 
-    void ExplicitMaterial::SetShader(const ShaderID& shader)
+    void ExplicitMaterial::SetShader(const Ref<Shader>& shader)
     {
         m_customShader = shader;
     }
 
-    ShaderID ExplicitMaterial::GetShader() const
+    Ref<Shader> ExplicitMaterial::GetShader() const
     {
         return m_customShader;
     }
