@@ -3,7 +3,7 @@
 
 namespace le
 {
-    class DummyGraphicsDriver : public GraphicsDriver
+    class DummyDriver : public GraphicsDriver
     {
     public:
         [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override;
