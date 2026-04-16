@@ -3,6 +3,7 @@
 #include <LE/Math/Types.hpp>
 #include <LE/Resources/Resource.hpp>
 #include <LE/Resources/Texture.hpp>
+#include <LE/Resources/Shader.hpp>
 
 namespace le
 {

@@ -26,7 +26,7 @@ namespace le
         Vector(Ts... value)
         {
             size_t i = 0;
-            ((data[i++] = value), ...);
+            ((data[i++] = T(value)), ...);
         }
 
         template <size_t M, typename... Rest>

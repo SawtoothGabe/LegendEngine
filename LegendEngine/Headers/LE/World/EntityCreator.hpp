@@ -1,7 +1,6 @@
 #pragma once
 #include <typeindex>
 #include <unordered_map>
-#include <LE/Common/Defs.hpp>
 #include <LE/Common/UID.hpp>
 #include <LE/Components/ComponentStorage.hpp>
 
@@ -10,6 +9,10 @@ namespace le
     class EntityCreator
     {
     public:
+        EntityCreator() = default;
+        EntityCreator(EntityCreator&&) = default;
+        EntityCreator(const EntityCreator&) = delete;
+
         template <typename T>
             requires std::is_base_of_v<Component, T>
         void AddComponent(const T& component)

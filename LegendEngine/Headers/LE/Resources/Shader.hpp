@@ -1,5 +1,6 @@
 #pragma once
 
+#include <LE/Common/Types.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/Resources/Resource.hpp>
 

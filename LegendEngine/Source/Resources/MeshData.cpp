@@ -1,5 +1,6 @@
 #include <LE/Application.hpp>
 #include <LE/Resources/MeshData.hpp>
+#include <LE/Graphics/GraphicsResources.hpp>
 
 namespace le
 {

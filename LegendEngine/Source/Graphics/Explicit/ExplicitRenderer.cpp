@@ -273,6 +273,9 @@ namespace le
         m_driver.CmdBindVertexBuffers(buffer, 0, buffers);
         m_driver.CmdBindIndexBuffer(buffer, index, 0);
 
-        m_driver.CmdDrawIndexed(buffer, explicitMesh.GetIndexCount(), 1, 0, 0, 0);
+        m_driver.CmdDrawIndexed(buffer,
+            static_cast<uint32_t>(explicitMesh.GetIndexCount()),
+            1, 0, 0, 0
+        );
     }
 }

@@ -14,8 +14,8 @@ namespace le::ECS
 {
     struct EntityRecord
     {
-        size_t archetypeID = -1;
-        size_t row = -1;
+        size_t archetypeID = ~0ULL;
+        size_t row = ~0ULL;
     };
 
     size_t HashIDs(const std::span<size_t>& ids);

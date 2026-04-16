@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstring>
 #include <vector>
 
 #include <LE/Common/Assert.hpp>
@@ -38,6 +37,6 @@ namespace le
     private:
         size_t m_componentSize = 0;
         size_t m_count = 0;
-        std::vector<std::byte> m_componentData;
+        std::vector<uint8_t> m_componentData;
     };
 }

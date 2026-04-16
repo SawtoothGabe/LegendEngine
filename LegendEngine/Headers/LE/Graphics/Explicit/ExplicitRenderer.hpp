@@ -1,6 +1,8 @@
 #pragma once
 
 #include <LE/Common/UID.hpp>
+#include <LE/Components/Mesh.hpp>
+#include <LE/Components/Transform.hpp>
 #include <LE/Graphics/Renderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Resources/Material.hpp>

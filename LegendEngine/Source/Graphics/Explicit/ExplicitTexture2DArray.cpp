@@ -71,7 +71,7 @@ namespace le
             barrier.dstAccessMask = AccessFlagBits::TRANSFER_WRITE_BIT;
             barrier.image = m_image;
             barrier.subresourceRange.aspect = ImageAspect::COLOR;
-            barrier.subresourceRange.layerCount = textureData.size();
+            barrier.subresourceRange.layerCount = static_cast<uint32_t>(textureData.size());
 
             m_driver.CmdPipelineBarrier(c, PipelineStage::TOP_OF_PIPE,
                 PipelineStage::TRANSFER, std::span(&barrier, 1));
@@ -81,7 +81,7 @@ namespace le
             {
                 copies[i].bufferOffset = i * size;
                 copies[i].imageSubresource.aspect = ImageAspect::COLOR;
-                copies[i].imageSubresource.baseArrayLayer = i;
+                copies[i].imageSubresource.baseArrayLayer = static_cast<uint32_t>(i);
                 copies[i].imageSubresource.layerCount = 1;
                 copies[i].imageOffset = { 0, 0, 0 };
                 copies[i].imageExtent = extent;

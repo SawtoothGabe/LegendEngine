@@ -12,6 +12,7 @@ namespace le
 
     enum class GraphicsAPI
     {
+        NONE,
         VULKAN,
         OPENGL,
         D3D11,

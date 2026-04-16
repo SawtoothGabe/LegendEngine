@@ -20,6 +20,8 @@ namespace le
             std::string_view applicationName);
     };
 
+    Scope<GraphicsDriver> CreateDummyGraphicsDriver();
+
 #ifdef LE_VULKAN_API
     Scope<GraphicsDriver> CreateVulkanGraphicsDriver(std::string_view applicationName);
 #endif
@@ -41,6 +43,8 @@ namespace le
     {
         switch (api)
         {
+            case GraphicsAPI::NONE: return CreateDummyGraphicsDriver();
+
 #ifdef LE_VULKAN_API
             case GraphicsAPI::VULKAN: return CreateVulkanGraphicsDriver(applicationName);
 #endif
@@ -57,7 +61,8 @@ namespace le
             case GraphicsAPI::WEBGPU: return CreateWebGPUGraphicsDriver(applicationName);
 #endif
 
-            default: break;
+            // Get rid of no default case warning
+            default:;
         }
 
         LE_ASSERT(false, "Unknown graphics API. Was the program linked with the relevant library for it?");

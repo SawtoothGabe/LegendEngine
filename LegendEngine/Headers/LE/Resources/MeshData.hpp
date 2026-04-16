@@ -4,10 +4,10 @@
 #include <LE/Resources/Resource.hpp>
 
 #include <span>
-#include <LE/Graphics/GraphicsResources.hpp>
 
 namespace le
 {
+    class GraphicsResources;
     class MeshData : public Resource
     {
         struct Passkey {};

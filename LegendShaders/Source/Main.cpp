@@ -93,7 +93,7 @@ Slang::ComPtr<slang::ISession> CreateSession(const Options& options, const Slang
     sessionDesc.searchPaths = options.includeDirs.data();
     sessionDesc.targetCount = static_cast<SlangInt>(targets.size());
     sessionDesc.targets = targets.data();
-    sessionDesc.compilerOptionEntryCount = static_cast<SlangInt>(compilerOptions.size());
+    sessionDesc.compilerOptionEntryCount = static_cast<uint32_t>(compilerOptions.size());
     sessionDesc.compilerOptionEntries = compilerOptions.data();
 
     Slang::ComPtr<slang::ISession> session;
