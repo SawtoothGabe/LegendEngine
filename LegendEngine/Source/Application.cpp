@@ -44,7 +44,7 @@ namespace le
     }
 
     Application::Application(
-        Scope<ExplicitDriver> driver,
+        Scope<GraphicsDriver> driver,
         const std::string_view applicationName,
         const int width, const int height)
         :

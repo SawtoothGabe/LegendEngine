@@ -191,7 +191,7 @@ public:
 		floor(&testScene, m_mesh)
 	{
 		const Ref<Shader> shader = app.GetGraphicsContext().GetShaderManager().GetByID("textured");
-		shader->SetCullMode(Shader::CullMode::NONE);
+		shader->SetCullMode(CullMode::NONE);
 
 		CreateMaterials();
 		CreateObjects();

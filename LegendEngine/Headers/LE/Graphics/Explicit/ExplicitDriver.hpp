@@ -42,7 +42,7 @@ namespace le
         virtual void DestroyImage(ImageID image) = 0;
         virtual void DestroyImageView(ImageViewID view) = 0;
         virtual void DestroyPipeline(PipelineID pipeline) = 0;
-        virtual void DestroyPipelineLayout(PipelineLayoutID layoutID);
+        virtual void DestroyPipelineLayout(PipelineLayoutID layoutID) = 0;
         virtual void DestroySemaphore(SemaphoreID semaphore) = 0;
         virtual void DestroySwapchain(SwapchainID swapchain) = 0;
         virtual void DestroySurface(SurfaceID surface) = 0;

@@ -1,14 +1,13 @@
-#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
 
 namespace le
 {
-    GraphicsContext::GraphicsContext(Scope<ExplicitDriver> driver)
+    GraphicsContext::GraphicsContext(Scope<GraphicsDriver> driver)
         :
         m_driver(std::move(driver))
     {
         m_resources = m_driver->CreateResources();
-        m_renderer = m_driver->CreateRenderer(static_cast<ExplicitResources&>(*m_resources));
+        m_renderer = m_driver->CreateRenderer(*m_resources);
     }
 
     GraphicsContext::~GraphicsContext()
