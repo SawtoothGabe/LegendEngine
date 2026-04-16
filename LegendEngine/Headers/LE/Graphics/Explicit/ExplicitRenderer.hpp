@@ -32,6 +32,12 @@ namespace le
         void DestroyTexture2DArray(Texture2DArrayID id) override;
         void DestroyRenderTarget(RenderTargetID id) override;
 
+        void UpdateMesh(MeshID id, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices) override;
+        void ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) override;
+        void SetMaterialTexture(MaterialID id, Ref<Texture> texture) override;
+        void SetMaterialColor(MaterialID id, Color color) override;
+        void SetMaterialShader(MaterialID id, ShaderID shader) override;
+
         void StartFrame() override;
         void RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) override;
         void EndFrame() override;

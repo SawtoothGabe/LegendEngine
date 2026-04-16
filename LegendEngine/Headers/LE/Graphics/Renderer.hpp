@@ -4,6 +4,7 @@
 #include <LE/Graphics/Types.hpp>
 #include <LE/IO/TextureData.hpp>
 #include <LE/Resources/MeshData.hpp>
+#include <LE/Resources/Texture.hpp>
 #include <LE/World/Scene.hpp>
 
 namespace le
@@ -30,6 +31,12 @@ namespace le
         virtual void DestroyTexture2D(Texture2DID id) = 0;
         virtual void DestroyTexture2DArray(Texture2DArrayID id) = 0;
         virtual void DestroyRenderTarget(RenderTargetID id) = 0;
+
+        virtual void UpdateMesh(MeshID id, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices) = 0;
+        virtual void ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) = 0;
+        virtual void SetMaterialTexture(MaterialID id, Ref<Texture> texture) = 0;
+        virtual void SetMaterialColor(MaterialID id, Color color) = 0;
+        virtual void SetMaterialShader(MaterialID id, ShaderID shader) = 0;
 
         virtual ImageID GetTexture2DImage(Texture2DID texture) = 0;
         virtual ImageViewID GetTexture2DImageView(Texture2DID texture) = 0;

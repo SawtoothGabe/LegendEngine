@@ -662,6 +662,13 @@ return id != other.id; \
         size_t range = 0;
     };
 
+    struct DescriptorImageInfo
+    {
+        SamplerID sampler;
+        ImageViewID imageView;
+        ImageLayout imageLayout;
+    };
+
     struct WriteDescriptorSet
     {
         DescriptorSetID dstSet;
@@ -670,6 +677,7 @@ return id != other.id; \
         uint32_t descriptorCount = 1;
         DescriptorType descriptorType = DescriptorType::UNIFORM_BUFFER;
         DescriptorBufferInfo* pBufferInfo = nullptr;
+        DescriptorImageInfo* pImageInfo = nullptr;
     };
 
     LE_DEFINE_BITMASK(AccessFlagBits);

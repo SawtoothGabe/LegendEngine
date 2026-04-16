@@ -163,6 +163,31 @@ namespace le
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitRenderTarget*>(id.id); });
     }
 
+    void ExplicitRenderer::UpdateMesh(const MeshID id, const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices)
+    {
+        reinterpret_cast<ExplicitMesh*>(id.id)->Update(vertices, indices);
+    }
+
+    void ExplicitRenderer::ResizeMesh(const MeshID id, const size_t vertexCount, const size_t indexCount)
+    {
+        reinterpret_cast<ExplicitMesh*>(id.id)->Resize(vertexCount, indexCount);
+    }
+
+    void ExplicitRenderer::SetMaterialTexture(const MaterialID id, const Ref<Texture> texture)
+    {
+        reinterpret_cast<ExplicitMaterial*>(id.id)->SetTexture(texture);
+    }
+
+    void ExplicitRenderer::SetMaterialColor(const MaterialID id, const Color color)
+    {
+        reinterpret_cast<ExplicitMaterial*>(id.id)->SetColor(color);
+    }
+
+    void ExplicitRenderer::SetMaterialShader(const MaterialID id, const ShaderID shader)
+    {
+        reinterpret_cast<ExplicitMaterial*>(id.id)->SetShader(shader);
+    }
+
     void ExplicitRenderer::StartFrame()
     {
         m_currentFrame = Application::Get().GetCurrentFrame();
@@ -207,7 +232,7 @@ namespace le
 
             UseMaterial(m_defaultMaterial);
             UpdateCamera(*sceneWithCamera, cameraID);
-            explicitTarget.UpdateCameraUniforms(sceneWithCamera->GetComponentData<Camera>(cameraID));
+            explicitTarget.UpdateCameraUniforms(m_currentFrame, sceneWithCamera->GetComponentData<Camera>(cameraID));
 
             for (Scene* pScene : scenes)
                 if (pScene)
@@ -519,8 +544,8 @@ namespace le
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
         const ExplicitMesh& explicitMesh = *reinterpret_cast<ExplicitMesh*>(mesh.data->GetHandle().id);
-        const BufferID vertex = explicitMesh.GetVertexBuffer().GetDesc().buffer;
-        const BufferID index = explicitMesh.GetIndexBuffer().GetDesc().buffer;
+        const BufferID vertex = explicitMesh.GetVertexBuffer().GetDesc(m_currentFrame).buffer;
+        const BufferID index = explicitMesh.GetIndexBuffer().GetDesc(m_currentFrame).buffer;
 
         if (!vertex || !index)
             return;

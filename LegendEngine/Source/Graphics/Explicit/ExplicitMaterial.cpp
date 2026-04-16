@@ -27,13 +27,72 @@ namespace le
         );
     }
 
-    void ExplicitMaterial::UpdateUniforms(size_t frame)
+    void ExplicitMaterial::UpdateUniforms(const size_t frame)
     {
+        if (m_shouldUpdate)
+        {
+            for (size_t i = 0; i < m_sets.size(); ++i)
+            {
+                DescriptorBufferInfo bufferInfo {
+                    .buffer = m_uniformBuffer.GetDesc(i).buffer,
+                    .range = sizeof(m_uniforms),
+                };
 
+                DescriptorImageInfo imageInfo{};
+
+                size_t writeCount = 1;
+
+                WriteDescriptorSet writes[2]{};
+                writes[0].dstSet = m_sets[i];
+                writes[0].pBufferInfo = &bufferInfo;
+
+                if (m_texture)
+                {
+                    writeCount++;
+
+                    imageInfo.sampler = m_texture->GetSampler();
+                    imageInfo.imageView = m_texture->GetImageView();
+                    imageInfo.imageLayout = ImageLayout::SHADER_READ_ONLY_OPTIMAL;
+
+                    writes[1].dstSet = m_sets[i],
+                    writes[1].dstBinding = 1,
+                    writes[1].descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                    writes[1].pImageInfo = &imageInfo;
+                }
+
+                m_driver.UpdateDescriptorSets(std::span(writes, writeCount));
+            }
+
+            m_shouldUpdate = false;
+        }
+
+        const BufferID buffer = m_uniformBuffer.GetDesc(frame).buffer;
+        memcpy(m_driver.GetMappedBufferData(buffer), &m_uniforms, sizeof(m_uniforms));
     }
 
     DescriptorSetID ExplicitMaterial::GetSet(const size_t frame) const
     {
         return m_sets[frame];
+    }
+
+    void ExplicitMaterial::SetTexture(const Ref<Texture>& texture)
+    {
+        m_texture = texture;
+        m_shouldUpdate = true;
+    }
+
+    void ExplicitMaterial::SetColor(const Color color)
+    {
+        m_uniforms.color = color;
+    }
+
+    void ExplicitMaterial::SetShader(const ShaderID& shader)
+    {
+        m_customShader = shader;
+    }
+
+    ShaderID ExplicitMaterial::GetShader() const
+    {
+        return m_customShader;
     }
 }

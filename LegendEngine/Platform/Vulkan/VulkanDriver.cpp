@@ -242,6 +242,8 @@ namespace le
 		    );
 	    }
 
+    	vk::DescriptorImageInfo
+
 	    const vk::PipelineVertexInputStateCreateInfo vertexInput(
 		    {},
 		    bindings.size(), bindings.data(),
