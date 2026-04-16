@@ -2,7 +2,6 @@
 
 #include <LE/Math/Matrix4x4.hpp>
 #include <LE/Math/Vector.hpp>
-#include <Tether/Math/Types.hpp>
 
 namespace le
 {

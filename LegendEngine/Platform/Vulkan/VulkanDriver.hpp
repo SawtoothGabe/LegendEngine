@@ -31,7 +31,6 @@ namespace le
         SemaphoreID CreateSemaphore() override;
         SwapchainID CreateSwapchain(const SwapchainInfo& info) override;
         SurfaceID CreateSurface(Window& window) override;
-        ShaderModuleID CreateShaderModule(const ShaderModuleInfo& info) override;
         DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) override;
         SamplerID CreateSampler(const SamplerInfo& info) override;
         QueueID GetQueue(QueueFamily family) override;
@@ -69,6 +68,7 @@ namespace le
         SurfaceCapabilities GetSurfaceCapabilities(SurfaceID surface) override;
         Format FindDepthFormat() override;
         bool HasTransferQueue() override;
+        void UpdateDescriptorSets(std::span<WriteDescriptorSet> writes) override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

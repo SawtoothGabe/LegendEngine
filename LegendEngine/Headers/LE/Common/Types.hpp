@@ -18,12 +18,4 @@ namespace le
         D3D12,
         WEBGPU,
     };
-
-    enum class ShaderType
-    {
-        VERTEX,
-        GEOM, // ! CURRENTLY UNSUPPORTED
-        COMPUTE, // ! CURRENTLY UNSUPPORTED
-        FRAG,
-    };
 }

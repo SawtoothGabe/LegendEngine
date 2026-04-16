@@ -4,7 +4,6 @@
 #include <vector>
 #include <LE/Common/Defs.hpp>
 #include <LE/Common/UID.hpp>
-#include <LE/Math/Math.hpp>
 #include <LE/World/Archetype.hpp>
 #include <LE/World/ECS.hpp>
 
@@ -21,6 +20,7 @@ namespace le
         friend Entity;
     public:
         Scene();
+        explicit Scene(Renderer& renderer);
         ~Scene();
         LE_NO_COPY(Scene);
 
@@ -30,10 +30,10 @@ namespace le
         void EnqueueEntityDeletion(UID entity);
 
         // These just call the functions with UID
-        bool HasEntity(const Entity& entity) const;
+        [[nodiscard]] bool HasEntity(const Entity& entity) const;
         void DeleteEntity(const Entity& entity);
 
-        bool HasEntity(UID entity) const;
+        [[nodiscard]] bool HasEntity(UID entity) const;
         void DeleteEntity(UID entity);
 
         template <typename T, typename... Args>
@@ -217,23 +217,13 @@ namespace le
             }
         }
 
-        void SetAmbientLight(float level);
+        void SetAmbientLight(float level) const;
         void Clear();
+
+        [[nodiscard]] SceneID GetHandle() const;
 
         void ProcessEntityChanges();
     private:
-        struct Storage
-        {
-            alignas(16) float ambientLight = 0.0f;
-        };
-
-        struct LightData
-        {
-            Vector4f position;
-            Vector4f color;
-            alignas(16) uint32_t type;
-        };
-
         template<typename T, typename... Args>
         void AddComponentToEmptyEntity(ECS::EntityRecord& record, const UID entity, Args&&... args)
         {
@@ -287,6 +277,9 @@ namespace le
         void ProcessDeletions();
         void ClearCachedArchetypeLookups();
 
+        Renderer* m_pRenderer = nullptr;
+        SceneID m_handle;
+
         std::unordered_map<UID, ECS::EntityRecord> m_entities;
         std::unordered_map<size_t, std::vector<size_t>> m_findArchetypeResults;
         std::unordered_map<size_t, Archetype> m_archetypes;
@@ -297,7 +290,6 @@ namespace le
         std::mutex m_deletionMutex;
         std::vector<UID> m_deletions;
 
-        Storage m_storage;
-        std::vector<LightData> m_lightData;
+        std::vector<SceneLightData> m_lightData;
     };
 }

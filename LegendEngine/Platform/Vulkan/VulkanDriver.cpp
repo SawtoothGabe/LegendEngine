@@ -242,8 +242,6 @@ namespace le
 		    );
 	    }
 
-    	vk::DescriptorImageInfo
-
 	    const vk::PipelineVertexInputStateCreateInfo vertexInput(
 		    {},
 		    bindings.size(), bindings.data(),
@@ -645,6 +643,11 @@ namespace le
     bool VulkanDriver::HasTransferQueue()
     {
 	    return m_indices.hasTransferFamily;
+    }
+
+    void VulkanDriver::UpdateDescriptorSets(std::span<WriteDescriptorSet> writes)
+    {
+
     }
 
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)

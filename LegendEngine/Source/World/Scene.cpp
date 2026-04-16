@@ -7,11 +7,20 @@
 namespace le
 {
     Scene::Scene()
+        :
+        m_pRenderer(&Application::Get().GetGraphicsContext().GetRenderer()),
+        m_handle(m_pRenderer->CreateScene())
+    {}
+
+    Scene::Scene(Renderer& renderer)
+        :
+        m_pRenderer(&renderer),
+        m_handle(renderer.CreateScene())
     {}
 
     Scene::~Scene()
     {
-
+        m_pRenderer->DestroyScene(m_handle);
     }
 
     Entity Scene::CreateEntity()
@@ -62,9 +71,9 @@ namespace le
         ClearCachedArchetypeLookups();
     }
 
-    void Scene::SetAmbientLight(const float level)
+    void Scene::SetAmbientLight(const float level) const
     {
-        m_storage.ambientLight = level;
+        m_pRenderer->SetSceneAmbientLight(m_handle, level);
     }
 
     void Scene::Clear()
@@ -72,6 +81,11 @@ namespace le
         m_entities.clear();
         m_findArchetypeResults.clear();
         m_archetypes.clear();
+    }
+
+    SceneID Scene::GetHandle() const
+    {
+        return m_handle;
     }
 
     void Scene::ClearCachedArchetypeLookups()

@@ -45,6 +45,7 @@ return id != other.id; \
     LE_GRAPHICS_RESOURCE_ID(Texture2DArray);
     LE_GRAPHICS_RESOURCE_ID(RenderTarget);
     LE_GRAPHICS_RESOURCE_ID(PoolManager);
+    LE_GRAPHICS_RESOURCE_ID(Scene);
 
     // GPU primitives
     LE_GRAPHICS_RESOURCE_ID(Buffer);
@@ -678,6 +679,18 @@ return id != other.id; \
         DescriptorType descriptorType = DescriptorType::UNIFORM_BUFFER;
         DescriptorBufferInfo* pBufferInfo = nullptr;
         DescriptorImageInfo* pImageInfo = nullptr;
+    };
+
+    struct SceneStorage
+    {
+        alignas(16) float ambientLight = 0.0f;
+    };
+
+    struct SceneLightData
+    {
+        Vector4f position;
+        Vector4f color;
+        alignas(16) uint32_t type{};
     };
 
     LE_DEFINE_BITMASK(AccessFlagBits);

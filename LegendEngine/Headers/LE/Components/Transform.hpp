@@ -2,7 +2,6 @@
 
 #include <LE/Components/Component.hpp>
 #include <LE/Math/Math.hpp>
-#include <LE/Math/Quaternion.hpp>
 
 namespace le
 {
