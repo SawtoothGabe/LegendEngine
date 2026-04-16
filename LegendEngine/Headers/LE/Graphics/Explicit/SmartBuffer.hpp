@@ -13,10 +13,10 @@ namespace le
         SmartBuffer(const ExplicitResources& resources, BufferUsageFlagBits usage);
         ~SmartBuffer() override;
 
-        void Update(std::size_t size, std::size_t offset, const void* data) override;
+        void Update(std::size_t size, std::size_t offset, const void* data, size_t) override;
         void Resize(std::size_t newSize) override;
 
-        Desc GetDesc() const override;
+        Desc GetDesc(size_t) const override;
     private:
         struct BufferDesc
         {

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <LE/TetherBindings.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/IO/TextureData.hpp>

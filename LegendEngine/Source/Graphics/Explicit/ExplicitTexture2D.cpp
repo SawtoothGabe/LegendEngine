@@ -2,10 +2,10 @@
 
 namespace le
 {
-    ExplicitTexture2D::ExplicitTexture2D(const ExplicitRenderer& renderer, const TextureData& loader)
+    ExplicitTexture2D::ExplicitTexture2D(const ExplicitResources& resources, const TextureData& loader)
         :
-        m_driver(renderer.GetDriver()),
-        m_mutex(renderer.GetTransferMutex())
+        m_driver(resources.GetDriver()),
+        m_mutex(resources.GetTransferMutex())
     {
         Format format;
         switch (loader.GetChannels())
@@ -31,7 +31,7 @@ namespace le
         };
 
         Upload(loader.GetData(), imageInfo.width * imageInfo.height * loader.GetChannels(), extent,
-            renderer.GetTransferQueue(), renderer.GetTransferPool());
+            resources.GetTransferQueue(), resources.GetTransferPool());
     }
 
     ExplicitTexture2D::~ExplicitTexture2D()

@@ -8,37 +8,14 @@ namespace le
         :
         m_driver(resources.GetDriver()),
         m_storageBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(SceneStorage)),
-        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData) * 1024)
+        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData))
     {
+        m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
         m_sets = m_driver.AllocateDescriptorSets(
             resources.GetScenePoolManager(),
             m_descriptorPool,
             Application::FRAMES_IN_FLIGHT
         );
-
-        for (size_t i = 0; i < m_sets.size(); ++i)
-        {
-            DescriptorBufferInfo storageInfo {
-                .buffer = m_storageBuffer.GetDesc(i).buffer,
-                .range = sizeof(SceneStorage),
-            };
-
-            DescriptorBufferInfo lightsInfo {
-                .buffer = m_lightsBuffer.GetDesc(i).buffer,
-                .range = sizeof(SceneLightData) * 1024,
-            };
-
-            WriteDescriptorSet writes[2]{};
-            writes[0].dstSet = m_sets[i];
-            writes[0].pBufferInfo = &storageInfo;
-
-            writes[1].dstSet = m_sets[i];
-            writes[1].dstBinding = 1,
-            writes[1].descriptorType = DescriptorType::STORAGE_BUFFER,
-            writes[1].pBufferInfo = &lightsInfo;
-
-            m_driver.UpdateDescriptorSets(writes);
-        }
     }
 
     void ExplicitScene::SetAmbientLight(const float level)
@@ -46,30 +23,57 @@ namespace le
         m_storage.ambientLight = level;
     }
 
-    void ExplicitScene::SetLightCount(const size_t count)
+    void ExplicitScene::StartFrame(const size_t frame, const size_t lightCount)
     {
-        m_storage.lightCount = static_cast<uint32_t>(count);
+        if (m_lightCount != lightCount)
+        {
+            m_lightsBuffer.Resize(sizeof(SceneLightData) * lightCount);
+            m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
+            m_lightCount = lightCount;
+        }
+
+        if (m_framesUntilSetsValid)
+            UpdateSets(frame);
     }
 
-    void ExplicitScene::UpdateLightData(const size_t index, const SceneLightData& data)
+    void ExplicitScene::UpdateLightData(const size_t frame, const size_t index, const SceneLightData& data)
     {
-        const size_t frame = Application::Get().GetCurrentFrame();
-        const BufferID buffer = m_lightsBuffer.GetDesc(frame).buffer;
-
-        void* pData = m_driver.GetMappedBufferData(buffer);
-        memcpy(static_cast<SceneLightData*>(pData) + index, &data, sizeof(SceneLightData));
+        m_lightsBuffer.Update(sizeof(SceneLightData), sizeof(SceneLightData) * index, &data, frame);
     }
 
-    void ExplicitScene::UpdateUniforms()
+    void ExplicitScene::UpdateUniforms(const size_t frame)
     {
-        const size_t frame = Application::Get().GetCurrentFrame();
-        const BufferID buffer = m_storageBuffer.GetDesc(frame).buffer;
-
-        memcpy(m_driver.GetMappedBufferData(buffer), &m_storage, sizeof(m_storage));
+        m_storageBuffer.Update(sizeof(SceneStorage), 0, &m_storage, frame);
     }
 
     DescriptorSetID ExplicitScene::GetSet(const size_t index) const
     {
         return m_sets[index];
+    }
+
+    void ExplicitScene::UpdateSets(const size_t frame)
+    {
+        DescriptorBufferInfo storageInfo {
+            .buffer = m_storageBuffer.GetDesc(frame).buffer,
+            .range = sizeof(SceneStorage),
+        };
+
+        DescriptorBufferInfo lightsInfo {
+            .buffer = m_lightsBuffer.GetDesc(frame).buffer,
+            .range = sizeof(SceneLightData) * m_lightCount,
+        };
+
+        WriteDescriptorSet writes[2]{};
+        writes[0].dstSet = m_sets[frame];
+        writes[0].pBufferInfo = &storageInfo;
+
+        writes[1].dstSet = m_sets[frame];
+        writes[1].dstBinding = 1,
+        writes[1].descriptorType = DescriptorType::STORAGE_BUFFER,
+        writes[1].pBufferInfo = &lightsInfo;
+
+        m_driver.UpdateDescriptorSets(writes);
+
+        m_framesUntilSetsValid--;
     }
 }

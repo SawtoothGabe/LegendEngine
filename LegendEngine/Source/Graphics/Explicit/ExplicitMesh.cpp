@@ -34,12 +34,12 @@ namespace le
             {
                 BufferCopy vertexCopy;
                 vertexCopy.size = vertexSize;
-                driver.CmdCopyBuffer(c, vertexStager, m_vertexBuffer->GetDesc().buffer,
+                driver.CmdCopyBuffer(c, vertexStager, m_vertexBuffer->GetDesc(0).buffer,
                     std::span(&vertexCopy, 1));
 
                 BufferCopy indexCopy;
                 indexCopy.size = indexSize;
-                driver.CmdCopyBuffer(c, indexStager, m_indexBuffer->GetDesc().buffer,
+                driver.CmdCopyBuffer(c, indexStager, m_indexBuffer->GetDesc(0).buffer,
                     std::span(&indexCopy, 1));
             }
             driver.EndCommandBuffer(c);
@@ -65,8 +65,8 @@ namespace le
         }
         else
         {
-            m_vertexBuffer->Update(vertexSize, 0, vertices.data());
-            m_indexBuffer->Update(indexSize, 0, indices.data());
+            m_vertexBuffer->Update(vertexSize, 0, vertices.data(), 0);
+            m_indexBuffer->Update(indexSize, 0, indices.data(), 0);
         }
     }
 
@@ -86,8 +86,8 @@ namespace le
 
     void ExplicitMesh::Update(const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices)
     {
-        m_vertexBuffer->Update(vertices.size() * sizeof(MeshData::Vertex3), 0, vertices.data());
-        m_indexBuffer->Update(indices.size() * sizeof(uint32_t), 0, indices.data());
+        m_vertexBuffer->Update(vertices.size() * sizeof(MeshData::Vertex3), 0, vertices.data(), 0);
+        m_indexBuffer->Update(indices.size() * sizeof(uint32_t), 0, indices.data(), 0);
 
         m_vertexCount = vertices.size();
         m_indexCount = indices.size();

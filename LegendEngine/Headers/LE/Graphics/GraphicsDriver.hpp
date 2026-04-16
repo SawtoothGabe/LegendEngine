@@ -12,7 +12,7 @@ namespace le
     {
     public:
         virtual ~GraphicsDriver() = default;
-        
+
         [[nodiscard]] virtual Scope<Renderer> CreateRenderer(GraphicsResources& resources) = 0;
         [[nodiscard]] virtual Scope<GraphicsResources> CreateResources() = 0;
 

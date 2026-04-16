@@ -24,7 +24,7 @@ namespace le
         DestroyBuffer(m_buffer2);
     }
 
-    void SmartBuffer::Update(const std::size_t size, const std::size_t offset, const void* data)
+    void SmartBuffer::Update(const std::size_t size, const std::size_t offset, const void* data, size_t)
     {
         if (size == 0 || data == nullptr)
             return;
@@ -95,7 +95,7 @@ namespace le
         LE_WARN("Resize called on a smart buffer. This doesn't affect the size");
     }
 
-    Buffer::Desc SmartBuffer::GetDesc() const
+    Buffer::Desc SmartBuffer::GetDesc(size_t) const
     {
         const BufferDesc* pDesc = m_currentBuffer.load();
 

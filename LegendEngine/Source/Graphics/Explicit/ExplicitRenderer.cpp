@@ -215,7 +215,7 @@ namespace le
         });
 
         auto& explicitScene = *reinterpret_cast<ExplicitScene*>(scene.GetHandle().id);
-        explicitScene.SetLightCount(count);
+        explicitScene.StartFrame(count);
 
         size_t index = 0;
         scene.QueryComponents<Transform, Light>([&](const Transform& transform, Light& light)

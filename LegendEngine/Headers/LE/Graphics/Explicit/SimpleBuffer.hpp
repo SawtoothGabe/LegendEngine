@@ -11,10 +11,10 @@ namespace le
         SimpleBuffer(const ExplicitResources& resources, BufferUsageFlags usage, size_t size);
         ~SimpleBuffer() override;
 
-        void Update(std::size_t size, std::size_t offset, const void* data) override;
+        void Update(std::size_t size, std::size_t offset, const void* data, size_t currentFrame) override;
         void Resize(std::size_t newSize) override;
 
-        Desc GetDesc() const override;
+        [[nodiscard]] Desc GetDesc(size_t currentFrame) const override;
     private:
         ExplicitDriver& m_driver;
 

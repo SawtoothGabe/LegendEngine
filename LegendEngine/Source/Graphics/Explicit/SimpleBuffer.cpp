@@ -15,7 +15,7 @@ namespace le
         m_driver.DestroyBuffer(m_buffer);
     }
 
-    void SimpleBuffer::Update(const std::size_t size, const std::size_t offset, const void* data)
+    void SimpleBuffer::Update(const std::size_t size, const std::size_t offset, const void* data, size_t)
     {
         void* mappedData = m_driver.GetMappedBufferData(m_buffer);
         LE_ASSERT(mappedData != nullptr, "Buffer was updated but not mapped");
@@ -41,7 +41,7 @@ namespace le
         m_buffer = m_driver.CreateBuffer(m_usage, newSize, false);
     }
 
-    Buffer::Desc SimpleBuffer::GetDesc() const
+    Buffer::Desc SimpleBuffer::GetDesc(size_t) const
     {
         return {m_buffer, m_driver.GetBufferSize(m_buffer)};
     }

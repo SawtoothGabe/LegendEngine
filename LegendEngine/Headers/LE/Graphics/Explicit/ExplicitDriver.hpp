@@ -14,8 +14,6 @@ namespace le
     public:
         ~ExplicitDriver() override = default;
 
-        [[nodiscard]] GraphicsAPI GetAPI() const override = 0;
-
         [[nodiscard]] virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
         [[nodiscard]] virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
         [[nodiscard]] virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
@@ -69,6 +67,7 @@ namespace le
         virtual Format FindDepthFormat() = 0;
         virtual bool HasTransferQueue() = 0;
         virtual void UpdateDescriptorSets(std::span<WriteDescriptorSet> writes) = 0;
+        virtual bool AcquireNextImage(SwapchainID swapchain, SemaphoreID waitSemaphore, uint32_t& outIndex) = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

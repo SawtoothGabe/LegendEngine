@@ -2,6 +2,7 @@
 
 #include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Graphics/Explicit/PerFrameBuffer.hpp>
+#include <LE/Resources/Material.hpp>
 
 namespace le
 {
@@ -19,9 +20,9 @@ namespace le
         void SetShader(const ShaderID& shader);
 
         ShaderID GetShader() const;
-        private:
+    private:
         Material::Uniforms m_uniforms;
-        bool m_shouldUpdate = true;
+        size_t m_framesUntilValid = 0;
 
         ExplicitResources& m_resources;
         ExplicitDriver& m_driver;

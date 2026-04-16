@@ -5,18 +5,18 @@
 
 namespace le
 {
-    ExplicitRenderTarget::ExplicitRenderTarget(ExplicitRenderer& renderer, const Format colorFormat,
+    ExplicitRenderTarget::ExplicitRenderTarget(ExplicitResources& resources, const Format colorFormat,
         const Format depthFormat, Window& window)
         :
-        m_driver(renderer.GetDriver()),
-        m_cameraPoolManager(renderer.GetCameraPoolManager()),
+        m_driver(resources.GetDriver()),
+        m_cameraPoolManager(resources.GetCameraPoolManager()),
         m_window(window),
-        m_mutex(renderer.GetGraphicsMutex()),
-        m_queue(renderer.GetGraphicsQueue()),
-        m_commandPool(renderer.GetGraphicsPool()),
+        m_mutex(resources.GetGraphicsMutex()),
+        m_queue(resources.GetGraphicsQueue()),
+        m_commandPool(resources.GetGraphicsPool()),
         m_colorFormat(colorFormat),
         m_depthFormat(depthFormat),
-        m_cameraUniforms(renderer, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Camera::CameraUniforms))
+        m_cameraUniforms(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Camera::CameraUniforms))
     {
         m_frames.resize(Application::FRAMES_IN_FLIGHT);
         m_surface = m_driver.CreateSurface(window);
@@ -57,8 +57,18 @@ namespace le
         m_shouldRecreateSwapchain = true;
     }
 
-    void ExplicitRenderTarget::StartRendering(const CommandBufferID& c, const size_t currentFrame) const
+    bool ExplicitRenderTarget::StartRendering(const CommandBufferID& c, const size_t currentFrame)
     {
+        if (m_shouldRecreateSwapchain)
+            RecreateSwapchain();
+
+        if (!m_driver.AcquireNextImage(m_swapchain,
+            m_frames[currentFrame].imageAvailableSemaphore, m_imageIndex))
+        {
+            m_shouldRecreateSwapchain = true;
+            return false;
+        }
+
         ImageMemoryBarrier colorBarrier;
         colorBarrier.image = m_images[m_imageIndex];
         colorBarrier.oldLayout = ImageLayout::UNDEFINED;
@@ -91,6 +101,8 @@ namespace le
         m_driver.CmdBeginRendering(c, renderingInfo);
         m_driver.CmdSetViewport(c, m_extent);
         m_driver.CmdSetScissor(c, {{}, m_extent});
+
+        return true;
     }
 
     void ExplicitRenderTarget::EndRendering(const CommandBufferID& c) const

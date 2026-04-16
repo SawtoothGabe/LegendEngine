@@ -15,6 +15,8 @@ namespace le
             m_descriptorPool,
             Application::FRAMES_IN_FLIGHT
         );
+
+        m_framesUntilValid = Application::FRAMES_IN_FLIGHT;
     }
 
     ExplicitMaterial::~ExplicitMaterial()
@@ -29,45 +31,41 @@ namespace le
 
     void ExplicitMaterial::UpdateUniforms(const size_t frame)
     {
-        if (m_shouldUpdate)
+        if (m_framesUntilValid)
         {
-            for (size_t i = 0; i < m_sets.size(); ++i)
+            DescriptorBufferInfo bufferInfo {
+                .buffer = m_uniformBuffer.GetDesc(frame).buffer,
+                .range = sizeof(m_uniforms),
+            };
+
+            DescriptorImageInfo imageInfo{};
+
+            size_t writeCount = 1;
+
+            WriteDescriptorSet writes[2]{};
+            writes[0].dstSet = m_sets[frame];
+            writes[0].pBufferInfo = &bufferInfo;
+
+            if (m_texture)
             {
-                DescriptorBufferInfo bufferInfo {
-                    .buffer = m_uniformBuffer.GetDesc(i).buffer,
-                    .range = sizeof(m_uniforms),
-                };
+                writeCount++;
 
-                DescriptorImageInfo imageInfo{};
+                imageInfo.sampler = m_texture->GetSampler();
+                imageInfo.imageView = m_texture->GetImageView();
+                imageInfo.imageLayout = ImageLayout::SHADER_READ_ONLY_OPTIMAL;
 
-                size_t writeCount = 1;
-
-                WriteDescriptorSet writes[2]{};
-                writes[0].dstSet = m_sets[i];
-                writes[0].pBufferInfo = &bufferInfo;
-
-                if (m_texture)
-                {
-                    writeCount++;
-
-                    imageInfo.sampler = m_texture->GetSampler();
-                    imageInfo.imageView = m_texture->GetImageView();
-                    imageInfo.imageLayout = ImageLayout::SHADER_READ_ONLY_OPTIMAL;
-
-                    writes[1].dstSet = m_sets[i],
-                    writes[1].dstBinding = 1,
-                    writes[1].descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
-                    writes[1].pImageInfo = &imageInfo;
-                }
-
-                m_driver.UpdateDescriptorSets(std::span(writes, writeCount));
+                writes[1].dstSet = m_sets[frame],
+                writes[1].dstBinding = 1,
+                writes[1].descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                writes[1].pImageInfo = &imageInfo;
             }
 
-            m_shouldUpdate = false;
+            m_driver.UpdateDescriptorSets(std::span(writes, writeCount));
+
+            m_framesUntilValid--;
         }
 
-        const BufferID buffer = m_uniformBuffer.GetDesc(frame).buffer;
-        memcpy(m_driver.GetMappedBufferData(buffer), &m_uniforms, sizeof(m_uniforms));
+        m_uniformBuffer.Update(sizeof(m_uniforms), 0, &m_uniforms, frame);
     }
 
     DescriptorSetID ExplicitMaterial::GetSet(const size_t frame) const
@@ -78,7 +76,7 @@ namespace le
     void ExplicitMaterial::SetTexture(const Ref<Texture>& texture)
     {
         m_texture = texture;
-        m_shouldUpdate = true;
+        m_framesUntilValid = Application::FRAMES_IN_FLIGHT;
     }
 
     void ExplicitMaterial::SetColor(const Color color)

@@ -5,10 +5,10 @@
 #include <LE/Common/Assert.hpp>
 #include <LE/Common/Defs.hpp>
 #include <LE/Events/EventBus.hpp>
-#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
-#include <LE/Graphics/Renderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 #include <LE/IO/Logger.hpp>
+#include <LE/World/Scene.hpp>
 
 namespace le
 {
@@ -39,12 +39,12 @@ namespace le
         void SetActiveScene(Scene& scene);
         void ClearActiveScene();
 
-        Tether::Window& GetWindow() const;
+        [[nodiscard]] Window& GetWindow() const;
         GraphicsContext& GetGraphicsContext();
         EventBus& GetEventBus();
         Scene& GetGlobalScene();
-        Scene* GetActiveScene() const;
-        size_t GetCurrentFrame() const;
+        [[nodiscard]] Scene* GetActiveScene() const;
+        [[nodiscard]] size_t GetCurrentFrame() const;
 
         // Must be called on the main thread
         void AdvanceFrame(float delta = 1.0f);

@@ -8,8 +8,8 @@ namespace le
     class ExplicitResources : public GraphicsResources
     {
     public:
-        ExplicitResources(ExplicitDriver& driver);
-        ~ExplicitResources();
+        explicit ExplicitResources(ExplicitDriver& driver);
+        ~ExplicitResources() override;
 
         [[nodiscard]] MaterialID CreateMaterial() override;
         [[nodiscard]] MeshID CreateMesh(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,

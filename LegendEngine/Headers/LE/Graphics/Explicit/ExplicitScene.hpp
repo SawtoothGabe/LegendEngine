@@ -1,6 +1,7 @@
 #pragma once
 #include <LE/Graphics/Types.hpp>
 #include <LE/Graphics/Explicit/ExplicitResources.hpp>
+#include <LE/Graphics/Explicit/PerFrameBuffer.hpp>
 
 namespace le
 {
@@ -10,13 +11,18 @@ namespace le
         explicit ExplicitScene(ExplicitResources& resources);
 
         void SetAmbientLight(float level);
-        void SetLightCount(size_t count);
-        void UpdateLightData(size_t index, const SceneLightData& data);
+        void StartFrame(size_t frame, size_t lightCount);
+        void UpdateLightData(size_t frame, size_t index, const SceneLightData& data);
 
-        void UpdateUniforms();
+        void UpdateUniforms(size_t frame);
 
         [[nodiscard]] DescriptorSetID GetSet(size_t index) const;
     private:
+        void UpdateSets(size_t frame);
+
+        size_t m_lightCount = 0;
+        size_t m_framesUntilSetsValid = 0;
+
         ExplicitDriver& m_driver;
 
         SceneStorage m_storage;

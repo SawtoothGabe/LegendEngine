@@ -13,14 +13,14 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(ExplicitRenderer& renderer, Format colorFormat, Format depthFormat, Window& window);
+        explicit ExplicitRenderTarget(ExplicitResources& resources, Format colorFormat, Format depthFormat, Window& window);
         ~ExplicitRenderTarget() override;
 
         void SetClearColor(Color clearColor);
         void SetVSync(bool vsync) override;
         void InvalidateSwapchain() override;
 
-        void StartRendering(const CommandBufferID& c, size_t currentFrame) const;
+        bool StartRendering(const CommandBufferID& c, size_t currentFrame);
         void EndRendering(const CommandBufferID& c) const;
         void EndFrame(SemaphoreID waitSemaphore);
 

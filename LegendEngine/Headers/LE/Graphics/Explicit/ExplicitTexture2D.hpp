@@ -1,7 +1,7 @@
 #pragma once
 
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Resources/Texture2D.hpp>
 
 namespace le
@@ -9,7 +9,7 @@ namespace le
     class ExplicitTexture2D final
     {
     public:
-        ExplicitTexture2D(const ExplicitRenderer& renderer, const TextureData& loader);
+        ExplicitTexture2D(const ExplicitResources& resources, const TextureData& loader);
         ~ExplicitTexture2D();
 
         [[nodiscard]] ImageID GetImage() const;
