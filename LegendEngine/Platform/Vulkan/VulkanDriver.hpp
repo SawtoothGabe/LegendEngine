@@ -96,6 +96,9 @@ namespace le
 
         void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
                                    ImageLayout newLayout, ImageAspect aspect) override;
+
+        [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override;
+        [[nodiscard]] Scope<GraphicsResources> CreateResources() override;
     private:
         struct QueueFamilyIndices
         {

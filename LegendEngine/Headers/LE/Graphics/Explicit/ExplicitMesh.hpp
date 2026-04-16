@@ -1,7 +1,7 @@
 #pragma once
 
 #include <LE/Graphics/Explicit/Buffer.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Resources/MeshData.hpp>
 
 namespace le
@@ -9,9 +9,9 @@ namespace le
     class ExplicitMesh final
     {
     public:
-        ExplicitMesh(ExplicitRenderer& renderer, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
+        ExplicitMesh(ExplicitResources& resources, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
             MeshData::UpdateFrequency frequency);
-        ExplicitMesh(ExplicitRenderer& renderer, size_t initialVertexCount, size_t initialIndexCount,
+        ExplicitMesh(ExplicitResources& resources, size_t initialVertexCount, size_t initialIndexCount,
             MeshData::UpdateFrequency frequency);
 
         void Update(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices);
@@ -23,7 +23,7 @@ namespace le
         [[nodiscard]] Buffer& GetVertexBuffer() const;
         [[nodiscard]] Buffer& GetIndexBuffer() const;
     private:
-        void CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize, MeshData::UpdateFrequency frequency);
+        void CreateBuffer(ExplicitResources& resources, size_t vertexSize, size_t indexSize, MeshData::UpdateFrequency frequency);
 
         Scope<Buffer> m_vertexBuffer;
         Scope<Buffer> m_indexBuffer;

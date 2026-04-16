@@ -5,7 +5,7 @@
 
 namespace le
 {
-    ExplicitMesh::ExplicitMesh(ExplicitRenderer& renderer, const std::span<MeshData::Vertex3> vertices,
+    ExplicitMesh::ExplicitMesh(ExplicitResources& resources, const std::span<MeshData::Vertex3> vertices,
         const std::span<uint32_t> indices, const MeshData::UpdateFrequency frequency)
         :
         m_vertexCount(vertices.size()),
@@ -14,13 +14,13 @@ namespace le
         const size_t vertexSize = m_vertexCount * sizeof(MeshData::Vertex3);
         const size_t indexSize = m_indexCount * sizeof(uint32_t);
 
-        CreateBuffer(renderer, vertexSize, indexSize, frequency);
+        CreateBuffer(resources, vertexSize, indexSize, frequency);
 
         if (frequency == MeshData::UpdateFrequency::UPDATES_ONCE)
         {
-            ExplicitDriver& driver = renderer.GetDriver();
+            ExplicitDriver& driver = resources.GetDriver();
 
-            CommandBufferID c = driver.AllocateCommandBuffer(renderer.GetTransferPool());
+            CommandBufferID c = driver.AllocateCommandBuffer(resources.GetTransferPool());
 
             const BufferID vertexStager = driver.CreateBuffer(BufferUsageFlagBits::TRANSFER_SRC,
                 vertexSize, true);
@@ -44,15 +44,15 @@ namespace le
             }
             driver.EndCommandBuffer(c);
 
-            FenceID fence = driver.CreateFence(true);
+            FenceID fence = driver.CreateFence(false);
 
             SubmitInfo info;
             info.commandBuffer = c;
             info.fence = fence;
 
             {
-                std::scoped_lock lock(renderer.GetTransferMutex());
-                driver.QueueSubmit(renderer.GetTransferQueue(), info);
+                std::scoped_lock lock(resources.GetTransferMutex());
+                driver.QueueSubmit(resources.GetTransferQueue(), info);
             }
 
             driver.WaitForFences(1, &fence);
@@ -60,17 +60,17 @@ namespace le
             driver.DestroyBuffer(vertexStager);
             driver.DestroyBuffer(indexStager);
 
-            driver.FreeCommandBuffers(renderer.GetTransferPool(), 1, &c);
+            driver.FreeCommandBuffers(resources.GetTransferPool(), 1, &c);
             driver.DestroyFence(fence);
         }
         else
         {
             m_vertexBuffer->Update(vertexSize, 0, vertices.data());
-            m_indexBuffer->Update(indexSize, 0, vertices.data());
+            m_indexBuffer->Update(indexSize, 0, indices.data());
         }
     }
 
-    ExplicitMesh::ExplicitMesh(ExplicitRenderer& renderer, const size_t initialVertexCount,
+    ExplicitMesh::ExplicitMesh(ExplicitResources& resources, const size_t initialVertexCount,
         const size_t initialIndexCount, const MeshData::UpdateFrequency frequency)
         :
         m_vertexCount(initialVertexCount),
@@ -81,7 +81,7 @@ namespace le
 
         LE_ASSERT(frequency != MeshData::UpdateFrequency::UPDATES_ONCE, "ExplicitMeshData made with MeshData::UpdateFrequency::UPDATES_ONCE must specify vertex data");
 
-        CreateBuffer(renderer, vertexSize, indexSize, frequency);
+        CreateBuffer(resources, vertexSize, indexSize, frequency);
     }
 
     void ExplicitMesh::Update(const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices)
@@ -122,32 +122,32 @@ namespace le
         return *m_indexBuffer;
     }
 
-    void ExplicitMesh::CreateBuffer(ExplicitRenderer& renderer, size_t vertexSize, size_t indexSize,
+    void ExplicitMesh::CreateBuffer(ExplicitResources& resources, size_t vertexSize, size_t indexSize,
         const MeshData::UpdateFrequency frequency)
     {
         switch (frequency)
         {
             case MeshData::UpdateFrequency::UPDATES_ONCE:
             {
-                m_vertexBuffer = std::make_unique<SimpleBuffer>(renderer,
+                m_vertexBuffer = std::make_unique<SimpleBuffer>(resources,
                     BufferUsageFlagBits::VERTEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
-                m_indexBuffer = std::make_unique<SimpleBuffer>(renderer,
+                m_indexBuffer = std::make_unique<SimpleBuffer>(resources,
                     BufferUsageFlagBits::INDEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
             }
             break;
 
             case MeshData::UpdateFrequency::UPDATES_OCCASIONALLY:
             {
-                m_vertexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlagBits::VERTEX_BUFFER);
-                m_indexBuffer = std::make_unique<SmartBuffer>(renderer, BufferUsageFlagBits::INDEX_BUFFER);
+                m_vertexBuffer = std::make_unique<SmartBuffer>(resources, BufferUsageFlagBits::VERTEX_BUFFER);
+                m_indexBuffer = std::make_unique<SmartBuffer>(resources, BufferUsageFlagBits::INDEX_BUFFER);
             }
             break;
 
             case MeshData::UpdateFrequency::UPDATES_OFTEN:
             {
-                m_vertexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlagBits::VERTEX_BUFFER,
+                m_vertexBuffer = std::make_unique<PerFrameBuffer>(resources, BufferUsageFlagBits::VERTEX_BUFFER,
                     vertexSize);
-                m_indexBuffer = std::make_unique<PerFrameBuffer>(renderer, BufferUsageFlagBits::INDEX_BUFFER,
+                m_indexBuffer = std::make_unique<PerFrameBuffer>(resources, BufferUsageFlagBits::INDEX_BUFFER,
                     indexSize);
             }
             break;

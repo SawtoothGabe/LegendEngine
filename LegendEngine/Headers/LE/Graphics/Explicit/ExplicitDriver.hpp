@@ -2,16 +2,19 @@
 
 #include <LE/Common/Types.hpp>
 #include <LE/Graphics/Types.hpp>
+#include <LE/Graphics/GraphicsDriver.hpp>
 
 #include <LE/TetherBindings.hpp>
 
 namespace le
 {
     class Renderer;
-    class ExplicitDriver
+    class ExplicitDriver : public GraphicsDriver
     {
     public:
-        virtual ~ExplicitDriver() = default;
+        ~ExplicitDriver() override = default;
+
+        [[nodiscard]] GraphicsAPI GetAPI() const override = 0;
 
         [[nodiscard]] virtual std::vector<CommandBufferID> AllocateCommandBuffers(CommandPoolID pool, size_t count) = 0;
         [[nodiscard]] virtual CommandBufferID AllocateCommandBuffer(CommandPoolID pool) = 0;
@@ -93,7 +96,7 @@ namespace le
         virtual void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
             ImageLayout newLayout, ImageAspect aspect) = 0;
 
-        static Scope<ExplicitDriver> Create(GraphicsAPI api,
-            std::string_view applicationName);
+        [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override = 0;
+        [[nodiscard]] Scope<GraphicsResources> CreateResources() override = 0;
     };
 }

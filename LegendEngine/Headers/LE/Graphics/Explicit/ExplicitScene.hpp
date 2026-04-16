@@ -1,12 +1,13 @@
 #pragma once
 #include <LE/Graphics/Types.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
 namespace le
 {
     class ExplicitScene final
     {
     public:
-        explicit ExplicitScene(const ExplicitRenderer& renderer);
+        explicit ExplicitScene(ExplicitResources& resources);
 
         void SetAmbientLight(float level);
         void SetLightCount(size_t count);
@@ -20,6 +21,7 @@ namespace le
 
         SceneStorage m_storage;
 
+        DescriptorPoolID m_descriptorPool;
         std::vector<DescriptorSetID> m_sets;
         PerFrameBuffer m_storageBuffer; // not a storage buffer lol, just a uniform buffer for the storage
         PerFrameBuffer m_lightsBuffer; // this is a storage buffer

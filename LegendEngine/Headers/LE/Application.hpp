@@ -5,6 +5,7 @@
 #include <LE/Common/Assert.hpp>
 #include <LE/Common/Defs.hpp>
 #include <LE/Events/EventBus.hpp>
+#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
 #include <LE/Graphics/Renderer.hpp>
 #include <LE/IO/Logger.hpp>
@@ -19,7 +20,7 @@ namespace le
         static constexpr size_t FRAMES_IN_FLIGHT = 2;
 
         Application(
-            Scope<Renderer> renderer,
+            Scope<ExplicitDriver> driver,
             std::string_view applicationName,
             int width = 1280, int height = 720);
 
@@ -28,7 +29,7 @@ namespace le
         {
             LE_INFO("Creating application");
             LE_ASSERT(!m_Instance, "Application already exists");
-            m_Instance = std::make_unique<Application>(Renderer::Create(api, applicationName),
+            m_Instance = std::make_unique<Application>(ExplicitDriver::Create(api, applicationName),
                 applicationName, args...);
         }
         ~Application();

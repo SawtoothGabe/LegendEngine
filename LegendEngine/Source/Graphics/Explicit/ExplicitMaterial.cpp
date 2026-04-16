@@ -4,14 +4,14 @@
 
 namespace le
 {
-    ExplicitMaterial::ExplicitMaterial(ExplicitRenderer& renderer)
+    ExplicitMaterial::ExplicitMaterial(ExplicitResources& resources)
         :
-        m_renderer(renderer),
-        m_driver(renderer.GetDriver()),
-        m_uniformBuffer(renderer, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Material::Uniforms))
+        m_resources(resources),
+        m_driver(resources.GetDriver()),
+        m_uniformBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Material::Uniforms))
     {
         m_sets = m_driver.AllocateDescriptorSets(
-            renderer.GetMaterialPoolManager(),
+            resources.GetMaterialPoolManager(),
             m_descriptorPool,
             Application::FRAMES_IN_FLIGHT
         );
@@ -20,7 +20,7 @@ namespace le
     ExplicitMaterial::~ExplicitMaterial()
     {
         m_driver.FreeDescriptorSets(
-            m_renderer.GetMaterialPoolManager(),
+            m_resources.GetMaterialPoolManager(),
             m_descriptorPool,
             m_sets.size(),
             m_sets.data()

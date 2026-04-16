@@ -1,6 +1,6 @@
 #pragma once
 
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Graphics/Explicit/PerFrameBuffer.hpp>
 
 namespace le
@@ -8,7 +8,7 @@ namespace le
     class ExplicitMaterial final
     {
     public:
-        explicit ExplicitMaterial(ExplicitRenderer& renderer);
+        explicit ExplicitMaterial(ExplicitResources& resources);
         ~ExplicitMaterial();
 
         void UpdateUniforms(size_t frame);
@@ -18,15 +18,16 @@ namespace le
         void SetColor(Color color);
         void SetShader(const ShaderID& shader);
 
-        [[nodiscard]] ShaderID GetShader() const;
-    private:
+        ShaderID GetShader() const;
+        private:
         Material::Uniforms m_uniforms;
         bool m_shouldUpdate = true;
 
-        ExplicitRenderer& m_renderer;
+        ExplicitResources& m_resources;
         ExplicitDriver& m_driver;
 
         DescriptorPoolID m_descriptorPool;
+
 
         PerFrameBuffer m_uniformBuffer;
         std::vector<DescriptorSetID> m_sets;

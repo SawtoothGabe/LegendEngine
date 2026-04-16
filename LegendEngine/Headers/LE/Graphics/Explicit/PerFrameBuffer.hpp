@@ -1,14 +1,14 @@
 #pragma once
 
 #include <LE/Graphics/Explicit/Buffer.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
 namespace le
 {
     class PerFrameBuffer : public Buffer
     {
     public:
-        PerFrameBuffer(const ExplicitRenderer& renderer, BufferUsageFlagBits usage, size_t size);
+        PerFrameBuffer(const ExplicitResources& resources, BufferUsageFlagBits usage, size_t size);
         ~PerFrameBuffer() override;
 
         void Update(std::size_t size, std::size_t offset, const void* data, size_t currentFrame) override;

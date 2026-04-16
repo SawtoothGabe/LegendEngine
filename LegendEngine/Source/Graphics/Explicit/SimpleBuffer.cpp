@@ -2,9 +2,9 @@
 
 namespace le
 {
-    SimpleBuffer::SimpleBuffer(const ExplicitRenderer& renderer, const BufferUsageFlags usage, const size_t size)
+    SimpleBuffer::SimpleBuffer(const ExplicitResources& resources, const BufferUsageFlags usage, const size_t size)
         :
-        m_driver(renderer.GetDriver()),
+        m_driver(resources.GetDriver()),
         m_usage(usage)
     {
         m_buffer = m_driver.CreateBuffer(usage, size, false);

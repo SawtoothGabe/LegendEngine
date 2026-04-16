@@ -14,13 +14,33 @@ namespace le
         m_driver(driver)
     {
         m_deletionQueues.resize(Application::FRAMES_IN_FLIGHT);
+
+        m_depthFormat = m_driver.FindDepthFormat();
+
+        CreateQueues();
+        CreateDescriptorSetLayouts();
+        CreatePipelineLayout();
     }
 
     ExplicitResources::~ExplicitResources()
     {
+        m_driver.WaitIdle();
+
         for (auto& queue : m_deletionQueues)
             for (auto& deletionFunc : queue)
                 deletionFunc();
+
+        m_driver.DestroyCommandPool(m_graphicsPool);
+        if (m_driver.HasTransferQueue())
+            m_driver.DestroyCommandPool(m_transferPool);
+
+        m_driver.DestroyPipelineLayout(m_pipelineLayout);
+
+        m_driver.DestroyLayoutPoolManager(m_cameraPool);
+        m_driver.DestroyLayoutPoolManager(m_scenePool);
+        m_driver.DestroyLayoutPoolManager(m_materialPool);
+        for (const DescriptorSetLayoutID& layout : m_descriptorSetLayouts)
+            m_driver.DestroyDescriptorSetLayout(layout);
     }
 
     void ExplicitResources::ProcessDeletionQueue()
@@ -196,5 +216,157 @@ namespace le
     ImageViewID ExplicitResources::GetTexture2DArrayImageView(const Texture2DArrayID texture)
     {
         return reinterpret_cast<ExplicitTexture2DArray*>(texture.id)->GetImageView();
+    }
+
+    PoolManagerID ExplicitResources::GetCameraPoolManager() const
+    {
+        return m_cameraPool;
+    }
+
+    PoolManagerID ExplicitResources::GetScenePoolManager() const
+    {
+        return m_scenePool;
+    }
+
+    PoolManagerID ExplicitResources::GetMaterialPoolManager() const
+    {
+        return m_materialPool;
+    }
+
+    CommandPoolID ExplicitResources::GetGraphicsPool() const
+    {
+        return m_graphicsPool;
+    }
+
+    CommandPoolID ExplicitResources::GetTransferPool() const
+    {
+        return *m_pTransferPool;
+    }
+
+    QueueID ExplicitResources::GetGraphicsQueue() const
+    {
+        return m_graphicsQueue;
+    }
+
+    QueueID ExplicitResources::GetTransferQueue() const
+    {
+        return *m_pTransferQueue;
+    }
+
+    std::mutex& ExplicitResources::GetGraphicsMutex()
+    {
+        return m_graphicsMutex;
+    }
+
+    std::mutex& ExplicitResources::GetTransferMutex() const
+    {
+        return *m_pTransferMutex;
+    }
+
+    ExplicitDriver& ExplicitResources::GetDriver() const
+    {
+        return m_driver;
+    }
+
+    PipelineLayoutID ExplicitResources::GetPipelineLayout() const
+    {
+        return m_pipelineLayout;
+    }
+
+    void ExplicitResources::CreateQueues()
+    {
+        m_graphicsPool = m_driver.CreateCommandPool(QueueFamily::GRAPHICS);
+        m_graphicsQueue = m_driver.GetQueue(QueueFamily::GRAPHICS);
+        m_pTransferPool = &m_graphicsPool;
+        m_pTransferQueue = &m_graphicsQueue;
+        m_pTransferMutex = &m_graphicsMutex;
+
+        if (m_driver.HasTransferQueue())
+        {
+            m_transferPool = m_driver.CreateCommandPool(QueueFamily::TRANSFER);
+            m_transferQueue = m_driver.GetQueue(QueueFamily::TRANSFER);
+            m_pTransferPool = &m_transferPool;
+            m_pTransferQueue = &m_transferQueue;
+            m_pTransferMutex = &m_transferMutex;
+        }
+    }
+
+    void ExplicitResources::CreateDescriptorSetLayouts()
+    {
+        // Camera
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::VERTEX
+                }
+            };
+
+            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_cameraPool = m_driver.CreateLayoutPoolManager(layout);
+        }
+
+        // Scene
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                },
+                DescriptorSetLayoutBinding {
+                    .binding = 1,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::STORAGE_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                }
+            };
+
+            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_scenePool = m_driver.CreateLayoutPoolManager(layout);
+        }
+
+        // Material
+        {
+            DescriptorSetLayoutBinding bindings[] =
+            {
+                DescriptorSetLayoutBinding {
+                    .binding = 0,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                },
+                DescriptorSetLayoutBinding {
+                    .binding = 1,
+                    .descriptorCount = 1,
+                    .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                    .stageFlags = ShaderStageFlagBits::FRAGMENT
+                }
+            };
+
+            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
+            m_descriptorSetLayouts.emplace_back(layout);
+            m_materialPool = m_driver.CreateLayoutPoolManager(layout);
+        }
+    }
+
+    void ExplicitResources::CreatePipelineLayout()
+    {
+        PushConstantRange ranges[] = {
+            {
+                .size = sizeof(Transform),
+                .offset = 0,
+                .stage = ShaderStageFlagBits::VERTEX
+            }
+        };
+
+        m_pipelineLayout = m_driver.CreatePipelineLayout(ranges, m_descriptorSetLayouts);
     }
 }

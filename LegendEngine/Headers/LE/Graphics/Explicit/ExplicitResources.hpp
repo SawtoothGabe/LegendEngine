@@ -55,9 +55,16 @@ namespace le
         [[nodiscard]] std::mutex& GetGraphicsMutex();
         [[nodiscard]] std::mutex& GetTransferMutex() const;
 
+        [[nodiscard]] ExplicitDriver& GetDriver() const;
+        [[nodiscard]] PipelineLayoutID GetPipelineLayout() const;
+
         void ProcessDeletionQueue();
         void EnqueueDeletionFunc(const std::function<void()>& func);
     private:
+        void CreateQueues();
+        void CreateDescriptorSetLayouts();
+        void CreatePipelineLayout();
+
         static constexpr auto COLOR_FORMAT = Format::B8G8R8A8_SRGB;
 
         ExplicitDriver& m_driver;

@@ -2,7 +2,7 @@
 
 #include <LE/Common/UID.hpp>
 #include <LE/Graphics/Renderer.hpp>
-#include <LE/Graphics/Explicit/ExplicitDriver.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 #include <LE/Resources/Material.hpp>
 #include <LE/Resources/Shader.hpp>
 
@@ -11,7 +11,7 @@ namespace le
     class ExplicitRenderer final : public Renderer
     {
     public:
-        explicit ExplicitRenderer(ExplicitDriver& driver);
+        explicit ExplicitRenderer(ExplicitResources& resources);
         ~ExplicitRenderer() override;
 
         void StartFrame() override;
@@ -20,11 +20,8 @@ namespace le
 
         [[nodiscard]] ExplicitDriver& GetDriver() const;
     private:
-        void CreateQueues();
         void CreateCommandBuffers();
         void CreateSyncObjects();
-        void CreateDescriptorSetLayouts();
-        void CreatePipelineLayout();
 
         void UseMaterial(const Ref<Material>& material);
         void RenderScene(Scene& scene);
@@ -34,6 +31,7 @@ namespace le
         static void UpdateSceneUniforms(Scene& scene);
         static void UpdateCamera(Scene& scene, UID cameraID);
 
+        ExplicitResources& m_resources;
         ExplicitDriver& m_driver;
 
         bool m_vsync = false;

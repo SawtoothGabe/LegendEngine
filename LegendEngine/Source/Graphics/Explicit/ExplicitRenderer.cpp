@@ -12,22 +12,18 @@
 
 namespace le
 {
-    ExplicitRenderer::ExplicitRenderer(ExplicitDriver& driver)
+    ExplicitRenderer::ExplicitRenderer(ExplicitResources& resources)
         :
-        m_driver(driver)
+        m_resources(resources),
+        m_driver(resources.GetDriver())
     {
         LE_INFO("Creating ExplicitRenderer");
-
-        m_depthFormat = m_driver.FindDepthFormat();
 
         m_renderFinishedSemaphores.resize(Application::FRAMES_IN_FLIGHT);
         m_inFlightFences.resize(Application::FRAMES_IN_FLIGHT);
 
-        CreateQueues();
         CreateCommandBuffers();
         CreateSyncObjects();
-        CreateDescriptorSetLayouts();
-        CreatePipelineLayout();
 
         m_defaultMaterial = Material::Create();
 
@@ -40,22 +36,13 @@ namespace le
 
         m_driver.WaitIdle();
 
-        m_driver.FreeCommandBuffers(m_graphicsPool, m_commandBuffers.size(), m_commandBuffers.data());
+        m_driver.FreeCommandBuffers(m_resources.GetGraphicsPool(), m_commandBuffers.size(), m_commandBuffers.data());
 
         for (size_t i = 0; i < Application::FRAMES_IN_FLIGHT; ++i)
         {
             m_driver.DestroyFence(m_inFlightFences[i]);
             m_driver.DestroySemaphore(m_renderFinishedSemaphores[i]);
         }
-
-        m_driver.DestroyCommandPool(m_graphicsPool);
-        m_driver.DestroyPipelineLayout(m_pipelineLayout);
-
-        m_driver.DestroyLayoutPoolManager(m_cameraPool);
-        m_driver.DestroyLayoutPoolManager(m_scenePool);
-        m_driver.DestroyLayoutPoolManager(m_materialPool);
-        for (const DescriptorSetLayoutID& layout : m_descriptorSetLayouts)
-            m_driver.DestroyDescriptorSetLayout(layout);
 
         LE_INFO("Destroyed ExplicitRenderer");
     }
@@ -134,8 +121,8 @@ namespace le
         info.signalSemaphores = signalSemaphores;
 
         {
-            std::scoped_lock lock(m_graphicsMutex);
-            m_driver.QueueSubmit(m_graphicsQueue, info);
+            std::scoped_lock lock(m_resources.GetGraphicsMutex());
+            m_driver.QueueSubmit(m_resources.GetGraphicsQueue(), info);
         }
 
         for (const RenderTargetID& target : m_targetsRendered)
@@ -147,77 +134,14 @@ namespace le
         m_targetsRendered.clear();
     }
 
-    PoolManagerID ExplicitRenderer::GetCameraPoolManager() const
-    {
-        return m_cameraPool;
-    }
-
-    PoolManagerID ExplicitRenderer::GetScenePoolManager() const
-    {
-        return m_scenePool;
-    }
-
-    PoolManagerID ExplicitRenderer::GetMaterialPoolManager() const
-    {
-        return m_materialPool;
-    }
-
-    CommandPoolID ExplicitRenderer::GetGraphicsPool() const
-    {
-        return m_graphicsPool;
-    }
-
-    CommandPoolID ExplicitRenderer::GetTransferPool() const
-    {
-        return *m_pTransferPool;
-    }
-
-    QueueID ExplicitRenderer::GetGraphicsQueue() const
-    {
-        return m_graphicsQueue;
-    }
-
-    QueueID ExplicitRenderer::GetTransferQueue() const
-    {
-        return *m_pTransferQueue;
-    }
-
-    std::mutex& ExplicitRenderer::GetGraphicsMutex()
-    {
-        return m_graphicsMutex;
-    }
-
-    std::mutex& ExplicitRenderer::GetTransferMutex() const
-    {
-        return *m_pTransferMutex;
-    }
-
     ExplicitDriver& ExplicitRenderer::GetDriver() const
     {
         return m_driver;
     }
 
-    void ExplicitRenderer::CreateQueues()
-    {
-        m_graphicsPool = m_driver.CreateCommandPool(QueueFamily::GRAPHICS);
-        m_graphicsQueue = m_driver.GetQueue(QueueFamily::GRAPHICS);
-        m_pTransferPool = &m_graphicsPool;
-        m_pTransferQueue = &m_graphicsQueue;
-        m_pTransferMutex = &m_graphicsMutex;
-
-        if (m_driver.HasTransferQueue())
-        {
-            m_transferPool = m_driver.CreateCommandPool(QueueFamily::TRANSFER);
-            m_transferQueue = m_driver.GetQueue(QueueFamily::TRANSFER);
-            m_pTransferPool = &m_transferPool;
-            m_pTransferQueue = &m_transferQueue;
-            m_pTransferMutex = &m_transferMutex;
-        }
-    }
-
     void ExplicitRenderer::CreateCommandBuffers()
     {
-        m_commandBuffers = m_driver.AllocateCommandBuffers(m_graphicsPool, Application::FRAMES_IN_FLIGHT);
+        m_commandBuffers = m_driver.AllocateCommandBuffers(m_resources.GetGraphicsPool(), Application::FRAMES_IN_FLIGHT);
     }
 
     void ExplicitRenderer::CreateSyncObjects()
@@ -227,85 +151,6 @@ namespace le
             m_inFlightFences[i] = m_driver.CreateFence(true);
             m_renderFinishedSemaphores[i] = m_driver.CreateSemaphore();
         }
-    }
-
-    void ExplicitRenderer::CreateDescriptorSetLayouts()
-    {
-        // Camera
-        {
-            DescriptorSetLayoutBinding bindings[] =
-            {
-                DescriptorSetLayoutBinding {
-                    .binding = 0,
-                    .descriptorCount = 1,
-                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
-                    .stageFlags = ShaderStageFlagBits::VERTEX
-                }
-            };
-
-            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
-            m_descriptorSetLayouts.emplace_back(layout);
-            m_scenePool = m_driver.CreateLayoutPoolManager(layout);
-        }
-
-        // Scene
-        {
-            DescriptorSetLayoutBinding bindings[] =
-            {
-                DescriptorSetLayoutBinding {
-                    .binding = 0,
-                    .descriptorCount = 1,
-                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
-                    .stageFlags = ShaderStageFlagBits::FRAGMENT
-                },
-                DescriptorSetLayoutBinding {
-                    .binding = 1,
-                    .descriptorCount = 1,
-                    .descriptorType = DescriptorType::STORAGE_BUFFER,
-                    .stageFlags = ShaderStageFlagBits::FRAGMENT
-                }
-            };
-
-            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
-            m_descriptorSetLayouts.emplace_back(layout);
-            m_scenePool = m_driver.CreateLayoutPoolManager(layout);
-        }
-
-        // Material
-        {
-            DescriptorSetLayoutBinding bindings[] =
-            {
-                DescriptorSetLayoutBinding {
-                    .binding = 0,
-                    .descriptorCount = 1,
-                    .descriptorType = DescriptorType::UNIFORM_BUFFER,
-                    .stageFlags = ShaderStageFlagBits::FRAGMENT
-                },
-                DescriptorSetLayoutBinding {
-                    .binding = 1,
-                    .descriptorCount = 1,
-                    .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
-                    .stageFlags = ShaderStageFlagBits::FRAGMENT
-                }
-            };
-
-            DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
-            m_descriptorSetLayouts.emplace_back(layout);
-            m_materialPool = m_driver.CreateLayoutPoolManager(layout);
-        }
-    }
-
-    void ExplicitRenderer::CreatePipelineLayout()
-    {
-        PushConstantRange ranges[] = {
-            {
-                .size = sizeof(Transform),
-                .offset = 0,
-                .stage = ShaderStageFlagBits::VERTEX
-            }
-        };
-
-        m_pipelineLayout = m_driver.CreatePipelineLayout(ranges, m_descriptorSetLayouts);
     }
 
     void ExplicitRenderer::UseMaterial(const Ref<Material>& material)
@@ -414,13 +259,13 @@ namespace le
         if (!vertex || !index)
             return;
 
-        m_driver.CmdPushConstants(buffer, m_pipelineLayout, ShaderStageFlagBits::VERTEX,
+        m_driver.CmdPushConstants(buffer, m_resources.GetPipelineLayout(), ShaderStageFlagBits::VERTEX,
                                    0, sizeof(Transform), &transform);
 
         if (m_haveSetsChanged)
         {
             m_driver.CmdBindDescriptorSets(buffer, PipelineBindPoint::GRAPHICS,
-                                            m_pipelineLayout, 0, m_sets);
+                                            m_resources.GetPipelineLayout(), 0, m_sets);
             m_haveSetsChanged = false;
         }
 

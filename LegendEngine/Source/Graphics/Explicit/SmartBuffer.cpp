@@ -4,12 +4,12 @@
 
 namespace le
 {
-    SmartBuffer::SmartBuffer(const ExplicitRenderer& renderer, const BufferUsageFlagBits usage)
+    SmartBuffer::SmartBuffer(const ExplicitResources& resources, const BufferUsageFlagBits usage)
         :
-        m_driver(renderer.GetDriver()),
-        m_queue(renderer.GetTransferQueue()),
+        m_driver(resources.GetDriver()),
+        m_queue(resources.GetGraphicsQueue()),
         m_usage(usage),
-        m_stager(renderer),
+        m_stager(resources),
         m_sub(Application::Get().GetEventBus())
     {
         m_sub.AddEventHandler<RenderEvent>([this](const RenderEvent&) { DeleteUnusedBuffers(); });

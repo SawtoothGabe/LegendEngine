@@ -40,19 +40,19 @@ namespace le
     }
 
     Application::Application(
-        Scope<Renderer> renderer,
+        Scope<ExplicitDriver> driver,
         const std::string_view applicationName,
         const int width, const int height)
         :
         m_ResizeHandler(*this),
-        m_graphicsContext(std::move(renderer))
+        m_graphicsContext(std::move(driver))
     {
         std::wstring title(applicationName.size(), L' ');
         std::mbstowcs(title.data(), applicationName.data(),
                       applicationName.size());
 
         m_Window = Window::Create(width, height, title, false);
-        m_renderTarget = m_graphicsContext.GetRenderer().CreateRenderTarget(*m_Window);
+        m_renderTarget = m_graphicsContext.GetResources().CreateRenderTarget(*m_Window);
 
         LE_INFO("Application created");
     }

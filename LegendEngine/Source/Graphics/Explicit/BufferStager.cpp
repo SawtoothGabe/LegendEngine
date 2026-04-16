@@ -2,12 +2,12 @@
 
 namespace le
 {
-    BufferStager::BufferStager(const ExplicitRenderer& renderer)
+    BufferStager::BufferStager(const ExplicitResources& resources)
         :
-        m_driver(renderer.GetDriver()),
-        m_transferMutex(renderer.GetTransferMutex()),
-        m_queue(renderer.GetTransferQueue()),
-        m_commandPool(renderer.GetTransferPool())
+        m_driver(resources.GetDriver()),
+        m_transferMutex(resources.GetTransferMutex()),
+        m_queue(resources.GetTransferQueue()),
+        m_commandPool(resources.GetTransferPool())
     {
         CreateCommandBuffer();
     }

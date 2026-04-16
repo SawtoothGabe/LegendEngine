@@ -11,7 +11,6 @@
 
 namespace le
 {
-    struct PointLight;
     class GraphicsResources;
     class GraphicsContext;
     class Entity;
@@ -20,7 +19,7 @@ namespace le
         friend Entity;
     public:
         Scene();
-        explicit Scene(Renderer& renderer);
+        explicit Scene(GraphicsResources& resources);
         ~Scene();
         LE_NO_COPY(Scene);
 
@@ -277,7 +276,7 @@ namespace le
         void ProcessDeletions();
         void ClearCachedArchetypeLookups();
 
-        Renderer* m_pRenderer = nullptr;
+        GraphicsResources* m_resources = nullptr;
         SceneID m_handle;
 
         std::unordered_map<UID, ECS::EntityRecord> m_entities;

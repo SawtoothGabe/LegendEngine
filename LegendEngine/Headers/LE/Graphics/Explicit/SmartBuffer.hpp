@@ -3,14 +3,14 @@
 #include <LE/Events/EventBusSubscriber.hpp>
 #include <LE/Graphics/Explicit/Buffer.hpp>
 #include <LE/Graphics/Explicit/BufferStager.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
 namespace le
 {
     class SmartBuffer : public Buffer
     {
     public:
-        SmartBuffer(const ExplicitRenderer& renderer, BufferUsageFlagBits usage);
+        SmartBuffer(const ExplicitResources& resources, BufferUsageFlagBits usage);
         ~SmartBuffer() override;
 
         void Update(std::size_t size, std::size_t offset, const void* data) override;

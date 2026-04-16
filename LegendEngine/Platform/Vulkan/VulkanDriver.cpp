@@ -5,6 +5,7 @@
 #include <vk_mem_alloc.h>
 
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
 #include "DescriptorSetLayout.hpp"
 #include "PlatformUtils.hpp"
@@ -18,9 +19,19 @@ namespace le
 #define VULKAN_CAST(type, identifier) vk::type(reinterpret_cast<Vk##type>(identifier.id))
 #define RAW_CAST(type, identifier) reinterpret_cast<Vk##type>(identifier.id)
 
-    Scope<Renderer> CreateVulkanRenderer(std::string_view applicationName)
+    Scope<GraphicsDriver> CreateVulkanGraphicsDriver(std::string_view applicationName)
     {
-        return std::make_unique<ExplicitRenderer>(std::make_unique<VulkanDriver>(applicationName));
+        return std::make_unique<VulkanDriver>(applicationName);
+    }
+
+    Scope<Renderer> VulkanDriver::CreateRenderer(GraphicsResources& resources)
+    {
+        return std::make_unique<ExplicitRenderer>(static_cast<ExplicitResources&>(resources));
+    }
+
+    Scope<GraphicsResources> VulkanDriver::CreateResources()
+    {
+        return std::make_unique<ExplicitResources>(*this);
     }
 
     static const std::vector VALIDATION_LAYERS = {

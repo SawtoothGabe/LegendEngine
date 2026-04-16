@@ -1,13 +1,13 @@
 #pragma once
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
+#include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
 namespace le
 {
     class BufferStager final
     {
     public:
-        explicit BufferStager(const ExplicitRenderer& renderer);
+        explicit BufferStager(const ExplicitResources& resources);
         ~BufferStager();
 
         void CreateStagingBuffer(const BufferID& target, size_t targetSize);
