@@ -616,7 +616,7 @@ namespace le
 	    return m_device.getFenceStatus(VULKAN_CAST(Fence, fence)) == vk::Result::eSuccess;
     }
 
-    SurfaceCapabilities VulkanDriver::GetSurfaceCapabilities(SurfaceID surface)
+    SurfaceCapabilities VulkanDriver::GetSurfaceCapabilities(const SurfaceID surface)
     {
     	const vk::SurfaceCapabilitiesKHR surfaceCapabilities =
     		m_physicalDevice.getSurfaceCapabilitiesKHR(VULKAN_CAST(SurfaceKHR, surface));
@@ -656,9 +656,61 @@ namespace le
 	    return m_indices.hasTransferFamily;
     }
 
-    void VulkanDriver::UpdateDescriptorSets(std::span<WriteDescriptorSet> writes)
+    void VulkanDriver::UpdateDescriptorSets(const std::span<WriteDescriptorSet> writes)
     {
+		size_t bufferInfoIndex = 0;
+    	size_t imageInfoIndex = 0;
+    	std::vector<vk::DescriptorBufferInfo> bufferInfos;
+    	std::vector<vk::DescriptorImageInfo> imageInfos;
 
+    	bufferInfos.reserve(writes.size());
+    	imageInfos.reserve(writes.size());
+
+    	for (const WriteDescriptorSet& write : writes)
+    	{
+    		if (write.pBufferInfo)
+    		{
+    			bufferInfos.push_back({
+    				VULKAN_CAST(Buffer, write.pBufferInfo->buffer),
+    				write.pBufferInfo->offset,
+    				write.pBufferInfo->range
+    			});
+    		}
+
+    		if (write.pImageInfo)
+    		{
+    			imageInfos.emplace_back(
+    				VULKAN_CAST(Sampler, write.pImageInfo->sampler),
+    				VULKAN_CAST(ImageView, write.pImageInfo->imageView),
+    				VulkanTypes::GetImageLayout(write.pImageInfo->imageLayout)
+    			);
+    		}
+    	}
+
+    	std::vector<vk::WriteDescriptorSet> vkWrites;
+    	vkWrites.reserve(writes.size());
+    	for (const WriteDescriptorSet& write : writes)
+    	{
+    		vkWrites.emplace_back(
+    			VULKAN_CAST(DescriptorSet, write.dstSet),
+    			static_cast<uint32_t>(write.dstBinding),
+    			static_cast<uint32_t>(write.dstArrayElement),
+    			static_cast<uint32_t>(write.descriptorCount),
+    			VulkanTypes::GetDescriptorType(write.descriptorType),
+    			write.pImageInfo ? &imageInfos[imageInfoIndex++] : nullptr,
+    			write.pBufferInfo ? &bufferInfos[bufferInfoIndex++] : nullptr
+    		);
+    	}
+
+    	m_device.updateDescriptorSets(vkWrites, {});
+    }
+
+    bool VulkanDriver::AcquireNextImage(const SwapchainID swapchain, const SemaphoreID waitSemaphore, uint32_t& outIndex)
+    {
+	    return m_device.acquireNextImageKHR(VULKAN_CAST(SwapchainKHR, swapchain), UINT64_MAX,
+	    	VULKAN_CAST(Semaphore, waitSemaphore),
+	    	{}, &outIndex
+	    ) == vk::Result::eSuccess;
     }
 
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
