@@ -11,8 +11,18 @@ namespace le
         return m_shaders[pInfo->name] = Shader::Create(*pInfo);
     }
 
-    Ref<Shader> ShaderManager::FromID(const std::string_view id)
+    Ref<Shader> ShaderManager::TryCreateFromId(const std::string_view id)
     {
+        if (!m_shaders.contains(id.data()))
+        {
+            ShaderRegistry& reg = ShaderRegistry::Get();
+            const ShaderInfo* pInfo = reg.GetShader(id.data());
+            LE_ASSERT(pInfo, "No shader found with ID {}", id);
+
+            // ReSharper disable once CppDFANullDereference
+            return m_shaders[pInfo->name] = Shader::Create(*pInfo);
+        }
+
         return m_shaders.at(id.data());
     }
 }

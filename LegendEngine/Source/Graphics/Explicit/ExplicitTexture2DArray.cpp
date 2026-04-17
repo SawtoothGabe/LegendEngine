@@ -105,7 +105,7 @@ namespace le
         }
         m_driver.EndCommandBuffer(c);
 
-        FenceID fence = m_driver.CreateFence(true);
+        FenceID fence = m_driver.CreateFence(false);
 
         SubmitInfo info;
         info.commandBuffer = c;

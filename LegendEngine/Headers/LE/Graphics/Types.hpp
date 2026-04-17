@@ -584,15 +584,6 @@ return id != other.id; \
         uint32_t layerCount = 1;
     };
 
-    struct ImageInfo
-    {
-        std::size_t width = 0;
-        std::size_t height = 0;
-        std::size_t arrayLayers = 1;
-        Format format = Format::R8G8B8A8_UNORM;
-        ImageSubresource subresourceRange;
-    };
-
     struct ImageViewInfo
     {
         ImageID image;
@@ -696,11 +687,30 @@ return id != other.id; \
         alignas(16) uint32_t type{};
     };
 
+    enum class ImageUsageFlagBits : uint32_t
+    {
+        TRANSFER_DST = 0x00000002,
+        SAMPLED = 0x00000004,
+        DEPTH_STENCIL_ATTACHMENT = 0x00000020,
+    };
+
     LE_DEFINE_BITMASK(AccessFlagBits);
     LE_DEFINE_BITMASK(BufferUsageFlagBits);
     LE_DEFINE_BITMASK(ShaderStageFlagBits);
+    LE_DEFINE_BITMASK(ImageUsageFlagBits);
 
     using AccessFlags = Flags<AccessFlagBits>;
     using BufferUsageFlags = Flags<BufferUsageFlagBits>;
     using ShaderStageFlags = Flags<ShaderStageFlagBits>;
+    using ImageUsageFlags = Flags<ImageUsageFlagBits>;
+
+    struct ImageInfo
+    {
+        std::size_t width = 0;
+        std::size_t height = 0;
+        std::size_t arrayLayers = 1;
+        Format format = Format::R8G8B8A8_UNORM;
+        ImageUsageFlags usage = ImageUsageFlagBits::TRANSFER_DST | ImageUsageFlagBits::SAMPLED;
+        ImageSubresource subresourceRange;
+    };
 }

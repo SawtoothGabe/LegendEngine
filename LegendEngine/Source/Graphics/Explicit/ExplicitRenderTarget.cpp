@@ -181,6 +181,7 @@ namespace le
             imageInfo.width = m_extent.width;
             imageInfo.height = m_extent.height;
             imageInfo.format = m_depthFormat;
+            imageInfo.usage = ImageUsageFlagBits::DEPTH_STENCIL_ATTACHMENT;
 
             frame.depthImage = m_driver.CreateImage(imageInfo);
 
@@ -199,7 +200,7 @@ namespace le
         }
         m_driver.EndCommandBuffer(c);
 
-        FenceID fence = m_driver.CreateFence(true);
+        FenceID fence = m_driver.CreateFence(false);
 
         SubmitInfo info;
         info.commandBuffer = c;

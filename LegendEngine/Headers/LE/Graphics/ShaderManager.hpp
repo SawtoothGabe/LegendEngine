@@ -13,7 +13,7 @@ namespace le
         LE_NO_COPY(ShaderManager);
 
         Ref<Shader> TryCreate(const ShaderInfo* pInfo);
-        Ref<Shader> FromID(std::string_view id);
+        Ref<Shader> TryCreateFromId(std::string_view id);
     private:
         std::unordered_map<std::string, Ref<Shader>> m_shaders;
     };
