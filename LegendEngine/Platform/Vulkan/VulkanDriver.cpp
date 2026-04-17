@@ -197,7 +197,7 @@ namespace le
 	    }
 
 	    const vk::ImageView view = m_device.createImageView(
-		    {{}, VULKAN_CAST(Image, image), viewType, VulkanTypes::GetVkFormat(format)});
+		    {{}, reinterpret_cast<VulkanImage*>(image.id)->image, viewType, VulkanTypes::GetVkFormat(format)});
 	    return ImageViewID(view);
     }
 
@@ -691,11 +691,11 @@ namespace le
     	{
     		if (write.pBufferInfo)
     		{
-    			bufferInfos.push_back({
-    				VULKAN_CAST(Buffer, write.pBufferInfo->buffer),
+    			bufferInfos.emplace_back(
+    				reinterpret_cast<VulkanBuffer*>(write.pBufferInfo->buffer.id)->buffer,
     				write.pBufferInfo->offset,
     				write.pBufferInfo->range
-    			});
+    			);
     		}
 
     		if (write.pImageInfo)
@@ -749,8 +749,8 @@ namespace le
 		    vkRegions[i] = regionCopy;
 	    }
 
-	    const auto vkSrc = VULKAN_CAST(Buffer, src);
-	    const auto vkDst = VULKAN_CAST(Buffer, dst);
+	    const auto vkSrc = reinterpret_cast<VulkanBuffer*>(src.id)->buffer;
+	    const auto vkDst = reinterpret_cast<VulkanBuffer*>(dst.id)->buffer;
 	    VULKAN_CAST(CommandBuffer, buffer).copyBuffer(vkSrc, vkDst, static_cast<uint32_t>(vkRegions.size()), vkRegions.data());
     }
 
@@ -779,8 +779,8 @@ namespace le
 		    regionCopy.imageExtent.depth = region.imageExtent.depth;
 	    }
 
-	    const auto vkBuffer = VULKAN_CAST(Buffer, src);
-	    const auto vkImage = VULKAN_CAST(Image, dst);
+	    const auto vkBuffer = reinterpret_cast<VulkanBuffer*>(src.id)->buffer;
+	    const auto vkImage = reinterpret_cast<VulkanImage*>(dst.id)->image;
 	    const vk::ImageLayout vkLayout = VulkanTypes::GetImageLayout(layout);
 	    VULKAN_CAST(CommandBuffer, buffer).copyBufferToImage(vkBuffer, vkImage, vkLayout,
 	                                                         static_cast<uint32_t>(vkRegions.size()), vkRegions.data());
@@ -805,7 +805,7 @@ namespace le
 	    	vkBarrier.dstAccessMask = VulkanTypes::GetAccessFlags(barrier.dstAccessMask);
 		    vkBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		    vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		    vkBarrier.image = VULKAN_CAST(Image, barrier.image);
+		    vkBarrier.image = reinterpret_cast<VulkanImage*>(barrier.image.id)->image;
 		    vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
 		    vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.baseMipLevel;
 		    vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
@@ -972,7 +972,7 @@ namespace le
                                              const ImageID image, const ImageLayout oldLayout,
                                              const ImageLayout newLayout, const ImageAspect aspect)
     {
-	    const auto vkImage = VULKAN_CAST(Image, image);
+	    const auto vkImage = reinterpret_cast<VulkanImage*>(image.id)->image;
 	    const vk::ImageLayout vkOldLayout = VulkanTypes::GetImageLayout(oldLayout);
 	    const vk::ImageLayout vkNewLayout = VulkanTypes::GetImageLayout(newLayout);
 	    const vk::ImageAspectFlags aspectMask = VulkanTypes::GetImageAspectFlags(aspect);
