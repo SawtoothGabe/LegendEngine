@@ -79,6 +79,9 @@ namespace le
     {
 	    vmaDestroyAllocator(m_allocator);
 	    m_device.destroy();
+
+    	m_instance.destroyDebugUtilsMessengerEXT(m_messenger);
+
 	    m_instance.destroy();
     }
 
