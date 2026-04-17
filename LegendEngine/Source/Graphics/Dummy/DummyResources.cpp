@@ -56,7 +56,6 @@ namespace le
     void DummyResources::ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) {}
     void DummyResources::SetMaterialTexture(MaterialID id, Ref<Texture> texture) {}
     void DummyResources::SetMaterialColor(MaterialID id, Color color) {}
-    void DummyResources::SetMaterialShader(MaterialID id, Ref<Shader> shader) {}
     void DummyResources::SetSceneAmbientLight(SceneID id, float level) {}
 
     ImageID DummyResources::GetTexture2DImage(Texture2DID texture)

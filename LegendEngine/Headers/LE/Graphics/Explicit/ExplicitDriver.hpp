@@ -30,7 +30,6 @@ namespace le
         [[nodiscard]] virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
         [[nodiscard]] virtual SurfaceID CreateSurface(Window& window) = 0;
         [[nodiscard]] virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
-        [[nodiscard]] virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
         [[nodiscard]] virtual QueueID GetQueue(QueueFamily family) = 0;
 
         virtual void FreeCommandBuffers(CommandPoolID pool, size_t count, CommandBufferID* buffers) = 0;
@@ -48,7 +47,6 @@ namespace le
         virtual void DestroySurface(SurfaceID surface) = 0;
         virtual void DestroyShaderModule(ShaderModuleID shaderModule) = 0;
         virtual void DestroyDescriptorSetLayout(DescriptorSetLayoutID layout) = 0;
-        virtual void DestroySampler(SamplerID sampler) = 0;
 
         virtual void ResetAllPools(PoolManagerID manager) = 0;
         virtual void WaitForFences(size_t count, FenceID* fences) = 0;

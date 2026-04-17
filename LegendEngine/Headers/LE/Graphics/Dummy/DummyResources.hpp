@@ -30,7 +30,6 @@ namespace le
         void ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) override;
         void SetMaterialTexture(MaterialID id, Ref<Texture> texture) override;
         void SetMaterialColor(MaterialID id, Color color) override;
-        void SetMaterialShader(MaterialID id, Ref<Shader> shader) override;
         void SetSceneAmbientLight(SceneID id, float level) override;
 
         ImageID GetTexture2DImage(Texture2DID texture) override;

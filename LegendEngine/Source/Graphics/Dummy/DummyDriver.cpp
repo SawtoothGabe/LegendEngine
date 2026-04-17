@@ -18,4 +18,11 @@ namespace le
     {
         return std::make_unique<DummyResources>();
     }
+
+    SamplerID DummyDriver::CreateSampler(const SamplerInfo& info)
+    {
+        return {};
+    }
+
+    void DummyDriver::DestroySampler(SamplerID sampler) {}
 }

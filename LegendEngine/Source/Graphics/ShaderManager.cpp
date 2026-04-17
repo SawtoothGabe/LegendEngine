@@ -3,18 +3,16 @@
 
 namespace le
 {
-    ShaderManager::~ShaderManager()
-    {}
-
-    Ref<Shader> ShaderManager::GetByID(const std::string_view shaderID) const
+    Ref<Shader> ShaderManager::TryCreate(const ShaderInfo* pInfo)
     {
-        LE_ASSERT(m_shaders.contains(shaderID.data()), "Invalid shader ID. Was it registered?");
-        return m_shaders.at(shaderID.data());
+        if (m_shaders.contains(pInfo->name))
+            return m_shaders.at(pInfo->name);
+
+        return m_shaders[pInfo->name] = Shader::Create(*pInfo);
     }
 
-    void ShaderManager::RegisterShader(const std::string_view id, const Ref<Shader>& shader)
+    Ref<Shader> ShaderManager::FromID(const std::string_view id)
     {
-        LE_ASSERT(!m_shaders.contains(id.data()), "Shader registered twice");
-        m_shaders[id.data()] = shader;
+        return m_shaders.at(id.data());
     }
 }

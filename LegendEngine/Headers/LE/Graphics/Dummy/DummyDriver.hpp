@@ -8,5 +8,9 @@ namespace le
     public:
         [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override;
         [[nodiscard]] Scope<GraphicsResources> CreateResources() override;
+
+        [[nodiscard]] SamplerID CreateSampler(const SamplerInfo& info) override;
+
+        void DestroySampler(SamplerID sampler) override;
     };
 }

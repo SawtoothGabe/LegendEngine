@@ -30,7 +30,8 @@ namespace le
 
     enum class Features
     {
-        TEXTURED = 1 << 0
+        SOLID_COLOR = 1 << 0,
+        TEXTURED    = 1 << 1,
     };
 
     struct Entrypoint
@@ -46,6 +47,7 @@ namespace le
 
     struct ShaderInfo
     {
+        const char* name = nullptr;
         uint64_t features = 0;
         size_t entrypointCount = 0;
         Entrypoint* pEntrypoints = nullptr;
@@ -59,11 +61,16 @@ namespace le
     class ShaderRegistry
     {
     public:
-        void Register(std::string_view name, ShaderInfo* pInfo);
+        void Register(ShaderInfo* pInfo);
         ShaderInfo* GetShader(std::string_view name);
+        ShaderInfo* FromFeatures(uint64_t features);
 
         static ShaderRegistry& Get();
     private:
         std::unordered_map<std::string, ShaderInfo*> m_shaders;
+        std::unordered_map<uint64_t, ShaderInfo*> m_featuredShaders;
     };
+
+#define LE_REGISTER_SHADER(shaderInfo) \
+    static int LE_SHADER_REG_##shaderInfo = (le::ShaderRegistry::Get().Register(&shaderInfo), 0)
 }

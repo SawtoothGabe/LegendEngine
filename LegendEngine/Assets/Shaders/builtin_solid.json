@@ -1,5 +1,5 @@
 {
-  "features": [ "textured" ],
+  "features": [ "solid_color" ],
   "modules": [
     "builtin_solid.slang"
   ]

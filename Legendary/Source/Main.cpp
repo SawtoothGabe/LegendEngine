@@ -190,7 +190,7 @@ public:
 		cube2(&testScene, m_mesh),
 		floor(&testScene, m_mesh)
 	{
-		const Ref<Shader> shader = app.GetGraphicsContext().GetShaderManager().GetByID("textured");
+		const Ref<Shader> shader = app.GetGraphicsContext().GetShaderManager().FromID("builtin_textured");
 		shader->SetCullMode(CullMode::NONE);
 
 		CreateMaterials();

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string_view>
 #include <unordered_map>
 #include <LE/Common/Defs.hpp>
 #include <LE/Resources/Shader.hpp>
@@ -11,12 +10,10 @@ namespace le
     {
     public:
         ShaderManager() = default;
-        ~ShaderManager();
         LE_NO_COPY(ShaderManager);
 
-        Ref<Shader> GetByID(std::string_view shaderID) const;
-
-        void RegisterShader(std::string_view id, const Ref<Shader>& shader);
+        Ref<Shader> TryCreate(const ShaderInfo* pInfo);
+        Ref<Shader> FromID(std::string_view id);
     private:
         std::unordered_map<std::string, Ref<Shader>> m_shaders;
     };

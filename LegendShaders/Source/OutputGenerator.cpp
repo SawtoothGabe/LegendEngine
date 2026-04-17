@@ -188,13 +188,10 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
                 std::format("SHADER_{}_WGSL", filenameHash));
     }
 
-    output += "extern \"C\"\n";
-    output += "{\n";
-    output += "\n";
-
     for (Program& program : programs)
     {
         output += std::format("le::ShaderInfo LE_SHADER_{}_INFO = \n{{\n", program.GetFilenameHash());
+        output += std::format("\t.name = \"{}\",\n", program.GetName());
         output += std::format("\t.features = {},\n", static_cast<uint64_t>(program.GetFeatures()));
         output += std::format("\t.entrypointCount = {},\n", program.GetEntrypoints().size());
         output += std::format("\t.pEntrypoints = SHADER_{}_ENTRYPOINTS,\n", program.GetFilenameHash());
@@ -209,8 +206,8 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
             output += std::format("\t.pWgslCode = SHADER_{}_WGSL,\n", program.GetFilenameHash());
 
         output += "};\n\n";
+        output += std::format("LE_REGISTER_SHADER(LE_SHADER_{}_INFO);\n\n", program.GetFilenameHash());
     }
 
-    output += "}\n";
     return output;
 }

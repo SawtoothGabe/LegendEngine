@@ -161,7 +161,7 @@ namespace le
         m_sets[2] = explicitMaterial.GetSet(m_currentFrame);
         m_haveSetsChanged = true;
 
-        const Ref<Shader> shader = explicitMaterial.GetShader();
+        const Ref<Shader> shader = material->GetShader();
         if (shader == m_currentShader)
             return;
 

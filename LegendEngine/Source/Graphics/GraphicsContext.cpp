@@ -12,7 +12,7 @@ namespace le
 
     GraphicsContext::~GraphicsContext()
     {
-
+        m_driver->DestroySampler(m_albedoSampler);
     }
 
     Renderer& GraphicsContext::GetRenderer() const
@@ -28,5 +28,15 @@ namespace le
     ShaderManager& GraphicsContext::GetShaderManager()
     {
         return m_shaderManager;
+    }
+
+    SamplerID GraphicsContext::GetAlbedoSampler() const
+    {
+        return m_albedoSampler;
+    }
+
+    void GraphicsContext::CreateSamplers()
+    {
+        m_albedoSampler = m_driver->CreateSampler({});
     }
 }

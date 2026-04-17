@@ -38,7 +38,6 @@ namespace le
         virtual void ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) = 0;
         virtual void SetMaterialTexture(MaterialID id, Ref<Texture> texture) = 0;
         virtual void SetMaterialColor(MaterialID id, Color color) = 0;
-        virtual void SetMaterialShader(MaterialID id, Ref<Shader> shader) = 0;
         virtual void SetSceneAmbientLight(SceneID id, float level) = 0;
 
         virtual ImageID GetTexture2DImage(Texture2DID texture) = 0;

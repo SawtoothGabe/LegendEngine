@@ -93,6 +93,11 @@ std::string Program::GetFilenameHash() const
     return m_filenameHash;
 }
 
+std::string Program::GetName() const
+{
+    return m_name;
+}
+
 const std::vector<Slang::ComPtr<slang::IEntryPoint>>& Program::GetEntrypoints() const
 {
     return m_entrypoints;
@@ -105,7 +110,8 @@ le::Features Program::GetFeatures() const
 
 Program::Program(const std::string_view path, const Slang::ComPtr<slang::IModule>& module)
     :
-    m_filenameHash(GetHashedName(path))
+    m_name(GetName(path)),
+    m_filenameHash(GetHashedName())
 {
     m_modules.emplace_back(module);
 
@@ -118,7 +124,8 @@ Program::Program(const std::string_view path, const Slang::ComPtr<slang::IModule
 Program::Program(const std::string_view path, le::Features features,
                  std::vector<Slang::ComPtr<slang::IModule>> modules)
     :
-    m_filenameHash(GetHashedName(path)),
+    m_name(GetName(path)),
+    m_filenameHash(GetHashedName()),
     m_features(features),
     m_modules(std::move(modules))
 {
@@ -128,20 +135,27 @@ Program::Program(const std::string_view path, le::Features features,
         throw std::runtime_error(std::format("shader program \"{}\" has no entrypoints", path));
 }
 
-std::string Program::GetHashedName(const std::string_view path)
+std::string Program::GetName(const std::string_view path)
 {
-    constexpr std::hash<std::string> hasher;
-
     const std::string filename = std::filesystem::path(path).stem().string();
     if (filename.empty())
         throw std::runtime_error("shader filename cannot be empty");
 
-    size_t hash = hasher(filename);
+    return filename;
+}
+
+std::string Program::GetHashedName() const
+{
+    constexpr std::hash<std::string> hasher;
+
+    size_t hash = hasher(m_name);
     return std::format("{:x}", hash);
 }
 
 le::Features Program::GetFeature(const std::string_view feature)
 {
+    if (feature == "solid_color")
+        return le::Features::SOLID_COLOR;
     if (feature == "textured")
         return le::Features::TEXTURED;
 

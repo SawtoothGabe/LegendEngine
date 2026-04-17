@@ -4,6 +4,8 @@
 #include <LE/Common/Types.hpp>
 #include <LE/Common/Assert.hpp>
 
+#include <LE/Graphics/Types.hpp>
+
 namespace le
 {
     class Renderer;
@@ -15,6 +17,10 @@ namespace le
 
         [[nodiscard]] virtual Scope<Renderer> CreateRenderer(GraphicsResources& resources) = 0;
         [[nodiscard]] virtual Scope<GraphicsResources> CreateResources() = 0;
+
+        [[nodiscard]] virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
+
+        virtual void DestroySampler(SamplerID sampler) = 0;
 
         static Scope<GraphicsDriver> Create(GraphicsAPI api,
             std::string_view applicationName);

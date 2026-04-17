@@ -21,9 +21,11 @@ namespace le
 		explicit Material(GraphicsResources& resources, Passkey);
 		~Material() override;
 
-		void SetTexture(const Ref<Texture>& toSet) const;
+		void SetTexture(const Ref<Texture>& toSet);
 		void SetColor(const Color& toSet) const;
-		void SetShader(const Ref<Shader>& toSet) const;
+		void SetShader(const Ref<Shader>& toSet);
+
+		Ref<Shader> GetShader() const;
 
 		[[nodiscard]] MaterialID GetHandle() const;
 
@@ -32,5 +34,8 @@ namespace le
 	private:
 		GraphicsResources& m_resources;
 		MaterialID m_handle;
+
+		uint64_t m_shaderFeatures = static_cast<uint64_t>(Features::SOLID_COLOR);
+		Ref<Shader> m_customShader;
 	};
 }

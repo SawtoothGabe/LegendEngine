@@ -17,9 +17,6 @@ namespace le
 
         void SetTexture(const Ref<Texture>& texture);
         void SetColor(Color color);
-        void SetShader(const Ref<Shader>& shader);
-
-        [[nodiscard]] Ref<Shader> GetShader() const;
     private:
         Material::Uniforms m_uniforms;
         size_t m_framesUntilValid = 0;

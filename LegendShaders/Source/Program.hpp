@@ -26,16 +26,20 @@ public:
 
     Slang::ComPtr<slang::IComponentType> Link(slang::ISession* session) const;
     [[nodiscard]] std::string GetFilenameHash() const;
+    [[nodiscard]] std::string GetName() const;
     const std::vector<Slang::ComPtr<slang::IEntryPoint>>& GetEntrypoints() const;
     le::Features GetFeatures() const;
 private:
     Program(std::string_view path, const Slang::ComPtr<slang::IModule>& module);
     Program(std::string_view path, le::Features features, std::vector<Slang::ComPtr<slang::IModule>> modules);
 
-    static std::string GetHashedName(std::string_view path);
+    std::string GetHashedName() const;
+
+    static std::string GetName(std::string_view path);
     static le::Features GetFeature(std::string_view feature);
     std::vector<Slang::ComPtr<slang::IEntryPoint>> MakeEntrypoints();
 
+    std::string m_name;
     std::string m_filenameHash;
     le::Features m_features;
     std::vector<Slang::ComPtr<slang::IModule>> m_modules;

@@ -188,11 +188,6 @@ namespace le
         reinterpret_cast<ExplicitMaterial*>(id.id)->SetColor(color);
     }
 
-    void ExplicitResources::SetMaterialShader(const MaterialID id, const Ref<Shader> shader)
-    {
-        reinterpret_cast<ExplicitMaterial*>(id.id)->SetShader(shader);
-    }
-
     void ExplicitResources::SetSceneAmbientLight(const SceneID id, const float level)
     {
         reinterpret_cast<ExplicitScene*>(id.id)->SetAmbientLight(level);

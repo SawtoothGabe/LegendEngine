@@ -19,11 +19,17 @@ namespace le
         [[nodiscard]] Renderer& GetRenderer() const;
         [[nodiscard]] GraphicsResources& GetResources() const;
         [[nodiscard]] ShaderManager& GetShaderManager();
+
+        [[nodiscard]] SamplerID GetAlbedoSampler() const;
     private:
+        void CreateSamplers();
+
         Scope<GraphicsDriver> m_driver;
         Scope<Renderer> m_renderer;
         Scope<GraphicsResources> m_resources;
 
         ShaderManager m_shaderManager;
+
+        SamplerID m_albedoSampler;
     };
 }

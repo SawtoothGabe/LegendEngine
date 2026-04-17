@@ -24,8 +24,16 @@ namespace le
         m_resources.DestroyMaterial(m_handle);
     }
 
-    void Material::SetTexture(const Ref<Texture>& toSet) const
+    void Material::SetTexture(const Ref<Texture>& toSet)
     {
+        if (toSet)
+            m_shaderFeatures |= static_cast<uint64_t>(Features::TEXTURED);
+        else
+            m_shaderFeatures &= ~static_cast<uint64_t>(Features::TEXTURED);
+
+        if (!toSet->GetSampler())
+            toSet->SetSampler(Application::Get().GetGraphicsContext().GetAlbedoSampler());
+
         m_resources.SetMaterialTexture(m_handle, toSet);
     }
 
@@ -34,9 +42,23 @@ namespace le
         m_resources.SetMaterialColor(m_handle, toSet);
     }
 
-    void Material::SetShader(const Ref<Shader>& toSet) const
+    void Material::SetShader(const Ref<Shader>& toSet)
     {
-        m_resources.SetMaterialShader(m_handle, toSet);
+        m_customShader = toSet;
+    }
+
+    Ref<Shader> Material::GetShader() const
+    {
+        if (m_customShader)
+            return m_customShader;
+
+        ShaderRegistry& registry = ShaderRegistry::Get();
+        ShaderManager& manager = Application::Get().GetGraphicsContext().GetShaderManager();
+
+        ShaderInfo* pInfo = registry.FromFeatures(m_shaderFeatures);
+        LE_ASSERT(pInfo, "No shader found with requested features");
+
+        return manager.TryCreate(pInfo);
     }
 
     MaterialID Material::GetHandle() const
