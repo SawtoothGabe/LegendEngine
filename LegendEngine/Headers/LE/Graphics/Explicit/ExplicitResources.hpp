@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <queue>
 #include <LE/Graphics/GraphicsResources.hpp>
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
@@ -61,6 +62,12 @@ namespace le
         void ProcessDeletionQueue();
         void EnqueueDeletionFunc(const std::function<void()>& func);
     private:
+        struct DeletionQueue
+        {
+            std::recursive_mutex mutex;
+            std::queue<std::function<void()>> queue;
+        };
+
         void CreateQueues();
         void CreateDescriptorSetLayouts();
         void CreatePipelineLayout();
@@ -91,7 +98,8 @@ namespace le
         PipelineLayoutID m_pipelineLayout;
 
         size_t m_currentFrame = 0;
-        std::vector<std::queue<std::function<void()>>> m_deletionQueues;
+
+        std::deque<DeletionQueue> m_deletionQueues;
 
         EventBusSubscriber m_sub;
     };

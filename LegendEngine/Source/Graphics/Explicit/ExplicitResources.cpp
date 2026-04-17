@@ -30,9 +30,12 @@ namespace le
     {
         m_driver.WaitIdle();
 
-        for (auto& queue : m_deletionQueues)
+        for (auto& [mutex, queue] : m_deletionQueues)
+        {
+            std::scoped_lock lock(mutex);
             for (; !queue.empty(); queue.pop())
                 queue.front()();
+        }
 
         m_driver.DestroyCommandPool(m_graphicsPool);
         if (m_driver.HasTransferQueue())
@@ -50,14 +53,19 @@ namespace le
     void ExplicitResources::ProcessDeletionQueue()
     {
         m_currentFrame = Application::Get().GetCurrentFrame();
+        auto& [mutex, queue] = m_deletionQueues[m_currentFrame];
 
-        for (auto& queue = m_deletionQueues[m_currentFrame]; !queue.empty(); queue.pop())
+        std::scoped_lock lock(mutex);
+        for (; !queue.empty(); queue.pop())
             queue.front()();
     }
 
     void ExplicitResources::EnqueueDeletionFunc(const std::function<void()>& func)
     {
-        m_deletionQueues[m_currentFrame].push(func);
+        auto& [mutex, queue] = m_deletionQueues[m_currentFrame];
+
+        std::scoped_lock lock(mutex);
+        queue.push(func);
     }
 
     MaterialID ExplicitResources::CreateMaterial()
