@@ -6,8 +6,8 @@ namespace le
     class DummyDriver : public GraphicsDriver
     {
     public:
+        [[nodiscard]] Scope<GraphicsResources> CreateResources(EventBus&) override;
         [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override;
-        [[nodiscard]] Scope<GraphicsResources> CreateResources() override;
 
         [[nodiscard]] SamplerID CreateSampler(const SamplerInfo& info) override;
 

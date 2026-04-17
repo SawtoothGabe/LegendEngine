@@ -28,9 +28,9 @@ namespace le
         return std::make_unique<ExplicitRenderer>(static_cast<ExplicitResources&>(resources));
     }
 
-    Scope<GraphicsResources> VulkanDriver::CreateResources()
+    Scope<GraphicsResources> VulkanDriver::CreateResources(EventBus& bus)
     {
-        return std::make_unique<ExplicitResources>(*this);
+        return std::make_unique<ExplicitResources>(bus, *this);
     }
 
     static const std::vector VALIDATION_LAYERS = {

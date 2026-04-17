@@ -18,8 +18,14 @@ namespace le
 
     PoolManager::~PoolManager()
     {
-        for (const auto& [pool, remaining] : m_pools)
+        for (size_t i = 0; i < m_pools.size(); ++i)
+        {
+            auto& [pool, remaining] = m_pools[i];
+            LE_ASSERT(remaining >= m_startSize * std::pow(GROWTH_FACTOR, i),
+                "Some descriptor sets were not freed prior to the destruction of this PoolManager");
+
             m_device.destroyDescriptorPool(pool);
+        }
     }
 
     std::vector<DescriptorSetID> PoolManager::Allocate(DescriptorPoolID& outPool, const size_t count)
@@ -52,7 +58,7 @@ namespace le
             {
                 foundPool = true;
                 LE_ASSERT(managedPool.remaining >= count, "Freed too many sets from pool");
-                managedPool.remaining -= count;
+                managedPool.remaining += count;
                 break;
             }
         }

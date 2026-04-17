@@ -49,7 +49,7 @@ namespace le
         const int width, const int height)
         :
         m_ResizeHandler(*this),
-        m_graphicsContext(std::move(driver)),
+        m_graphicsContext(m_EventBus, std::move(driver)),
         m_GlobalScene(m_graphicsContext.GetResources())
     {
         std::wstring title(applicationName.size(), L' ');

@@ -9,7 +9,7 @@ namespace le
     class ExplicitResources : public GraphicsResources
     {
     public:
-        explicit ExplicitResources(ExplicitDriver& driver);
+        explicit ExplicitResources(EventBus& bus, ExplicitDriver& driver);
         ~ExplicitResources() override;
 
         [[nodiscard]] MaterialID CreateMaterial() override;
@@ -92,5 +92,7 @@ namespace le
 
         size_t m_currentFrame = 0;
         std::vector<std::queue<std::function<void()>>> m_deletionQueues;
+
+        EventBusSubscriber m_sub;
     };
 }

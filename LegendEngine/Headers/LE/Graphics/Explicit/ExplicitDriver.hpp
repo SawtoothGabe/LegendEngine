@@ -1,8 +1,7 @@
 #pragma once
 
-#include <LE/Common/Types.hpp>
-#include <LE/Graphics/Types.hpp>
 #include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/Types.hpp>
 
 #include <LE/TetherBindings.hpp>
 
@@ -93,8 +92,5 @@ namespace le
 
         virtual void TransitionImageLayout(CommandBufferID buffer, ImageID image, ImageLayout oldLayout,
             ImageLayout newLayout, ImageAspect aspect) = 0;
-
-        [[nodiscard]] Scope<Renderer> CreateRenderer(GraphicsResources& resources) override = 0;
-        [[nodiscard]] Scope<GraphicsResources> CreateResources() override = 0;
     };
 }

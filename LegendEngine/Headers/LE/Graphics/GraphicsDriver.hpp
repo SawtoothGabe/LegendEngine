@@ -3,6 +3,7 @@
 #include <string_view>
 #include <LE/Common/Types.hpp>
 #include <LE/Common/Assert.hpp>
+#include <LE/Events/EventBus.hpp>
 
 #include <LE/Graphics/Types.hpp>
 
@@ -15,8 +16,8 @@ namespace le
     public:
         virtual ~GraphicsDriver() = default;
 
+        [[nodiscard]] virtual Scope<GraphicsResources> CreateResources(EventBus& bus) = 0;
         [[nodiscard]] virtual Scope<Renderer> CreateRenderer(GraphicsResources& resources) = 0;
-        [[nodiscard]] virtual Scope<GraphicsResources> CreateResources() = 0;
 
         [[nodiscard]] virtual SamplerID CreateSampler(const SamplerInfo& info) = 0;
 
