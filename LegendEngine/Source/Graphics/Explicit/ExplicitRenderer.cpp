@@ -94,6 +94,7 @@ namespace le
 
             UpdateCamera(*sceneWithCamera, cameraID);
             explicitTarget.UpdateCameraUniforms(m_currentFrame, sceneWithCamera->GetComponentData<Camera>(cameraID));
+            m_sets[0] = explicitTarget.GetCameraSet(m_currentFrame);
 
             for (Scene* pScene : scenes)
                 if (pScene)
