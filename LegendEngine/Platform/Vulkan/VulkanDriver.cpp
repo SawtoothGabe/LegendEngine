@@ -289,7 +289,9 @@ namespace le
 		    {}, 1, &viewport, 1, &scissor
 	    );
 
-	    constexpr vk::PipelineRasterizationStateCreateInfo rasterizerState;
+	    vk::PipelineRasterizationStateCreateInfo rasterizerState;
+    	rasterizerState.lineWidth = 1.0f;
+
 	    constexpr vk::PipelineMultisampleStateCreateInfo multisampleState;
 
 	    const vk::PipelineDepthStencilStateCreateInfo depthStencilState(

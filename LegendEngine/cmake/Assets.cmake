@@ -104,7 +104,8 @@ function (le_add_shaders_target name shaders)
         list(APPEND SHADER_CPP_FILES "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
     endforeach ()
 
-    add_library(${name} STATIC ${SHADER_CPP_FILES})
+    add_library(${name})
+    target_sources(${name} PUBLIC ${SHADER_CPP_FILES})
     target_include_directories(${name} PUBLIC "${LEGENDENGINE_BASE_DIR}/LegendEngine/Headers")
 endfunction()
 
