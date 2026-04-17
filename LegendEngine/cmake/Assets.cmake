@@ -101,6 +101,7 @@ function (le_add_shaders_target name shaders)
                 \"${shader}\"
         )
 
+        file(WRITE "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
         list(APPEND SHADER_CPP_FILES "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
     endforeach ()
 

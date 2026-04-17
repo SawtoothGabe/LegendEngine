@@ -364,7 +364,7 @@ namespace le
     {
         PushConstantRange ranges[] = {
             {
-                .size = sizeof(Transform),
+                .size = sizeof(Matrix4x4f),
                 .offset = 0,
                 .stage = ShaderStageFlagBits::VERTEX
             }

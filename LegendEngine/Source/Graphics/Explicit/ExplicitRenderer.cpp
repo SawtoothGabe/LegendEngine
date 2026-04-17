@@ -275,7 +275,7 @@ namespace le
             return;
 
         m_driver.CmdPushConstants(buffer, m_resources.GetPipelineLayout(), ShaderStageFlagBits::VERTEX,
-                                   0, sizeof(Transform), &transform);
+                                   0, sizeof(Matrix4x4f), &transform.transformMat);
 
         if (m_haveSetsChanged)
         {
