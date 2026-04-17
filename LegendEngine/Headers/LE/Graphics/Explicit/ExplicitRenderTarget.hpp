@@ -22,12 +22,13 @@ namespace le
 
         bool StartRendering(const CommandBufferID& c, size_t currentFrame);
         void EndRendering(const CommandBufferID& c) const;
-        void EndFrame(SemaphoreID waitSemaphore);
+        void EndFrame();
 
         void UpdateCameraUniforms(size_t currentFrame, const Camera& camera) const;
 
         DescriptorSetID GetCameraSet(size_t currentFrame) const;
         SemaphoreID GetImageAvailableSemaphore(size_t currentFrame) const;
+        SemaphoreID GetRenderFinishedSemaphore() const;
     private:
         struct PerFrameData
         {
@@ -65,6 +66,7 @@ namespace le
         std::vector<PerFrameData> m_frames;
         std::vector<ImageID> m_images;
         std::vector<ImageViewID> m_imageViews;
+        std::vector<SemaphoreID> m_renderFinishedSemaphores;
 
         std::vector<DescriptorSetID> m_cameraSets;
         PerFrameBuffer m_cameraUniforms;

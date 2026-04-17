@@ -122,11 +122,11 @@ namespace le
         );
     }
 
-    void ExplicitRenderTarget::EndFrame(SemaphoreID waitSemaphore)
+    void ExplicitRenderTarget::EndFrame()
     {
         PresentInfo info;
         info.swapchains = std::span(&m_swapchain, 1);
-        info.waitSemaphores = std::span(&waitSemaphore, 1);
+        info.waitSemaphores = std::span(&m_renderFinishedSemaphores[m_imageIndex], 1);
         info.imageIndices = std::span(&m_imageIndex, 1);
 
         std::scoped_lock lock(m_mutex);
@@ -153,6 +153,11 @@ namespace le
         return m_frames[currentFrame].imageAvailableSemaphore;
     }
 
+    SemaphoreID ExplicitRenderTarget::GetRenderFinishedSemaphore() const
+    {
+        return m_renderFinishedSemaphores[m_imageIndex];
+    }
+
     void ExplicitRenderTarget::CreateSurface()
     {
         m_surface = m_driver.CreateSurface(m_window);
@@ -170,6 +175,7 @@ namespace le
         m_images = m_driver.GetSwapchainImages(m_swapchain);
 
         m_imageViews.resize(m_images.size());
+        m_renderFinishedSemaphores.resize(m_images.size());
         for (size_t i = 0; i < m_images.size(); ++i)
         {
             ImageViewInfo viewInfo;
@@ -177,6 +183,7 @@ namespace le
             viewInfo.format = m_colorFormat;
 
             m_imageViews[i] = m_driver.CreateImageView(viewInfo);
+            m_renderFinishedSemaphores[i] = m_driver.CreateSemaphore();
         }
     }
 
@@ -255,7 +262,7 @@ namespace le
 
     void ExplicitRenderTarget::RecreateSwapchain()
     {
-        // The m_Device might still have work. Wait for it to finish before recreating the swapchain.
+        // The device might still have work. Wait for it to finish before recreating the swapchain.
         m_driver.WaitIdle();
 
         const SurfaceCapabilities capabilities = m_driver.GetSurfaceCapabilities(m_surface);
@@ -276,11 +283,12 @@ namespace le
     void ExplicitRenderTarget::DestroySwapchain() const
     {
         // Destroying the images is necessary
-        for (const ImageID image : m_images)
-            m_driver.DestroyImage(image);
-
-        for (const ImageViewID& view: m_imageViews)
-            m_driver.DestroyImageView(view);
+        for (size_t i = 0; i < m_images.size(); i++)
+        {
+            m_driver.DestroyImage(m_images[i]);
+            m_driver.DestroyImageView(m_imageViews[i]);
+            m_driver.DestroySemaphore(m_renderFinishedSemaphores[i]);
+        }
 
         for (const PerFrameData& data: m_frames)
         {

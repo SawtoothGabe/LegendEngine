@@ -43,6 +43,9 @@ namespace le
         std::vector<SemaphoreID> m_renderFinishedSemaphores;
         std::vector<RenderTarget*> m_targetsRendered;
 
+        std::vector<SemaphoreID> m_waitSemaphores;
+        std::vector<SemaphoreID> m_signalSemaphores;
+
         DescriptorSetID m_sets[3] = {};
         bool m_haveSetsChanged = true;
         Ref<Shader> m_currentShader = nullptr;

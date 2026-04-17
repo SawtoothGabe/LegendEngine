@@ -110,22 +110,23 @@ namespace le
 
         m_driver.EndCommandBuffer(buffer);
 
-        std::vector<SemaphoreID> waitSemaphores;
+        m_waitSemaphores.clear();
+        m_signalSemaphores.clear();
         for (RenderTarget* target : m_targetsRendered)
         {
             auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target);
-            waitSemaphores.emplace_back(explicitTarget.GetImageAvailableSemaphore(m_currentFrame));
+            m_waitSemaphores.emplace_back(explicitTarget.GetImageAvailableSemaphore(m_currentFrame));
+            m_signalSemaphores.emplace_back(explicitTarget.GetRenderFinishedSemaphore());
         }
 
         PipelineStage stageMask[] = { PipelineStage::COLOR_ATTACHMENT_OUTPUT };
-        SemaphoreID signalSemaphores[] = { m_renderFinishedSemaphores[m_currentFrame] };
 
         SubmitInfo info;
-        info.commandBuffer = m_commandBuffers[m_currentFrame];
+        info.commandBuffer = buffer;
         info.fence = m_inFlightFences[m_currentFrame];
         info.waitDstStageMask = stageMask;
-        info.waitSemaphores = waitSemaphores;
-        info.signalSemaphores = signalSemaphores;
+        info.waitSemaphores = m_waitSemaphores;
+        info.signalSemaphores = m_signalSemaphores;
 
         // The in flight fence for this frame must be reset.
         m_driver.ResetFences(1, &m_inFlightFences[m_currentFrame]);
@@ -138,7 +139,7 @@ namespace le
         for (RenderTarget* target : m_targetsRendered)
         {
             auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target);
-            explicitTarget.EndFrame(m_renderFinishedSemaphores[m_currentFrame]);
+            explicitTarget.EndFrame();
         }
 
         m_targetsRendered.clear();
