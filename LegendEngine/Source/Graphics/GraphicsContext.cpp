@@ -9,6 +9,8 @@ namespace le
     {
         m_resources = m_driver->CreateResources(bus);
         m_renderer = m_driver->CreateRenderer(*m_resources);
+
+        CreateSamplers();
     }
 
     GraphicsContext::~GraphicsContext()

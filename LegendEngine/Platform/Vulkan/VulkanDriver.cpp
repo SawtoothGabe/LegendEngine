@@ -145,7 +145,7 @@ namespace le
 		    case QueueFamily::TRANSFER: index = m_indices.transferFamilyIndex; break;
 	    }
 
-	    const vk::CommandPoolCreateInfo info({}, index);
+	    const vk::CommandPoolCreateInfo info(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, index);
 	    return CommandPoolID(m_device.createCommandPool(info, nullptr));
     }
 
@@ -510,7 +510,9 @@ namespace le
     void VulkanDriver::DestroyImage(const ImageID image)
     {
 	    const auto vkImage = reinterpret_cast<VulkanImage*>(image.id);
-	    vmaDestroyImage(m_allocator, vkImage->image, vkImage->allocation);
+    	if (vkImage->allocation)
+			vmaDestroyImage(m_allocator, vkImage->image, vkImage->allocation);
+
 	    delete vkImage;
     }
 
@@ -756,6 +758,19 @@ namespace le
 	    ) == vk::Result::eSuccess;
     }
 
+    std::vector<ImageID> VulkanDriver::GetSwapchainImages(const SwapchainID swapchain)
+    {
+		const std::vector<vk::Image> images =
+			m_device.getSwapchainImagesKHR(VULKAN_CAST(SwapchainKHR, swapchain));
+
+    	std::vector<ImageID> result;
+    	result.reserve(images.size());
+    	for (const auto& image : images)
+    		result.emplace_back(new VulkanImage{image, nullptr});
+
+    	return result;
+    }
+
     void VulkanDriver::CmdCopyBuffer(const CommandBufferID buffer, const BufferID src, const BufferID dst, std::span<BufferCopy> regions)
     {
 	    std::vector<vk::BufferCopy> vkRegions(regions.size());
@@ -829,7 +844,8 @@ namespace le
 		    vkBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		    vkBarrier.image = reinterpret_cast<VulkanImage*>(barrier.image.id)->image;
 		    vkBarrier.subresourceRange.aspectMask = VulkanTypes::GetImageAspectFlags(barrier.subresourceRange.aspect);
-		    vkBarrier.subresourceRange.levelCount = barrier.subresourceRange.baseMipLevel;
+		    vkBarrier.subresourceRange.baseMipLevel = barrier.subresourceRange.baseMipLevel;
+	    	vkBarrier.subresourceRange.levelCount = 1;
 		    vkBarrier.subresourceRange.baseArrayLayer = barrier.subresourceRange.baseArrayLayer;
 		    vkBarrier.subresourceRange.layerCount = barrier.subresourceRange.layerCount;
 	    }

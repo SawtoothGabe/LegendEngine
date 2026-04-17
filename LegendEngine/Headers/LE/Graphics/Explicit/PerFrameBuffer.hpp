@@ -8,7 +8,7 @@ namespace le
     class PerFrameBuffer : public Buffer
     {
     public:
-        PerFrameBuffer(const ExplicitResources& resources, BufferUsageFlagBits usage, size_t size);
+        PerFrameBuffer(const ExplicitResources& resources, BufferUsageFlagBits usage, size_t size, bool createMapped = false);
         ~PerFrameBuffer() override;
 
         void Update(std::size_t size, std::size_t offset, const void* data, size_t currentFrame) override;

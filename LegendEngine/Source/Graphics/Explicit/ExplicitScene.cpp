@@ -7,8 +7,8 @@ namespace le
     ExplicitScene::ExplicitScene(ExplicitResources& resources)
         :
         m_driver(resources.GetDriver()),
-        m_storageBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(SceneStorage)),
-        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData)),
+        m_storageBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(SceneStorage), true),
+        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData), true),
         m_poolManager(resources.GetScenePoolManager())
     {
         m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
@@ -38,9 +38,6 @@ namespace le
             m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
             m_lightCount = lightCount;
         }
-
-        if (m_framesUntilSetsValid)
-            UpdateSets(frame);
     }
 
     void ExplicitScene::UpdateLightData(const size_t frame, const size_t index, const SceneLightData& data)
@@ -51,6 +48,9 @@ namespace le
     void ExplicitScene::UpdateUniforms(const size_t frame)
     {
         m_storageBuffer.Update(sizeof(SceneStorage), 0, &m_storage, frame);
+
+        if (m_framesUntilSetsValid)
+            UpdateSets(frame);
     }
 
     DescriptorSetID ExplicitScene::GetSet(const size_t index) const
@@ -67,7 +67,7 @@ namespace le
 
         DescriptorBufferInfo lightsInfo {
             .buffer = m_lightsBuffer.GetDesc(frame).buffer,
-            .range = sizeof(SceneLightData) * m_lightCount,
+            .range = sizeof(SceneLightData) * std::max<size_t>(1, m_lightCount),
         };
 
         WriteDescriptorSet writes[2]{};

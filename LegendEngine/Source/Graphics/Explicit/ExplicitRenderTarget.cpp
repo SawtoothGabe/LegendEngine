@@ -1,6 +1,5 @@
 #include <LE/Application.hpp>
 #include <LE/Components/Camera.hpp>
-#include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
 
 namespace le
@@ -16,7 +15,7 @@ namespace le
         m_commandPool(resources.GetGraphicsPool()),
         m_colorFormat(colorFormat),
         m_depthFormat(depthFormat),
-        m_cameraUniforms(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Camera::CameraUniforms))
+        m_cameraUniforms(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Camera::CameraUniforms), true)
     {
         m_frames.resize(Application::FRAMES_IN_FLIGHT);
         m_surface = m_driver.CreateSurface(window);
@@ -36,7 +35,7 @@ namespace le
 
         DestroySwapchain();
 
-        for (const PerFrameData& perFrameData : m_frames)
+        for (const PerFrameData& perFrameData: m_frames)
             m_driver.DestroySemaphore(perFrameData.imageAvailableSemaphore);
 
         m_driver.DestroySurface(m_surface);
@@ -74,7 +73,7 @@ namespace le
         colorBarrier.oldLayout = ImageLayout::UNDEFINED;
         colorBarrier.newLayout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
         colorBarrier.dstAccessMask = AccessFlagBits::COLOR_ATTACHMENT_WRITE;
-        colorBarrier.subresourceRange = { ImageAspect::COLOR, 0, 0, 1 };
+        colorBarrier.subresourceRange = {ImageAspect::COLOR, 0, 0, 1};
 
         m_driver.CmdPipelineBarrier(
             c,
@@ -94,7 +93,7 @@ namespace le
         {
             .imageView = m_frames[currentFrame].depthView,
             .imageLayout = ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            .clearValue = { 1.0f, 0.0f, 0.0f, 0.0f },
+            .clearValue = {1.0f, 0.0f, 0.0f, 0.0f},
         };
         renderingInfo.extent = m_extent;
 
@@ -114,12 +113,12 @@ namespace le
         barrier.oldLayout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
         barrier.newLayout = ImageLayout::PRESENT_SRC;
         barrier.srcAccessMask = AccessFlagBits::COLOR_ATTACHMENT_WRITE;
-        barrier.subresourceRange = { ImageAspect::COLOR, 0, 0, 1 };
+        barrier.subresourceRange = {ImageAspect::COLOR, 0, 0, 1};
 
         m_driver.CmdPipelineBarrier(c,
-                                    PipelineStage::COLOR_ATTACHMENT_OUTPUT,
-                                    PipelineStage::BOTTOM_OF_PIPE,
-                                    std::span(&barrier, 1)
+            PipelineStage::COLOR_ATTACHMENT_OUTPUT,
+            PipelineStage::BOTTOM_OF_PIPE,
+            std::span(&barrier, 1)
         );
     }
 
@@ -144,12 +143,12 @@ namespace le
         memcpy(data, &uniforms, sizeof(uniforms));
     }
 
-    DescriptorSetID ExplicitRenderTarget::GetCameraSet(const size_t currentFrame)
+    DescriptorSetID ExplicitRenderTarget::GetCameraSet(const size_t currentFrame) const
     {
         return m_cameraSets[currentFrame];
     }
 
-    SemaphoreID ExplicitRenderTarget::GetImageAvailableSemaphore(const size_t currentFrame)
+    SemaphoreID ExplicitRenderTarget::GetImageAvailableSemaphore(const size_t currentFrame) const
     {
         return m_frames[currentFrame].imageAvailableSemaphore;
     }
@@ -168,6 +167,17 @@ namespace le
         info.vsync = m_vsync;
 
         m_swapchain = m_driver.CreateSwapchain(info);
+        m_images = m_driver.GetSwapchainImages(m_swapchain);
+
+        m_imageViews.resize(m_images.size());
+        for (size_t i = 0; i < m_images.size(); ++i)
+        {
+            ImageViewInfo viewInfo;
+            viewInfo.image = m_images[i];
+            viewInfo.format = m_colorFormat;
+
+            m_imageViews[i] = m_driver.CreateImageView(viewInfo);
+        }
     }
 
     void ExplicitRenderTarget::CreateDepthImages()
@@ -175,7 +185,7 @@ namespace le
         CommandBufferID c = m_driver.AllocateCommandBuffer(m_commandPool);
         m_driver.BeginCommandBuffer(c, true);
 
-        for (PerFrameData& frame : m_frames)
+        for (PerFrameData& frame: m_frames)
         {
             ImageInfo imageInfo;
             imageInfo.width = m_extent.width;
@@ -218,7 +228,7 @@ namespace le
 
     void ExplicitRenderTarget::CreateSemaphores()
     {
-        for (PerFrameData& frame : m_frames)
+        for (PerFrameData& frame: m_frames)
             frame.imageAvailableSemaphore = m_driver.CreateSemaphore();
     }
 
@@ -229,12 +239,12 @@ namespace le
 
         for (size_t i = 0; i < m_cameraSets.size(); ++i)
         {
-            DescriptorBufferInfo bufferInfo {
+            DescriptorBufferInfo bufferInfo{
                 .buffer = m_cameraUniforms.GetDesc(i).buffer,
                 .range = sizeof(Camera::CameraUniforms),
             };
 
-            WriteDescriptorSet write {
+            WriteDescriptorSet write{
                 .dstSet = m_cameraSets[i],
                 .pBufferInfo = &bufferInfo,
             };
@@ -265,10 +275,14 @@ namespace le
 
     void ExplicitRenderTarget::DestroySwapchain() const
     {
-        for (const ImageViewID& view : m_imageViews)
+        // Destroying the images is necessary
+        for (const ImageID image : m_images)
+            m_driver.DestroyImage(image);
+
+        for (const ImageViewID& view: m_imageViews)
             m_driver.DestroyImageView(view);
 
-        for (const PerFrameData& data : m_frames)
+        for (const PerFrameData& data: m_frames)
         {
             m_driver.DestroyImage(data.depthImage);
             m_driver.DestroyImageView(data.depthView);

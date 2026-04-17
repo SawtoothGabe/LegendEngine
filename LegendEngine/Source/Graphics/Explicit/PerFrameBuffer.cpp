@@ -3,11 +3,13 @@
 
 namespace le
 {
-    PerFrameBuffer::PerFrameBuffer(const ExplicitResources& resources, const BufferUsageFlagBits usage, const size_t size)
+    PerFrameBuffer::PerFrameBuffer(const ExplicitResources& resources, const BufferUsageFlagBits usage, const size_t size,
+        bool createMapped)
         :
         m_driver(resources.GetDriver()),
         m_size(size),
-        m_usage(usage)
+        m_usage(usage),
+        m_mapped(createMapped)
     {
         m_buffers.resize(Application::FRAMES_IN_FLIGHT);
         m_sizes.resize(Application::FRAMES_IN_FLIGHT);

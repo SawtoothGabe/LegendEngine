@@ -26,8 +26,8 @@ namespace le
 
         void UpdateCameraUniforms(size_t currentFrame, const Camera& camera) const;
 
-        DescriptorSetID GetCameraSet(size_t currentFrame);
-        SemaphoreID GetImageAvailableSemaphore(size_t currentFrame);
+        DescriptorSetID GetCameraSet(size_t currentFrame) const;
+        SemaphoreID GetImageAvailableSemaphore(size_t currentFrame) const;
     private:
         struct PerFrameData
         {

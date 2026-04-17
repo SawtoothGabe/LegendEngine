@@ -165,8 +165,12 @@ namespace le
 
     void Application::Render(const float delta)
     {
+        Renderer& renderer = m_graphicsContext.GetRenderer();
         Scene* scenes[] = {&m_GlobalScene, m_pActiveScene};
-        m_graphicsContext.GetRenderer().RenderFrame(m_windowManager->GetRenderTarget(), scenes);
+
+        renderer.StartFrame();
+        renderer.RenderFrame(m_windowManager->GetRenderTarget(), scenes);
+        renderer.EndFrame();
 
         m_EventBus.DispatchEvent<RenderEvent>(RenderEvent(delta));
 

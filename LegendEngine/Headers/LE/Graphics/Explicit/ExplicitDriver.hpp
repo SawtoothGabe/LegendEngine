@@ -66,6 +66,7 @@ namespace le
         virtual bool HasTransferQueue() = 0;
         virtual void UpdateDescriptorSets(std::span<WriteDescriptorSet> writes) = 0;
         virtual bool AcquireNextImage(SwapchainID swapchain, SemaphoreID waitSemaphore, uint32_t& outIndex) = 0;
+        virtual std::vector<ImageID> GetSwapchainImages(SwapchainID swapchain) = 0;
 
         virtual void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) = 0;
         virtual void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

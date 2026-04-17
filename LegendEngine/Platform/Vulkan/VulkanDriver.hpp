@@ -1,7 +1,5 @@
 #pragma once
 
-#include <PoolManager.hpp>
-
 #include "VkDefs.hpp"
 
 #include <vk_mem_alloc.h>
@@ -71,6 +69,7 @@ namespace le
         bool HasTransferQueue() override;
         void UpdateDescriptorSets(std::span<WriteDescriptorSet> writes) override;
         bool AcquireNextImage(SwapchainID swapchain, SemaphoreID waitSemaphore, uint32_t& outIndex) override;
+        std::vector<ImageID> GetSwapchainImages(SwapchainID swapchain) override;
 
         void CmdCopyBuffer(CommandBufferID buffer, BufferID src, BufferID dst, std::span<BufferCopy> regions) override;
         void CmdCopyBufferToImage(CommandBufferID buffer, BufferID src, ImageID dst,

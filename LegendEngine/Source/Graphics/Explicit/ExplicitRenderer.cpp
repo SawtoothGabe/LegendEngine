@@ -57,6 +57,9 @@ namespace le
 
         m_driver.ResetCommandBuffer(buffer);
         m_driver.BeginCommandBuffer(buffer, false);
+
+        m_currentShader = nullptr;
+        m_haveSetsChanged = true;
     }
 
     void ExplicitRenderer::RenderFrame(RenderTarget& target, const std::span<Scene*> scenes)
@@ -89,7 +92,6 @@ namespace le
                 return;
             }
 
-            UseMaterial(m_defaultMaterial);
             UpdateCamera(*sceneWithCamera, cameraID);
             explicitTarget.UpdateCameraUniforms(m_currentFrame, sceneWithCamera->GetComponentData<Camera>(cameraID));
 
@@ -187,6 +189,9 @@ namespace le
 
                 ExplicitMaterial& mat = *reinterpret_cast<ExplicitMaterial*>(mesh.material->GetHandle().id);
                 mat.UpdateUniforms(m_currentFrame);
+
+                if (mesh.material == nullptr)
+                    UseMaterial(m_defaultMaterial);
 
                 if (mesh.material != lastMaterial)
                 {

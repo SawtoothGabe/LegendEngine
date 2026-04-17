@@ -8,7 +8,7 @@ namespace le
         :
         m_resources(resources),
         m_driver(resources.GetDriver()),
-        m_uniformBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Material::Uniforms))
+        m_uniformBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(Material::Uniforms), true)
     {
         m_sets = m_driver.AllocateDescriptorSets(
             resources.GetMaterialPoolManager(),
