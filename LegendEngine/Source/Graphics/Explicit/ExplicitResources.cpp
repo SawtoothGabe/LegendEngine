@@ -27,8 +27,8 @@ namespace le
         m_driver.WaitIdle();
 
         for (auto& queue : m_deletionQueues)
-            for (auto & func : queue)
-                func();
+            for (; !queue.empty(); queue.pop())
+                queue.front()();
 
         m_driver.DestroyCommandPool(m_graphicsPool);
         if (m_driver.HasTransferQueue())
@@ -47,15 +47,13 @@ namespace le
     {
         m_currentFrame = Application::Get().GetCurrentFrame();
 
-        for (auto& func : m_deletionQueues[m_currentFrame])
-            func();
-
-        m_deletionQueues[m_currentFrame].clear();
+        for (auto& queue = m_deletionQueues[m_currentFrame]; !queue.empty(); queue.pop())
+            queue.front()();
     }
 
     void ExplicitResources::EnqueueDeletionFunc(const std::function<void()>& func)
     {
-        m_deletionQueues[m_currentFrame].push_back(func);
+        m_deletionQueues[m_currentFrame].push(func);
     }
 
     MaterialID ExplicitResources::CreateMaterial()
@@ -155,14 +153,17 @@ namespace le
     {
         EnqueueDeletionFunc([this, id] { m_driver.DestroyPipeline(PipelineID(id.id)); });
     }
+
     void ExplicitResources::DestroyTexture2D(Texture2DID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2D*>(id.id); });
     }
+
     void ExplicitResources::DestroyTexture2DArray(Texture2DArrayID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2DArray*>(id.id); });
     }
+
     void ExplicitResources::DestroyRenderTarget(RenderTargetID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitRenderTarget*>(id.id); });

@@ -128,6 +128,7 @@ namespace le
 
 	    LE_CHECK_VK(vmaCreateBuffer(m_allocator, &bufferInfo, &allocInfo,
 		    &buffer->buffer, &buffer->allocation, &buffer->allocationInfo));
+
 	    return BufferID(buffer);
     }
 

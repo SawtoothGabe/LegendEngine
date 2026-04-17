@@ -1,5 +1,6 @@
 #pragma once
 
+#include <queue>
 #include <LE/Graphics/GraphicsResources.hpp>
 #include <LE/Graphics/Explicit/ExplicitDriver.hpp>
 
@@ -90,6 +91,6 @@ namespace le
         PipelineLayoutID m_pipelineLayout;
 
         size_t m_currentFrame = 0;
-        std::vector<std::vector<std::function<void()>>> m_deletionQueues;
+        std::vector<std::queue<std::function<void()>>> m_deletionQueues;
     };
 }

@@ -110,6 +110,8 @@ namespace le
 #ifndef LE_HEADLESS
         m_Window->SetVisible(false);
 #endif
+
+        m_graphicsContext.GetResources().DestroyRenderTarget(m_renderTarget);
     }
 
     void Application::SetActiveScene(Scene& scene)

@@ -9,6 +9,7 @@ namespace le
     {
     public:
         explicit ExplicitScene(ExplicitResources& resources);
+        ~ExplicitScene();
 
         void SetAmbientLight(float level);
         void StartFrame(size_t frame, size_t lightCount);
@@ -27,7 +28,9 @@ namespace le
 
         SceneStorage m_storage;
 
+        PoolManagerID m_poolManager;
         DescriptorPoolID m_descriptorPool;
+
         std::vector<DescriptorSetID> m_sets;
         PerFrameBuffer m_storageBuffer; // not a storage buffer lol, just a uniform buffer for the storage
         PerFrameBuffer m_lightsBuffer; // this is a storage buffer

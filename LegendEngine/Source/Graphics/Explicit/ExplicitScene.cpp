@@ -8,14 +8,21 @@ namespace le
         :
         m_driver(resources.GetDriver()),
         m_storageBuffer(resources, BufferUsageFlagBits::UNIFORM_BUFFER, sizeof(SceneStorage)),
-        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData))
+        m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData)),
+        m_poolManager(resources.GetScenePoolManager())
     {
         m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
         m_sets = m_driver.AllocateDescriptorSets(
-            resources.GetScenePoolManager(),
+            m_poolManager,
             m_descriptorPool,
             Application::FRAMES_IN_FLIGHT
         );
+    }
+
+    ExplicitScene::~ExplicitScene()
+    {
+        m_driver.FreeDescriptorSets(m_poolManager, m_descriptorPool,
+            m_sets.size(), m_sets.data());
     }
 
     void ExplicitScene::SetAmbientLight(const float level)
