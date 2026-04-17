@@ -25,7 +25,7 @@ namespace le
         CreateCommandBuffers();
         CreateSyncObjects();
 
-        m_defaultMaterial = Material::Create();
+        m_defaultMaterial = Material::Create(resources);
 
         LE_INFO("Created ExplicitRenderer");
     }

@@ -21,7 +21,8 @@ namespace le
         std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) override;
         [[nodiscard]] BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) override;
         CommandPoolID CreateCommandPool(QueueFamily family) override;
-        PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) override;
+        PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout,
+            std::span<DescriptorSetLayoutBinding> bindings) override;
         FenceID CreateFence(bool signaled) override;
         ImageID CreateImage(const ImageInfo& info) override;
         ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) override;

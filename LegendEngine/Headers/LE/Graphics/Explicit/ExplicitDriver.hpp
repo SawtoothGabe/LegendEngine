@@ -19,7 +19,8 @@ namespace le
         [[nodiscard]] virtual std::vector<DescriptorSetID> AllocateDescriptorSets(PoolManagerID manager, DescriptorPoolID& outPool, size_t count) = 0;
         [[nodiscard]] virtual BufferID CreateBuffer(BufferUsageFlags flags, std::size_t size, bool createMapped) = 0;
         [[nodiscard]] virtual CommandPoolID CreateCommandPool(QueueFamily family) = 0;
-        [[nodiscard]] virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout) = 0;
+        [[nodiscard]] virtual PoolManagerID CreateLayoutPoolManager(DescriptorSetLayoutID layout,
+            std::span<DescriptorSetLayoutBinding> bindings) = 0;
         [[nodiscard]] virtual FenceID CreateFence(bool signaled) = 0;
         [[nodiscard]] virtual ImageID CreateImage(const ImageInfo& info) = 0;
         [[nodiscard]] virtual ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) = 0;

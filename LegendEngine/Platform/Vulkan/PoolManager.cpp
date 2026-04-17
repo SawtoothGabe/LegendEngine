@@ -1,18 +1,19 @@
 #include "PoolManager.hpp"
 
-#include <DescriptorSetLayout.hpp>
 #include <ranges>
+#include <VulkanTypes.hpp>
 
 namespace le
 {
-    PoolManager::PoolManager(const vk::Device device, const DescriptorSetLayout& layout, const size_t startSize)
+    PoolManager::PoolManager(const vk::Device device, const DescriptorSetLayoutID layout,
+        const std::span<DescriptorSetLayoutBinding> bindings, const size_t startSize)
         :
         m_device(device),
         m_nextAllocSize(startSize),
         m_startSize(startSize)
     {
-        m_layout = layout.layout;
-        PopulateSizes(layout);
+        m_layout = reinterpret_cast<VkDescriptorSetLayout>(layout.id);
+        PopulateSizes(bindings);
     }
 
     PoolManager::~PoolManager()
@@ -30,7 +31,7 @@ namespace le
 
         outPool = DescriptorPoolID(pool);
         const vk::DescriptorSetAllocateInfo allocInfo(
-            pool, vkLayouts.size(), vkLayouts.data()
+            pool, static_cast<uint32_t>(vkLayouts.size()), vkLayouts.data()
         );
 
         const std::vector<vk::DescriptorSet> sets = m_device.allocateDescriptorSets(allocInfo);
@@ -58,7 +59,7 @@ namespace le
 
         LE_ASSERT(foundPool, "Tried to free sets from pool manager not containing input pool");
 
-        LE_CHECK_RESULT(m_device.freeDescriptorSets(pool, count,
+        LE_CHECK_RESULT(m_device.freeDescriptorSets(pool, static_cast<uint32_t>(count),
             reinterpret_cast<vk::DescriptorSet*>(sets)));
     }
 
@@ -72,14 +73,19 @@ namespace le
         }
     }
 
-    void PoolManager::PopulateSizes(const DescriptorSetLayout& layout)
+    void PoolManager::PopulateSizes(const std::span<DescriptorSetLayoutBinding> bindings)
     {
-        m_sizes.reserve(layout.descriptorCounts.size());
-        for (const auto& [type, count] : layout.descriptorCounts)
+        std::unordered_map<vk::DescriptorType, size_t> sizes;
+        for (const DescriptorSetLayoutBinding& binding : bindings)
+            sizes[VulkanTypes::GetDescriptorType(binding.descriptorType)] +=
+                static_cast<uint32_t>(binding.descriptorCount);
+
+        m_sizes.reserve(sizes.size());
+        for (const auto& [type, count] : sizes)
         {
             vk::DescriptorPoolSize size;
             size.type = type;
-            size.descriptorCount = count * m_nextAllocSize;
+            size.descriptorCount = static_cast<uint32_t>(count * m_nextAllocSize);
 
             m_sizes.push_back(size);
         }
@@ -97,7 +103,7 @@ namespace le
     PoolManager::Pool& PoolManager::CreateNewPool()
     {
         const vk::DescriptorPoolCreateInfo info(
-            vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, m_nextAllocSize, m_sizes
+            vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, static_cast<uint32_t>(m_nextAllocSize), m_sizes
         );
 
         Pool& pool = m_pools.emplace_back(m_device.createDescriptorPool(info), m_nextAllocSize);

@@ -1,22 +1,19 @@
 #pragma once
 
-#include <unordered_map>
 #include <vector>
-#include <LE/Common/UID.hpp>
 #include <LE/Graphics/Types.hpp>
 
 #include "VkDefs.hpp"
 
 namespace le
 {
-    struct DescriptorSetLayout;
-
     class PoolManager final
     {
     public:
         static constexpr size_t GROWTH_FACTOR = 2;
 
-        explicit PoolManager(vk::Device device, const DescriptorSetLayout& layout, size_t startSize);
+        explicit PoolManager(vk::Device device, DescriptorSetLayoutID layout,
+            std::span<DescriptorSetLayoutBinding> bindings, size_t startSize);
         ~PoolManager();
 
         std::vector<DescriptorSetID> Allocate(DescriptorPoolID& outPool, size_t count);
@@ -29,7 +26,7 @@ namespace le
             size_t remaining = 0;
         };
 
-        void PopulateSizes(const DescriptorSetLayout& layout);
+        void PopulateSizes(std::span<DescriptorSetLayoutBinding> bindings);
         Pool& FindAvailablePool(size_t allocCount);
         Pool& CreateNewPool();
 

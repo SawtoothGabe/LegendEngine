@@ -302,7 +302,7 @@ namespace le
 
             DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
             m_descriptorSetLayouts.emplace_back(layout);
-            m_cameraPool = m_driver.CreateLayoutPoolManager(layout);
+            m_cameraPool = m_driver.CreateLayoutPoolManager(layout, bindings);
         }
 
         // Scene
@@ -325,7 +325,7 @@ namespace le
 
             DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
             m_descriptorSetLayouts.emplace_back(layout);
-            m_scenePool = m_driver.CreateLayoutPoolManager(layout);
+            m_scenePool = m_driver.CreateLayoutPoolManager(layout, bindings);
         }
 
         // Material
@@ -348,7 +348,7 @@ namespace le
 
             DescriptorSetLayoutID layout = m_driver.CreateDescriptorSetLayout(bindings);
             m_descriptorSetLayouts.emplace_back(layout);
-            m_materialPool = m_driver.CreateLayoutPoolManager(layout);
+            m_materialPool = m_driver.CreateLayoutPoolManager(layout, bindings);
         }
     }
 

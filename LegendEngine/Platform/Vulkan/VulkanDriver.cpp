@@ -7,7 +7,6 @@
 #include <LE/Graphics/Explicit/ExplicitRenderer.hpp>
 #include <LE/Graphics/Explicit/ExplicitResources.hpp>
 
-#include "DescriptorSetLayout.hpp"
 #include "PlatformUtils.hpp"
 #include "VkDefs.hpp"
 #include "VulkanBuffer.hpp"
@@ -146,9 +145,10 @@ namespace le
 	    return CommandPoolID(m_device.createCommandPool(info, nullptr));
     }
 
-    PoolManagerID VulkanDriver::CreateLayoutPoolManager(const DescriptorSetLayoutID layout)
+    PoolManagerID VulkanDriver::CreateLayoutPoolManager(DescriptorSetLayoutID layout,
+    	std::span<DescriptorSetLayoutBinding> bindings)
     {
-	    return PoolManagerID(new PoolManager(m_device, *reinterpret_cast<DescriptorSetLayout*>(layout.id), 32));
+	    return PoolManagerID(new PoolManager(m_device, layout, bindings, 32));
     }
 
     FenceID VulkanDriver::CreateFence(const bool signaled)
@@ -397,7 +397,25 @@ namespace le
 
     DescriptorSetLayoutID VulkanDriver::CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings)
     {
-	    return DescriptorSetLayoutID(new DescriptorSetLayout(m_device, bindings));
+    	std::vector<vk::DescriptorSetLayoutBinding> vkBindings;
+    	vkBindings.reserve(bindings.size());
+
+    	for (const DescriptorSetLayoutBinding& binding : bindings)
+    	{
+    		vk::DescriptorSetLayoutBinding vkBinding{};
+    		vkBinding.binding = static_cast<uint32_t>(binding.binding);
+    		vkBinding.descriptorCount = static_cast<uint32_t>(binding.descriptorCount);
+    		vkBinding.descriptorType = VulkanTypes::GetDescriptorType(binding.descriptorType);
+    		vkBinding.stageFlags = VulkanTypes::GetShaderStageFlags(binding.stageFlags);
+
+    		vkBindings.push_back(vkBinding);
+    	}
+
+    	const vk::DescriptorSetLayoutCreateInfo info(
+			{}, static_cast<uint32_t>(vkBindings.size()), vkBindings.data()
+		);
+
+	    return DescriptorSetLayoutID(m_device.createDescriptorSetLayout(info));
     }
 
     SamplerID VulkanDriver::CreateSampler(const SamplerInfo& info)
@@ -511,9 +529,7 @@ namespace le
 
     void VulkanDriver::DestroyDescriptorSetLayout(const DescriptorSetLayoutID layout)
     {
-	    const auto vkLayout = reinterpret_cast<DescriptorSetLayout*>(layout.id);
-	    m_device.destroy(vkLayout->layout);
-	    delete vkLayout;
+	    m_device.destroyDescriptorSetLayout(VULKAN_CAST(DescriptorSetLayout, layout));
     }
 
     void VulkanDriver::DestroySampler(const SamplerID sampler)
