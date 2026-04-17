@@ -11,7 +11,7 @@ namespace le
         m_lightsBuffer(resources, BufferUsageFlagBits::STORAGE_BUFFER, sizeof(SceneLightData), true),
         m_poolManager(resources.GetScenePoolManager())
     {
-        m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
+        m_framesUntilSetsValid = ~0ULL;
         m_sets = m_driver.AllocateDescriptorSets(
             m_poolManager,
             m_descriptorPool,
@@ -35,7 +35,7 @@ namespace le
         if (m_lightCount != lightCount)
         {
             m_lightsBuffer.Resize(sizeof(SceneLightData) * lightCount);
-            m_framesUntilSetsValid = Application::FRAMES_IN_FLIGHT;
+            m_framesUntilSetsValid = ~0ULL;
             m_lightCount = lightCount;
         }
     }
@@ -49,7 +49,7 @@ namespace le
     {
         m_storageBuffer.Update(sizeof(SceneStorage), 0, &m_storage, frame);
 
-        if (m_framesUntilSetsValid)
+        if (m_framesUntilSetsValid & 1 << frame)
             UpdateSets(frame);
     }
 
@@ -81,6 +81,6 @@ namespace le
 
         m_driver.UpdateDescriptorSets(writes);
 
-        m_framesUntilSetsValid--;
+        m_framesUntilSetsValid &= ~(1 << frame);
     }
 }

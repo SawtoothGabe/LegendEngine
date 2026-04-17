@@ -16,7 +16,7 @@ namespace le
             Application::FRAMES_IN_FLIGHT
         );
 
-        m_framesUntilValid = Application::FRAMES_IN_FLIGHT;
+        m_framesUntilValid = ~0ULL;
     }
 
     ExplicitMaterial::~ExplicitMaterial()
@@ -31,7 +31,7 @@ namespace le
 
     void ExplicitMaterial::UpdateUniforms(const size_t frame)
     {
-        if (m_framesUntilValid)
+        if (m_framesUntilValid & 1 << frame)
         {
             DescriptorBufferInfo bufferInfo {
                 .buffer = m_uniformBuffer.GetDesc(frame).buffer,
@@ -62,7 +62,7 @@ namespace le
 
             m_driver.UpdateDescriptorSets(std::span(writes, writeCount));
 
-            m_framesUntilValid--;
+            m_framesUntilValid &= ~(1 << frame);
         }
 
         m_uniformBuffer.Update(sizeof(m_uniforms), 0, &m_uniforms, frame);
@@ -76,7 +76,7 @@ namespace le
     void ExplicitMaterial::SetTexture(const Ref<Texture>& texture)
     {
         m_texture = texture;
-        m_framesUntilValid = Application::FRAMES_IN_FLIGHT;
+        m_framesUntilValid = ~0ULL;
     }
 
     void ExplicitMaterial::SetColor(const Color color)
