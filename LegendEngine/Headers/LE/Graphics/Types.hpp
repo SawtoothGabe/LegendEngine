@@ -593,6 +593,14 @@ return id != other.id; \
         ImageSubresource subresourceRange;
     };
 
+    struct ImageViewInfo
+    {
+        ImageID image;
+        Format format = Format::R8G8B8A8_UNORM;
+        ImageViewType type = ImageViewType::TYPE_2D;
+        ImageSubresource subresourceRange;
+    };
+
     struct BufferImageCopy
     {
         size_t bufferOffset{};

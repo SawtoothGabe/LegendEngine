@@ -24,7 +24,12 @@ namespace le
         imageInfo.format = format;
 
         m_image = m_driver.CreateImage(imageInfo);
-        m_view = m_driver.CreateImageView(m_image, format, ImageViewType::TYPE_2D);
+
+        ImageViewInfo viewInfo;
+        viewInfo.image = m_image;
+        viewInfo.format = imageInfo.format;
+
+        m_view = m_driver.CreateImageView(viewInfo);
 
         const Extent3D extent {
             static_cast<uint32_t>(width),

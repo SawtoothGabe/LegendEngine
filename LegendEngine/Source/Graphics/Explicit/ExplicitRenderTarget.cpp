@@ -183,7 +183,13 @@ namespace le
             imageInfo.format = m_depthFormat;
 
             frame.depthImage = m_driver.CreateImage(imageInfo);
-            frame.depthView = m_driver.CreateImageView(frame.depthImage, imageInfo.format, ImageViewType::TYPE_2D);
+
+            ImageViewInfo viewInfo;
+            viewInfo.image = frame.depthImage;
+            viewInfo.format = imageInfo.format;
+            viewInfo.subresourceRange.aspect = ImageAspect::DEPTH;
+
+            frame.depthView = m_driver.CreateImageView(viewInfo);
 
             m_driver.TransitionImageLayout(c, frame.depthImage,
                 ImageLayout::UNDEFINED,

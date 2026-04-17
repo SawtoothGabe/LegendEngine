@@ -25,7 +25,7 @@ namespace le
 		void SetColor(const Color& toSet) const;
 		void SetShader(const Ref<Shader>& toSet);
 
-		Ref<Shader> GetShader() const;
+		[[nodiscard]] Ref<Shader> GetShader() const;
 
 		[[nodiscard]] MaterialID GetHandle() const;
 

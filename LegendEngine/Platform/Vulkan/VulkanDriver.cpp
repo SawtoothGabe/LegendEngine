@@ -185,10 +185,12 @@ namespace le
 	    return ImageID(image);
     }
 
-    ImageViewID VulkanDriver::CreateImageView(const ImageID image, const Format format, const ImageViewType type)
+    ImageViewID VulkanDriver::CreateImageView(const ImageViewInfo& info)
     {
+    	LE_ASSERT(info.image, "Image view created with null image");
+
 	    vk::ImageViewType viewType = {};
-	    switch (type)
+	    switch (info.type)
 	    {
 		    case ImageViewType::TYPE_2D: viewType = vk::ImageViewType::e2D; break;
 		    case ImageViewType::TYPE_2D_ARRAY: viewType = vk::ImageViewType::e2DArray; break;
@@ -196,8 +198,22 @@ namespace le
 		    default: LE_ASSERT(false, "Unknown image view type");
 	    }
 
-	    const vk::ImageView view = m_device.createImageView(
-		    {{}, reinterpret_cast<VulkanImage*>(image.id)->image, viewType, VulkanTypes::GetVkFormat(format)});
+    	const vk::ImageViewCreateInfo createInfo(
+    		{},
+    		reinterpret_cast<VulkanImage*>(info.image.id)->image,
+    		viewType,
+    		VulkanTypes::GetVkFormat(info.format),
+    		{},
+    		vk::ImageSubresourceRange(
+    			VulkanTypes::GetImageAspectFlags(info.subresourceRange.aspect),
+    			info.subresourceRange.baseMipLevel,
+    			1,
+    			info.subresourceRange.baseArrayLayer,
+    			info.subresourceRange.layerCount
+    		)
+    	);
+
+	    const vk::ImageView view = m_device.createImageView(createInfo);
 	    return ImageViewID(view);
     }
 

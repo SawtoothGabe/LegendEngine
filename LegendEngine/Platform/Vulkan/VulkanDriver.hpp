@@ -25,7 +25,7 @@ namespace le
             std::span<DescriptorSetLayoutBinding> bindings) override;
         FenceID CreateFence(bool signaled) override;
         ImageID CreateImage(const ImageInfo& info) override;
-        ImageViewID CreateImageView(ImageID image, Format format, ImageViewType type) override;
+        ImageViewID CreateImageView(const ImageViewInfo& info) override;
         PipelineID CreatePipeline(const PipelineInfo& info) override;
         PipelineLayoutID CreatePipelineLayout(std::span<PushConstantRange> ranges,
             std::span<DescriptorSetLayoutID> layouts) override;
