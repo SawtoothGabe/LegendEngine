@@ -607,7 +607,7 @@ namespace le
 	    LE_CHECK_RESULT(vkQueue.submit(1, &submit, vkFence));
     }
 
-    void VulkanDriver::QueuePresent(const QueueID queue, const PresentInfo& info)
+    bool VulkanDriver::QueuePresent(const QueueID queue, const PresentInfo& info)
     {
 	    const auto vkQueue = VULKAN_CAST(Queue, queue);
 
@@ -619,7 +619,7 @@ namespace le
 		    info.imageIndices.data()
 	    );
 
-	    LE_CHECK_RESULT(vkQueue.presentKHR(presentInfo));
+	    return vkQueue.presentKHR(presentInfo) == vk::Result::eSuccess;
     }
 
     void VulkanDriver::QueueWaitIdle(const QueueID queue)

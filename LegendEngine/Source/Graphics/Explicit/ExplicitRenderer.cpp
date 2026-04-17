@@ -74,7 +74,8 @@ namespace le
             return;
         }
 
-        explicitTarget.StartRendering(buffer, m_currentFrame);
+        if (!explicitTarget.StartRendering(buffer, m_currentFrame))
+            return;
         {
             Scene* sceneWithCamera = nullptr;
             for (Scene* scene : scenes)

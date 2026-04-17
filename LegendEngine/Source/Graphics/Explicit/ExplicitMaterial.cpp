@@ -31,7 +31,7 @@ namespace le
 
     void ExplicitMaterial::UpdateUniforms(const size_t frame)
     {
-        if (m_framesUntilValid & 1 << frame)
+        if (m_framesUntilValid & 1ULL << frame)
         {
             DescriptorBufferInfo bufferInfo {
                 .buffer = m_uniformBuffer.GetDesc(frame).buffer,

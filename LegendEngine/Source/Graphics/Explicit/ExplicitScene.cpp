@@ -49,7 +49,7 @@ namespace le
     {
         m_storageBuffer.Update(sizeof(SceneStorage), 0, &m_storage, frame);
 
-        if (m_framesUntilSetsValid & 1 << frame)
+        if (m_framesUntilSetsValid & 1ULL << frame)
             UpdateSets(frame);
     }
 

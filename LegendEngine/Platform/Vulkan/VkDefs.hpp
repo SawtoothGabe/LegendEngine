@@ -3,6 +3,7 @@
 #include <LE/Common/Assert.hpp>
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+#define VULKAN_HPP_HANDLE_ERROR_OUT_OF_DATE_AS_SUCCESS
 #include <vulkan/vulkan.hpp>
 
 #ifdef NDEBUG

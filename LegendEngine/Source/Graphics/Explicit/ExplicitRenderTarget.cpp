@@ -130,7 +130,8 @@ namespace le
         info.imageIndices = std::span(&m_imageIndex, 1);
 
         std::scoped_lock lock(m_mutex);
-        m_driver.QueuePresent(m_queue, info);
+        if (!m_driver.QueuePresent(m_queue, info))
+            m_shouldRecreateSwapchain = true;
     }
 
     void ExplicitRenderTarget::UpdateCameraUniforms(const size_t currentFrame, const Camera& camera) const
