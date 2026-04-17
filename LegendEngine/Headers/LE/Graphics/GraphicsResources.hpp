@@ -20,7 +20,7 @@ namespace le
         [[nodiscard]] virtual MeshID CreateMesh(size_t initialVertexCount, size_t initialIndexCount,
             MeshData::UpdateFrequency frequency) = 0;
         [[nodiscard]] virtual SceneID CreateScene() = 0;
-        [[nodiscard]] virtual ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) = 0;
+        [[nodiscard]] virtual ShaderID CreateShader(const ShaderInfo& shaderInfo) = 0;
         [[nodiscard]] virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
         [[nodiscard]] virtual Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData) = 0;

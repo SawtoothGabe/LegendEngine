@@ -203,6 +203,9 @@ namespace le
 
     PipelineID VulkanDriver::CreatePipeline(const PipelineInfo& info)
     {
+    	if (!info.pShaderInfo)
+    		return {};
+
 	    std::vector<vk::Format> formats;
 	    std::vector<vk::PipelineShaderStageCreateInfo> stages;
 	    std::vector<vk::VertexInputBindingDescription> bindings;
@@ -215,14 +218,14 @@ namespace le
 		    formats.push_back(VulkanTypes::GetVkFormat(format));
 
     	vk::ShaderModuleCreateInfo moduleInfo(
-    		{}, info.shaderInfo.spirvCodeSize, reinterpret_cast<uint32_t*>(info.shaderInfo.pSpirvCode)
+    		{}, info.pShaderInfo->spirvCodeSize, reinterpret_cast<uint32_t*>(info.pShaderInfo->pSpirvCode)
     	);
 
     	vk::ShaderModule module = m_device.createShaderModule(moduleInfo);
 
-	    for (size_t i = 0; i < info.shaderInfo.entrypointCount; i++)
+	    for (size_t i = 0; i < info.pShaderInfo->entrypointCount; i++)
 	    {
-		    const sh::Entrypoint& entrypoint = info.shaderInfo.pEntrypoints[i];
+		    const Entrypoint& entrypoint = info.pShaderInfo->pEntrypoints[i];
 
 	    	vk::PipelineShaderStageCreateInfo stage = {
 	    		{},

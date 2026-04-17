@@ -24,7 +24,7 @@ namespace le
         return {};
     }
 
-    ShaderID DummyResources::CreateShader(const sh::ShaderInfo& shaderInfo)
+    ShaderID DummyResources::CreateShader(const ShaderInfo& shaderInfo)
     {
         return {};
     }

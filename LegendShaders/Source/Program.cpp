@@ -1,4 +1,4 @@
-#include <lesh/Shader.hpp>
+#include <LE/Graphics/ShaderInfo.hpp>
 
 #include "Program.hpp"
 
@@ -14,16 +14,16 @@
 
 using namespace simdjson;
 
-le::sh::Features operator|=(le::sh::Features& lhs, const le::sh::Features& rhs)
+le::Features operator|=(le::Features& lhs, const le::Features& rhs)
 {
-    return lhs = static_cast<le::sh::Features>(static_cast<size_t>(lhs) | static_cast<size_t>(rhs));
+    return lhs = static_cast<le::Features>(static_cast<size_t>(lhs) | static_cast<size_t>(rhs));
 }
 
 Program Program::FromJson(ModuleRegistry& registry, const std::string_view path, const std::string_view json, ondemand::parser& parser)
 {
     const std::filesystem::path jsonPath(path);
     const padded_string paddedJson = json;
-    le::sh::Features features = {};
+    le::Features features = {};
     std::vector<Slang::ComPtr<slang::IModule>> modules;
 
     ondemand::document doc = parser.iterate(paddedJson);
@@ -98,7 +98,7 @@ const std::vector<Slang::ComPtr<slang::IEntryPoint>>& Program::GetEntrypoints() 
     return m_entrypoints;
 }
 
-le::sh::Features Program::GetFeatures() const
+le::Features Program::GetFeatures() const
 {
     return m_features;
 }
@@ -115,7 +115,7 @@ Program::Program(const std::string_view path, const Slang::ComPtr<slang::IModule
         throw std::runtime_error(std::format("shader program \"{}\" has no entrypoints", path));
 }
 
-Program::Program(const std::string_view path, le::sh::Features features,
+Program::Program(const std::string_view path, le::Features features,
                  std::vector<Slang::ComPtr<slang::IModule>> modules)
     :
     m_filenameHash(GetHashedName(path)),
@@ -140,10 +140,10 @@ std::string Program::GetHashedName(const std::string_view path)
     return std::format("{:x}", hash);
 }
 
-le::sh::Features Program::GetFeature(const std::string_view feature)
+le::Features Program::GetFeature(const std::string_view feature)
 {
     if (feature == "textured")
-        return le::sh::Features::TEXTURED;
+        return le::Features::TEXTURED;
 
     throw std::runtime_error(std::format("Invalid feature \"{}\"", feature));
 }

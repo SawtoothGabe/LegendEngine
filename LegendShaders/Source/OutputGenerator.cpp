@@ -84,23 +84,23 @@ static std::string GetStageName(const SlangStage stage)
 {
     switch (stage)
     {
-        case SLANG_STAGE_NONE: return "le::sh::ShaderStage::NONE";
-        case SLANG_STAGE_VERTEX: return "le::sh::ShaderStage::VERTEX";
-        case SLANG_STAGE_HULL: return "le::sh::ShaderStage::HULL";
-        case SLANG_STAGE_DOMAIN: return "le::sh::ShaderStage::DOMAIN_STAGE";
-        case SLANG_STAGE_GEOMETRY: return "le::sh::ShaderStage::GEOMETRY";
-        case SLANG_STAGE_FRAGMENT: return "le::sh::ShaderStage::FRAGMENT";
-        case SLANG_STAGE_COMPUTE: return "le::sh::ShaderStage::COMPUTE";
-        case SLANG_STAGE_RAY_GENERATION: return "le::sh::ShaderStage::RAY_GENERATION";
-        case SLANG_STAGE_INTERSECTION: return "le::sh::ShaderStage::INTERSECTION";
-        case SLANG_STAGE_ANY_HIT: return "le::sh::ShaderStage::ANY_HIT";
-        case SLANG_STAGE_CLOSEST_HIT: return "le::sh::ShaderStage::CLOSEST_HIT";
-        case SLANG_STAGE_MISS: return "le::sh::ShaderStage::MISS";
-        case SLANG_STAGE_CALLABLE: return "le::sh::ShaderStage::CALLABLE";
-        case SLANG_STAGE_MESH: return "le::sh::ShaderStage::MESH";
-        case SLANG_STAGE_AMPLIFICATION: return "le::sh::ShaderStage::AMPLIFICATION";
-        case SLANG_STAGE_DISPATCH: return "le::sh::ShaderStage::DISPATCH";
-        case SLANG_STAGE_COUNT: return "le::sh::ShaderStage::COUNT";
+        case SLANG_STAGE_NONE: return "le::ShaderStage::NONE";
+        case SLANG_STAGE_VERTEX: return "le::ShaderStage::VERTEX";
+        case SLANG_STAGE_HULL: return "le::ShaderStage::HULL";
+        case SLANG_STAGE_DOMAIN: return "le::ShaderStage::DOMAIN_STAGE";
+        case SLANG_STAGE_GEOMETRY: return "le::ShaderStage::GEOMETRY";
+        case SLANG_STAGE_FRAGMENT: return "le::ShaderStage::FRAGMENT";
+        case SLANG_STAGE_COMPUTE: return "le::ShaderStage::COMPUTE";
+        case SLANG_STAGE_RAY_GENERATION: return "le::ShaderStage::RAY_GENERATION";
+        case SLANG_STAGE_INTERSECTION: return "le::ShaderStage::INTERSECTION";
+        case SLANG_STAGE_ANY_HIT: return "le::ShaderStage::ANY_HIT";
+        case SLANG_STAGE_CLOSEST_HIT: return "le::ShaderStage::CLOSEST_HIT";
+        case SLANG_STAGE_MISS: return "le::ShaderStage::MISS";
+        case SLANG_STAGE_CALLABLE: return "le::ShaderStage::CALLABLE";
+        case SLANG_STAGE_MESH: return "le::ShaderStage::MESH";
+        case SLANG_STAGE_AMPLIFICATION: return "le::ShaderStage::AMPLIFICATION";
+        case SLANG_STAGE_DISPATCH: return "le::ShaderStage::DISPATCH";
+        case SLANG_STAGE_COUNT: return "le::ShaderStage::COUNT";
     }
 
     return "";
@@ -132,7 +132,7 @@ static std::string AddEntrypoints(const Options& options, std::string& output, P
         }
 
         entrypointNames += std::format("\t{},\n", symbolName);
-        output += std::format("static le::sh::Entrypoint {} = \n{{\n", symbolName);
+        output += std::format("static le::Entrypoint {} = \n{{\n", symbolName);
         output += std::format("\t.stage = {},\n", GetStageName(pReflection->getStage()));
         output += std::format("\t.pName = \"{}\",\n", pReflection->getName());
 
@@ -155,7 +155,7 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
                                                        std::vector<Program>& programs)
 {
     std::string output;
-    output += "#include <lesh/Shader.hpp>\n";
+    output += "#include <LE/Graphics/ShaderInfo.hpp>\n";
     output += "\n";
 
     std::vector<Slang::ComPtr<slang::IComponentType>> linkedPrograms;
@@ -170,7 +170,7 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
         auto linkedProgram = linkedPrograms[i];
         std::string filenameHash = program.GetFilenameHash();
 
-        output += std::format("static le::sh::Entrypoint SHADER_{}_ENTRYPOINTS[] = \n{{\n{}}};\n\n",
+        output += std::format("static le::Entrypoint SHADER_{}_ENTRYPOINTS[] = \n{{\n{}}};\n\n",
             filenameHash,
             AddEntrypoints(options, output, program, linkedProgram)
         );
@@ -194,7 +194,7 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
 
     for (Program& program : programs)
     {
-        output += std::format("le::sh::ShaderInfo LE_SHADER_{}_INFO = \n{{\n", program.GetFilenameHash());
+        output += std::format("le::ShaderInfo LE_SHADER_{}_INFO = \n{{\n", program.GetFilenameHash());
         output += std::format("\t.features = {},\n", static_cast<uint64_t>(program.GetFeatures()));
         output += std::format("\t.entrypointCount = {},\n", program.GetEntrypoints().size());
         output += std::format("\t.pEntrypoints = SHADER_{}_ENTRYPOINTS,\n", program.GetFilenameHash());

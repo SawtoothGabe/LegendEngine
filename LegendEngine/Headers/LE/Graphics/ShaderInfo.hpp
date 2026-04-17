@@ -1,8 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <string_view>
+#include <unordered_map>
 
-namespace le::sh
+namespace le
 {
     enum class ShaderStage
     {
@@ -51,5 +54,16 @@ namespace le::sh
 
         // null terminated
         const char* pWgslCode = nullptr;
+    };
+
+    class ShaderRegistry
+    {
+    public:
+        void Register(std::string_view name, ShaderInfo* pInfo);
+        ShaderInfo* GetShader(std::string_view name);
+
+        static ShaderRegistry& Get();
+    private:
+        std::unordered_map<std::string, ShaderInfo*> m_shaders;
     };
 }

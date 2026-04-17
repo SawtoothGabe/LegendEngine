@@ -66,5 +66,5 @@ if (NOT MSVC)
     set(EXTRA_LIBS stdc++exp)
 endif ()
 
-target_include_directories(lesh PRIVATE Source PUBLIC include)
+target_include_directories(lesh PRIVATE Source PUBLIC "${LEGENDENGINE_BASE_DIR}/LegendEngine/Headers")
 target_link_libraries(lesh PRIVATE slang simdjson ${EXTRA_LIBS})

@@ -12,7 +12,7 @@ namespace le
         [[nodiscard]] MeshID CreateMesh(size_t initialVertexCount, size_t initialIndexCount,
             MeshData::UpdateFrequency frequency) override;
         [[nodiscard]] SceneID CreateScene() override;
-        [[nodiscard]] ShaderID CreateShader(const sh::ShaderInfo& shaderInfo) override;
+        [[nodiscard]] ShaderID CreateShader(const ShaderInfo& shaderInfo) override;
         [[nodiscard]] Texture2DID CreateTexture2D(const TextureData& loader) override;
         [[nodiscard]] Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData) override;

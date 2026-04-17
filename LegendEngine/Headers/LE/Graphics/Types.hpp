@@ -5,7 +5,7 @@
 #include <string>
 #include <LE/Common/Enums.hpp>
 #include <LE/Math/Types.hpp>
-#include <lesh/Shader.hpp>
+#include <LE/Graphics/ShaderInfo.hpp>
 
 namespace le
 {
@@ -484,7 +484,7 @@ return id != other.id; \
         PipelineLayoutID layout;
         std::span<const Format> colorAttachmentFormats;
         Format depthFormat;
-        sh::ShaderInfo shaderInfo;
+        const ShaderInfo* pShaderInfo;
         std::span<VertexBinding> vertexBindings;
         std::span<VertexAttribute> vertexAttributes;
     };

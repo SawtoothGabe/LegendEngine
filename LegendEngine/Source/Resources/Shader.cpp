@@ -1,4 +1,5 @@
 #include <LE/Application.hpp>
+#include <LE/Graphics/ShaderInfo.hpp>
 #include <LE/Resources/Shader.hpp>
 
 namespace le
@@ -29,7 +30,7 @@ namespace le
         return m_handle;
     }
 
-    Ref<Shader> Shader::Create(const sh::ShaderInfo& info)
+    Ref<Shader> Shader::Create(const ShaderInfo& info)
     {
         GraphicsResources& resources = Application::Get().GetGraphicsContext().GetResources();
         return std::make_shared<Shader>(resources, resources.CreateShader(info), Passkey{});

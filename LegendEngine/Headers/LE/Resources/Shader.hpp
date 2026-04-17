@@ -1,6 +1,7 @@
 #pragma once
 
 #include <LE/Common/Types.hpp>
+#include <LE/Graphics/ShaderInfo.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/Resources/Resource.hpp>
 
@@ -19,7 +20,7 @@ namespace le
 
         [[nodiscard]] ShaderID GetHandle() const;
 
-        static Ref<Shader> Create(const sh::ShaderInfo& info);
+        static Ref<Shader> Create(const ShaderInfo& info);
     private:
         GraphicsResources& m_resources;
         ShaderID m_handle;

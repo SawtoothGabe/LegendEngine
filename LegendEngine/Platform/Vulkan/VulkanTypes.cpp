@@ -194,24 +194,24 @@ namespace le
         return accessFlag;
     }
 
-    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlag(const sh::ShaderStage stage)
+    vk::ShaderStageFlagBits VulkanTypes::GetShaderStageFlag(const ShaderStage stage)
     {
         switch (stage)
         {
-            case sh::ShaderStage::VERTEX: return vk::ShaderStageFlagBits::eVertex;
-            case sh::ShaderStage::HULL: return vk::ShaderStageFlagBits::eTessellationEvaluation;
-            case sh::ShaderStage::DOMAIN_STAGE: return vk::ShaderStageFlagBits::eTessellationControl;
-            case sh::ShaderStage::GEOMETRY: return vk::ShaderStageFlagBits::eGeometry;
-            case sh::ShaderStage::FRAGMENT: return vk::ShaderStageFlagBits::eFragment;
-            case sh::ShaderStage::COMPUTE: return vk::ShaderStageFlagBits::eCompute;
-            case sh::ShaderStage::RAY_GENERATION: return vk::ShaderStageFlagBits::eRaygenKHR;
-            case sh::ShaderStage::INTERSECTION: return vk::ShaderStageFlagBits::eIntersectionKHR;
-            case sh::ShaderStage::ANY_HIT: return vk::ShaderStageFlagBits::eAnyHitKHR;
-            case sh::ShaderStage::CLOSEST_HIT: return vk::ShaderStageFlagBits::eClosestHitKHR;
-            case sh::ShaderStage::MISS: return vk::ShaderStageFlagBits::eMissKHR;
-            case sh::ShaderStage::CALLABLE: return vk::ShaderStageFlagBits::eCallableKHR;
-            case sh::ShaderStage::MESH: return vk::ShaderStageFlagBits::eMeshEXT;
-            case sh::ShaderStage::AMPLIFICATION: return vk::ShaderStageFlagBits::eTaskEXT;
+            case ShaderStage::VERTEX: return vk::ShaderStageFlagBits::eVertex;
+            case ShaderStage::HULL: return vk::ShaderStageFlagBits::eTessellationEvaluation;
+            case ShaderStage::DOMAIN_STAGE: return vk::ShaderStageFlagBits::eTessellationControl;
+            case ShaderStage::GEOMETRY: return vk::ShaderStageFlagBits::eGeometry;
+            case ShaderStage::FRAGMENT: return vk::ShaderStageFlagBits::eFragment;
+            case ShaderStage::COMPUTE: return vk::ShaderStageFlagBits::eCompute;
+            case ShaderStage::RAY_GENERATION: return vk::ShaderStageFlagBits::eRaygenKHR;
+            case ShaderStage::INTERSECTION: return vk::ShaderStageFlagBits::eIntersectionKHR;
+            case ShaderStage::ANY_HIT: return vk::ShaderStageFlagBits::eAnyHitKHR;
+            case ShaderStage::CLOSEST_HIT: return vk::ShaderStageFlagBits::eClosestHitKHR;
+            case ShaderStage::MISS: return vk::ShaderStageFlagBits::eMissKHR;
+            case ShaderStage::CALLABLE: return vk::ShaderStageFlagBits::eCallableKHR;
+            case ShaderStage::MESH: return vk::ShaderStageFlagBits::eMeshEXT;
+            case ShaderStage::AMPLIFICATION: return vk::ShaderStageFlagBits::eTaskEXT;
 
             default:;
         }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vk_mem_alloc.h>
+#include <LE/Graphics/ShaderInfo.hpp>
 #include <LE/Graphics/Types.hpp>
 #include "VkDefs.hpp"
 
@@ -22,7 +23,7 @@ namespace le::VulkanTypes
     vk::PipelineBindPoint GetPipelineBindPoint(PipelineBindPoint bindPoint);
     vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
     vk::AccessFlags GetAccessFlags(AccessFlags accessFlags);
-    vk::ShaderStageFlagBits GetShaderStageFlag(sh::ShaderStage stage);
+    vk::ShaderStageFlagBits GetShaderStageFlag(ShaderStage stage);
 
     Format ToFormat(vk::Format format);
 }

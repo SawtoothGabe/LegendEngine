@@ -80,7 +80,7 @@ namespace le
         return SceneID(new ExplicitScene(*this));
     }
 
-    ShaderID ExplicitResources::CreateShader(const sh::ShaderInfo& shaderInfo)
+    ShaderID ExplicitResources::CreateShader(const ShaderInfo& shaderInfo)
     {
         std::vector<VertexBinding> bindings;
         std::vector<VertexAttribute> attributes;
@@ -112,7 +112,7 @@ namespace le
         info.colorAttachmentFormats = std::span(&COLOR_FORMAT, 1);
         info.depthFormat = m_depthFormat;
         info.layout = m_pipelineLayout;
-        info.shaderInfo = shaderInfo;
+        info.pShaderInfo = &shaderInfo;
         info.vertexBindings = bindings;
         info.vertexAttributes = attributes;
 

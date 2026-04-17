@@ -222,7 +222,7 @@ public:
 		const float dragMult = std::pow(drag, delta);
 		testScene.QueryComponents<Velocity, Transform>([&](Velocity& velocity, Transform& transform)
 		{
-			Vector3f position = transform.GetPosition();
+			const Vector3f position = transform.GetPosition();
 
 			if (m_mouseButton)
 			{
@@ -273,7 +273,7 @@ public:
 		m_mouseButton = static_cast<uint32_t>(info.GetClickType()) * info.IsPressed() + info.IsPressed();
 	}
 private:
-	Ref<MeshData> CreateMesh()
+	static Ref<MeshData> CreateMesh()
 	{
 		MeshData::Vertex3 testVertices[] =
 		{
