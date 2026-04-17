@@ -25,10 +25,10 @@ struct VSOutput
 [shader("vertex")]
 VSOutput vertMain(VSInput input)
 {
-    float4 worldPos = mul(obj.transform, float4(input.pos, 1));
+    float4 worldPos = mul(float4(input.pos.xyz, 1), obj.transform);
 
     VSOutput output;
-    output.pos = mul(cam.vpMat, worldPos);
+    output.pos = mul(worldPos, cam.vpMat);
     output.worldPos = worldPos.xyz;
     output.coord = input.texcoord;
     return output;

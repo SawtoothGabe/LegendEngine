@@ -317,6 +317,7 @@ namespace le
 
 	    vk::DynamicState dynamicStates[] = {
 		    vk::DynamicState::eViewport,
+	    	vk::DynamicState::eScissor,
 		    vk::DynamicState::eCullMode
 	    };
 

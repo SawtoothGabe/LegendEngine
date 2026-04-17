@@ -132,7 +132,7 @@ namespace le
                 m_vertexBuffer = std::make_unique<SimpleBuffer>(resources,
                     BufferUsageFlagBits::VERTEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
                 m_indexBuffer = std::make_unique<SimpleBuffer>(resources,
-                    BufferUsageFlagBits::INDEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, vertexSize);
+                    BufferUsageFlagBits::INDEX_BUFFER | BufferUsageFlagBits::TRANSFER_DST, indexSize);
             }
             break;
 
