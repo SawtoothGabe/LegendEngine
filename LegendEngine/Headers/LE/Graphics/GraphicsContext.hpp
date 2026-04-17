@@ -25,8 +25,8 @@ namespace le
         void CreateSamplers();
 
         Scope<GraphicsDriver> m_driver;
-        Scope<Renderer> m_renderer;
         Scope<GraphicsResources> m_resources;
+        Scope<Renderer> m_renderer;
 
         ShaderManager m_shaderManager;
 

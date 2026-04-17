@@ -10,7 +10,7 @@ namespace le
     class ExplicitTexture2DArray final
     {
     public:
-        ExplicitTexture2DArray(const ExplicitResources& resources,
+        ExplicitTexture2DArray(ExplicitResources& resources,
             size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData);
         ~ExplicitTexture2DArray();

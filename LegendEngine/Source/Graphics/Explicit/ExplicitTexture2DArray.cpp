@@ -2,12 +2,12 @@
 
 namespace le
 {
-    ExplicitTexture2DArray::ExplicitTexture2DArray(const ExplicitResources& resources,
+    ExplicitTexture2DArray::ExplicitTexture2DArray(ExplicitResources& resources,
         const size_t width, const size_t height, const uint8_t channels,
         const std::span<TextureData*>& textureData)
         :
         m_driver(resources.GetDriver()),
-        m_mutex(resources.GetTransferMutex())
+        m_mutex(resources.GetGraphicsMutex())
     {
         Format format;
         switch (channels)
@@ -37,7 +37,7 @@ namespace le
             channels
         };
 
-        Upload(textureData, extent, resources.GetTransferQueue(), resources.GetTransferPool());
+        Upload(textureData, extent, resources.GetGraphicsQueue(), resources.GetGraphicsPool());
     }
 
     ExplicitTexture2DArray::~ExplicitTexture2DArray()

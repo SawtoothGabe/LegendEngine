@@ -9,7 +9,7 @@ namespace le
     class ExplicitTexture2D final
     {
     public:
-        ExplicitTexture2D(const ExplicitResources& resources, const TextureData& loader);
+        ExplicitTexture2D(ExplicitResources& resources, const TextureData& loader);
         ~ExplicitTexture2D();
 
         [[nodiscard]] ImageID GetImage() const;

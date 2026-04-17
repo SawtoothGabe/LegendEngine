@@ -27,8 +27,8 @@ namespace le
         m_driver.WaitIdle();
 
         for (auto& queue : m_deletionQueues)
-            for (auto& deletionFunc : queue)
-                deletionFunc();
+            for (auto & func : queue)
+                func();
 
         m_driver.DestroyCommandPool(m_graphicsPool);
         if (m_driver.HasTransferQueue())

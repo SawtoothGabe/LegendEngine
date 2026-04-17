@@ -62,7 +62,7 @@ namespace le
     void ExplicitRenderer::RenderFrame(RenderTargetID& target, const std::span<Scene*> scenes)
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
-        auto& explicitTarget = reinterpret_cast<ExplicitRenderTarget&>(target.id);
+        auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
 
         const UID cameraID = explicitTarget.GetActiveCameraID();
         if (cameraID == 0)
