@@ -45,9 +45,9 @@ public:
 			transform.SetPosition(Vector3f(-1.0f, 2.0f, 4.0f));
 		});
 
-		m_Window.AddInputListener(*this, Input::InputType::KEY);
-		m_Window.AddInputListener(*this, Input::InputType::RAW_MOUSE_MOVE);
-		m_Window.AddInputListener(*this, Input::InputType::MOUSE_CLICK);
+		m_Window.AddInputListener(*this, InputType::KEY);
+		m_Window.AddInputListener(*this, InputType::RAW_MOUSE_MOVE);
+		m_Window.AddInputListener(*this, InputType::MOUSE_CLICK);
 
 		m_Sub.AddEventHandler<UpdateEvent>([this](const UpdateEvent& e)
 		{
@@ -152,15 +152,15 @@ public:
 
 	struct Keys
 	{
-		bool w = false;
-		bool a = false;
-		bool s = false;
-		bool d = false;
-		bool space = false;
-		bool shift = false;
-		bool ctrl = false;
+		bool w : 1;
+		bool a : 1;
+		bool s : 1;
+		bool d : 1;
+		bool space : 1;
+		bool shift : 1;
+		bool ctrl : 1;
 	};
-	Keys keys;
+	Keys keys{};
 
 	float horizontal = 0.0f;
 	float vertical = 0.0f;
