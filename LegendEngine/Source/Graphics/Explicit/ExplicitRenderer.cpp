@@ -106,6 +106,10 @@ namespace le
 
     void ExplicitRenderer::EndFrame()
     {
+        const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
+
+        m_driver.EndCommandBuffer(buffer);
+
         std::vector<SemaphoreID> waitSemaphores;
         for (RenderTarget* target : m_targetsRendered)
         {
@@ -122,6 +126,9 @@ namespace le
         info.waitDstStageMask = stageMask;
         info.waitSemaphores = waitSemaphores;
         info.signalSemaphores = signalSemaphores;
+
+        // The in flight fence for this frame must be reset.
+        m_driver.ResetFences(1, &m_inFlightFences[m_currentFrame]);
 
         {
             std::scoped_lock lock(m_resources.GetGraphicsMutex());
