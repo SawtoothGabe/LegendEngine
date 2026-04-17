@@ -31,10 +31,11 @@ public:
 	explicit CameraManager(Scene* pScene)
 		:
 		m_camera(pScene->CreateEntity()),
-		m_Window(Application::Get().GetWindow()),
+		m_Window(Application::Get().GetWindowManager().GetWindow()),
 		m_Sub(Application::Get().GetEventBus())
 	{
-		m_camera.AddComponent<ActiveCamera>();
+		Application::Get().GetWindowManager().SetActiveCamera(m_camera);
+
 		m_camera.AddComponent<Camera>();
 		m_camera.AddComponent<Transform>();
 
@@ -198,7 +199,7 @@ public:
 
 		m_App.SetActiveScene(testScene);
 
-		Window& window = m_App.GetWindow();
+		Window& window = m_App.GetWindowManager().GetWindow();
 		window.SetCursorMode(Tether::Window::CursorMode::DISABLED);
 		window.SetRawInputEnabled(true);
 		window.AddInputListener(*this, InputType::MOUSE_CLICK);
@@ -209,7 +210,7 @@ public:
 		timer.Set();
 	}
 
-	void OnUpdate(float delta)
+	void OnUpdate(const float delta)
 	{
 		if (fpsTimer.GetElapsedMillis() >= 5000.0f)
 		{

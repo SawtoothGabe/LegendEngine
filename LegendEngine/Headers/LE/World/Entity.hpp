@@ -12,6 +12,9 @@ namespace le
     public:
         Entity() = default;
 
+        // ReSharper disable once CppNonExplicitConversionOperator
+        operator UID() const;
+
         template <typename T, typename... Args>
         void AddComponent(Args&&... args)
         {

@@ -1,7 +1,3 @@
-#ifdef _MSC_VER
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include <LE/Application.hpp>
 
 #include <LE/Common/Stopwatch.hpp>
@@ -15,103 +11,43 @@ namespace le
 {
     Scope<Application> Application::m_Instance = nullptr;
 
-#ifndef LE_HEADLESS
-    Application::ResizeHandler::ResizeHandler(Application& app)
-        :
-        m_Application(app)
-    {}
-
-    void Application::ResizeHandler::OnWindowResize(const Tether::Events::WindowResizeEvent& event)
-    {
-        const auto width = static_cast<float>(event.GetNewWidth());
-        const auto height = static_cast<float>(event.GetNewHeight());
-        const float aspect = width / height;
-
-        m_Application.m_GlobalScene.QueryComponents<Camera>(
-        [aspect](Camera& camera)
-        {
-            camera.SetAspectRatio(aspect);
-        });
-
-        if (!m_Application.m_pActiveScene)
-            return;
-
-        m_Application.m_pActiveScene->QueryComponents<Camera>(
-        [aspect](Camera& camera)
-        {
-            camera.SetAspectRatio(aspect);
-        });
-    }
-
     Application::Application(
         Scope<GraphicsDriver> driver,
         const std::string_view applicationName,
         const int width, const int height)
         :
-        m_ResizeHandler(*this),
         m_graphicsContext(m_EventBus, std::move(driver)),
         m_GlobalScene(m_graphicsContext.GetResources())
     {
-        std::wstring title(applicationName.size(), L' ');
-        std::mbstowcs(title.data(), applicationName.data(),
-                      applicationName.size());
-
-        m_Window = Window::Create(width, height, title, false);
-        m_renderTarget = m_graphicsContext.GetResources().CreateRenderTarget(*m_Window);
-
-        LE_INFO("Application created");
-    }
-
-    void Application::Render(const float delta)
-    {
-        Scene* scenes[] = { &m_GlobalScene, m_pActiveScene };
-        m_graphicsContext.GetRenderer().RenderFrame(m_renderTarget, scenes);
-
-        m_EventBus.DispatchEvent<RenderEvent>(RenderEvent(delta));
-
-        m_currentFrame = (m_currentFrame + 1) % FRAMES_IN_FLIGHT;
-    }
-
-    void Application::RunInstance()
-    {
-        m_Window->SetVisible(true);
-
-        Stopwatch deltaTimer;
-        while (!m_Window->IsCloseRequested())
+        m_windowManager = WindowManager::Create(m_graphicsContext.GetResources(), applicationName, width, height);
+        m_windowManager->AddResizeCallback([this](const int newWidth, const int newHeight)
         {
-            const float delta = deltaTimer.GetElapsedMillis() / 1000.0f;
-            deltaTimer.Set();
+            const auto floatWidth = static_cast<float>(newWidth);
+            const auto floatHeight = static_cast<float>(newHeight);
+            const float aspect = floatWidth / floatHeight;
 
-            AdvanceFrame(delta);
-        }
-    }
+            m_GlobalScene.QueryComponents<Camera>(
+                [aspect](Camera& camera)
+                {
+                    camera.SetAspectRatio(aspect);
+                });
 
-    void Application::AdvanceFrame(const float delta)
-    {
-        Update(delta);
-        Render(delta);
-    }
+            if (!m_pActiveScene)
+                return;
 
-    Tether::Window& Application::GetWindow() const
-    {
-        return *m_Window;
-    }
-#else
-    Application::Application(GraphicsContext& ctx)
-        :
-        m_GraphicsContext(ctx)
-    {
+            m_pActiveScene->QueryComponents<Camera>(
+                [aspect](Camera& camera)
+                {
+                    camera.SetAspectRatio(aspect);
+                });
+        });
+
         LE_INFO("Application created");
     }
-#endif
 
     Application::~Application()
     {
-#ifndef LE_HEADLESS
-        m_Window->SetVisible(false);
-#endif
-
-        m_graphicsContext.GetResources().DestroyRenderTarget(m_renderTarget);
+        LE_ASSERT(m_destroyed, "Application::Destroy must be called before the program exits");
     }
 
     void Application::SetActiveScene(Scene& scene)
@@ -122,6 +58,11 @@ namespace le
     void Application::ClearActiveScene()
     {
         m_pActiveScene = nullptr;
+    }
+
+    WindowManager& Application::GetWindowManager() const
+    {
+        return *m_windowManager;
     }
 
     GraphicsContext& Application::GetGraphicsContext()
@@ -144,6 +85,24 @@ namespace le
         return m_pActiveScene;
     }
 
+    size_t Application::GetCurrentFrame() const
+    {
+        return m_currentFrame;
+    }
+
+    void Application::AdvanceFrame(const float delta)
+    {
+        Update(delta);
+        Render(delta);
+    }
+
+    void Application::Run()
+    {
+        LE_ASSERT(m_Instance, "Run was called before Application::Create");
+
+        m_Instance->RunInstance();
+    }
+
     void Application::Destroy()
     {
         if (!m_Instance)
@@ -151,9 +110,8 @@ namespace le
 
         LE_INFO("Destroying application");
 
-#ifndef LE_HEADLESS
-        m_Instance->m_Window->SetVisible(false);
-#endif
+        m_Instance->m_destroyed = true;
+        m_Instance->m_windowManager->SetVisible(false);
         m_Instance->m_GlobalScene.Clear();
 
         m_Instance.reset();
@@ -175,12 +133,24 @@ namespace le
         return *m_Instance;
     }
 
+    void Application::RunInstance()
+    {
+        m_windowManager->SetVisible(true);
+
+        Stopwatch deltaTimer;
+        while (!m_windowManager->IsCloseRequested())
+        {
+            const float delta = deltaTimer.GetElapsedMillis() / 1000.0f;
+            deltaTimer.Set();
+
+            AdvanceFrame(delta);
+        }
+    }
+
     void Application::Update(const float delta, const bool updateWindow)
     {
-#ifndef LE_HEADLESS
         if (updateWindow)
-            Tether::Application::Get().PollEvents();
-#endif
+            WindowManager::PollEvents();
 
         RecalculateTransforms(m_GlobalScene);
         m_GlobalScene.ProcessEntityChanges();
@@ -193,6 +163,16 @@ namespace le
         m_EventBus.DispatchEvent<UpdateEvent>(UpdateEvent(delta));
     }
 
+    void Application::Render(const float delta)
+    {
+        Scene* scenes[] = {&m_GlobalScene, m_pActiveScene};
+        m_graphicsContext.GetRenderer().RenderFrame(m_windowManager->GetRenderTarget(), scenes);
+
+        m_EventBus.DispatchEvent<RenderEvent>(RenderEvent(delta));
+
+        m_currentFrame = (m_currentFrame + 1) % FRAMES_IN_FLIGHT;
+    }
+
     void Application::RecalculateTransforms(Scene& scene)
     {
         scene.QueryComponents<Transform>([](Transform& transform)
@@ -200,17 +180,5 @@ namespace le
             if (transform.dirty)
                 transform.CalculateTransformMatrix();
         });
-    }
-
-    void Application::Run()
-    {
-        LE_ASSERT(m_Instance, "Run was called before Application::Create");
-
-        m_Instance->RunInstance();
-    }
-
-    size_t Application::GetCurrentFrame() const
-    {
-        return m_currentFrame;
     }
 }

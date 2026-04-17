@@ -38,7 +38,6 @@ return id != other.id; \
     LE_GRAPHICS_RESOURCE_ID(Shader);
     LE_GRAPHICS_RESOURCE_ID(Texture2D);
     LE_GRAPHICS_RESOURCE_ID(Texture2DArray);
-    LE_GRAPHICS_RESOURCE_ID(RenderTarget);
     LE_GRAPHICS_RESOURCE_ID(PoolManager);
     LE_GRAPHICS_RESOURCE_ID(Scene);
 

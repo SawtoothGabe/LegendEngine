@@ -1,11 +1,16 @@
 #pragma once
 
-#include <LE/TetherBindings.hpp>
+#include <LE/Graphics/RenderTarget.hpp>
 #include <LE/Graphics/Types.hpp>
 #include <LE/IO/TextureData.hpp>
 #include <LE/Resources/MeshData.hpp>
 #include <LE/Resources/Shader.hpp>
 #include <LE/Resources/Texture.hpp>
+
+namespace Tether
+{
+    class Window;
+}
 
 namespace le
 {
@@ -13,6 +18,8 @@ namespace le
     {
     public:
         virtual ~GraphicsResources() = default;
+
+        [[nodiscard]] virtual Scope<RenderTarget> CreateRenderTarget(Tether::Window& window) = 0;
 
         [[nodiscard]] virtual MaterialID CreateMaterial() = 0;
         [[nodiscard]] virtual MeshID CreateMesh(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,
@@ -24,7 +31,6 @@ namespace le
         [[nodiscard]] virtual Texture2DID CreateTexture2D(const TextureData& loader) = 0;
         [[nodiscard]] virtual Texture2DArrayID CreateTexture2DArray(size_t width, size_t height, uint8_t channels,
             const std::span<TextureData*>& textureData) = 0;
-        [[nodiscard]] virtual RenderTargetID CreateRenderTarget(Window& window) = 0;
 
         virtual void DestroyMaterial(MaterialID id) = 0;
         virtual void DestroyMesh(MeshID id) = 0;
@@ -32,7 +38,6 @@ namespace le
         virtual void DestroyShader(ShaderID id) = 0;
         virtual void DestroyTexture2D(Texture2DID id) = 0;
         virtual void DestroyTexture2DArray(Texture2DArrayID id) = 0;
-        virtual void DestroyRenderTarget(RenderTargetID id) = 0;
 
         virtual void UpdateMesh(MeshID id, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices) = 0;
         virtual void ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) = 0;

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <memory>
-#include <LE/TetherBindings.hpp>
 #include <LE/Common/Assert.hpp>
 #include <LE/Common/Defs.hpp>
 #include <LE/Events/EventBus.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
 #include <LE/Graphics/GraphicsDriver.hpp>
+#include <LE/Graphics/WindowManager.hpp>
 #include <LE/IO/Logger.hpp>
 #include <LE/World/Scene.hpp>
 
@@ -25,7 +25,7 @@ namespace le
             int width = 1280, int height = 720);
 
         template<typename... Args>
-        static void Create(GraphicsAPI api, std::string_view applicationName, Args&&... args)
+        static void Create(const GraphicsAPI api, std::string_view applicationName, Args&&... args)
         {
             LE_INFO("Creating application");
             LE_ASSERT(!m_Instance, "Application already exists");
@@ -39,7 +39,7 @@ namespace le
         void SetActiveScene(Scene& scene);
         void ClearActiveScene();
 
-        [[nodiscard]] Window& GetWindow() const;
+        [[nodiscard]] WindowManager& GetWindowManager() const;
         GraphicsContext& GetGraphicsContext();
         EventBus& GetEventBus();
         Scene& GetGlobalScene();
@@ -64,26 +64,13 @@ namespace le
 
         EventBus m_EventBus;
 
-#ifndef LE_HEADLESS
-        class ResizeHandler : public Tether::Events::EventHandler
-        {
-        public:
-            explicit ResizeHandler(Application& app);
-
-            void OnWindowResize(const Tether::Events::WindowResizeEvent& event) override;
-
-            Application& m_Application;
-        };
-        ResizeHandler m_ResizeHandler;
-        Scope<Window> m_Window = nullptr;
-#endif
-
         GraphicsContext m_graphicsContext;
-        RenderTargetID m_renderTarget;
+        Scope<WindowManager> m_windowManager;
 
         Scene m_GlobalScene;
         Scene* m_pActiveScene = nullptr;
 
+        bool m_destroyed = false;
         bool m_Headless = false;
 
         size_t m_currentFrame = 0;

@@ -7,7 +7,7 @@ namespace le
     {
     public:
         void StartFrame() override;
-        void RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) override;
+        void RenderFrame(RenderTarget& target, std::span<Scene*> scenes) override;
         void EndFrame() override;
     };
 }

@@ -17,7 +17,7 @@ namespace le
         ~ExplicitRenderer() override;
 
         void StartFrame() override;
-        void RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) override;
+        void RenderFrame(RenderTarget& target, std::span<Scene*> scenes) override;
         void EndFrame() override;
 
         [[nodiscard]] ExplicitDriver& GetDriver() const;
@@ -41,7 +41,7 @@ namespace le
         std::vector<CommandBufferID> m_commandBuffers;
         std::vector<FenceID> m_inFlightFences;
         std::vector<SemaphoreID> m_renderFinishedSemaphores;
-        std::vector<RenderTargetID> m_targetsRendered;
+        std::vector<RenderTarget*> m_targetsRendered;
 
         DescriptorSetID m_sets[3] = {};
         bool m_haveSetsChanged = true;

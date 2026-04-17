@@ -59,10 +59,10 @@ namespace le
         m_driver.BeginCommandBuffer(buffer, false);
     }
 
-    void ExplicitRenderer::RenderFrame(RenderTargetID& target, const std::span<Scene*> scenes)
+    void ExplicitRenderer::RenderFrame(RenderTarget& target, const std::span<Scene*> scenes)
     {
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
-        auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
+        auto& explicitTarget = reinterpret_cast<ExplicitRenderTarget&>(target);
 
         const UID cameraID = explicitTarget.GetActiveCameraID();
         if (cameraID == 0)
@@ -98,15 +98,15 @@ namespace le
                     RenderScene(*pScene);
         }
         explicitTarget.EndRendering(buffer);
-        m_targetsRendered.push_back(target);
+        m_targetsRendered.push_back(&target);
     }
 
     void ExplicitRenderer::EndFrame()
     {
         std::vector<SemaphoreID> waitSemaphores;
-        for (const RenderTargetID& target : m_targetsRendered)
+        for (RenderTarget* target : m_targetsRendered)
         {
-            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
+            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target);
             waitSemaphores.emplace_back(explicitTarget.GetImageAvailableSemaphore(m_currentFrame));
         }
 
@@ -125,9 +125,9 @@ namespace le
             m_driver.QueueSubmit(m_resources.GetGraphicsQueue(), info);
         }
 
-        for (const RenderTargetID& target : m_targetsRendered)
+        for (RenderTarget* target : m_targetsRendered)
         {
-            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target.id);
+            auto& explicitTarget = *reinterpret_cast<ExplicitRenderTarget*>(target);
             explicitTarget.EndFrame(m_renderFinishedSemaphores[m_currentFrame]);
         }
 

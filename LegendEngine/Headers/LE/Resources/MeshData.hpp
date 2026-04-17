@@ -4,6 +4,7 @@
 #include <LE/Resources/Resource.hpp>
 
 #include <span>
+#include <LE/Graphics/Types.hpp>
 
 namespace le
 {

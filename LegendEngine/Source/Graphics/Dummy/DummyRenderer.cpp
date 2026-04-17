@@ -3,6 +3,6 @@
 namespace le
 {
     void DummyRenderer::StartFrame() {}
-    void DummyRenderer::RenderFrame(RenderTargetID& target, std::span<Scene*> scenes) {}
+    void DummyRenderer::RenderFrame(RenderTarget& target, std::span<Scene*> scenes) {}
     void DummyRenderer::EndFrame() {}
 }

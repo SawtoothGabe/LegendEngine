@@ -2,6 +2,11 @@
 
 namespace le
 {
+    Scope<RenderTarget> DummyResources::CreateRenderTarget(Tether::Window&)
+    {
+        return nullptr;
+    }
+
     MaterialID DummyResources::CreateMaterial()
     {
         return {};
@@ -40,18 +45,12 @@ namespace le
         return {};
     }
 
-    RenderTargetID DummyResources::CreateRenderTarget(Window& window)
-    {
-        return {};
-    }
-
     void DummyResources::DestroyMaterial(MaterialID id) {}
     void DummyResources::DestroyMesh(MeshID id) {}
     void DummyResources::DestroyScene(SceneID id) {}
     void DummyResources::DestroyShader(ShaderID id) {}
     void DummyResources::DestroyTexture2D(Texture2DID id) {}
     void DummyResources::DestroyTexture2DArray(Texture2DArrayID id) {}
-    void DummyResources::DestroyRenderTarget(RenderTargetID id) {}
     void DummyResources::UpdateMesh(MeshID id, std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices) {}
     void DummyResources::ResizeMesh(MeshID id, size_t vertexCount, size_t indexCount) {}
     void DummyResources::SetMaterialTexture(MaterialID id, Ref<Texture> texture) {}

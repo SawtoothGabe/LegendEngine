@@ -140,10 +140,10 @@ namespace le
         return Texture2DArrayID(new ExplicitTexture2DArray(*this, width, height, channels, textureData));
     }
 
-    RenderTargetID ExplicitResources::CreateRenderTarget(Window& window)
+    Scope<RenderTarget> ExplicitResources::CreateRenderTarget(Window& window)
     {
         constexpr auto color = Format::B8G8R8A8_SRGB;
-        return RenderTargetID(new ExplicitRenderTarget(*this, color, m_depthFormat, window));
+        return std::make_unique<ExplicitRenderTarget>(*this, color, m_depthFormat, window);
     }
 
     void ExplicitResources::DestroyMaterial(MaterialID id)
@@ -174,11 +174,6 @@ namespace le
     void ExplicitResources::DestroyTexture2DArray(Texture2DArrayID id)
     {
         EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitTexture2DArray*>(id.id); });
-    }
-
-    void ExplicitResources::DestroyRenderTarget(RenderTargetID id)
-    {
-        EnqueueDeletionFunc([id] { delete reinterpret_cast<ExplicitRenderTarget*>(id.id); });
     }
 
     void ExplicitResources::UpdateMesh(const MeshID id, const std::span<MeshData::Vertex3> vertices, const std::span<uint32_t> indices)
