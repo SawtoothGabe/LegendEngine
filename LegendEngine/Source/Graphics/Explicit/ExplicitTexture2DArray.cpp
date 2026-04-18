@@ -12,10 +12,10 @@ namespace le
         Format format;
         switch (channels)
         {
-            case 1: format = Format::R8_UNORM; break;
-            case 2: format = Format::R8G8_UNORM; break;
-            case 3: format = Format::R8G8B8_UNORM; break;
-            default: format = Format::R8G8B8A8_UNORM; break;
+            case 1: format = Format::R8_SRGB; break;
+            case 2: format = Format::R8G8_SRGB; break;
+            case 3: format = Format::R8G8B8_SRGB; break;
+            default: format = Format::R8G8B8A8_SRGB; break;
         }
 
         ImageInfo imageInfo;
