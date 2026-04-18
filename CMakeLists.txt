@@ -16,6 +16,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(TETHER_HEADLESS ${LE_HEADLESS})
 set(LEGENDENGINE_BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(LegendShaders)
+if (NOT LE_HEADLESS)
+    add_subdirectory(LegendShaders)
+endif ()
+
 add_subdirectory(Legendary)
 add_subdirectory(LegendEngine)
