@@ -13,7 +13,7 @@ namespace le
         explicit ExplicitResources(EventBus& bus, ExplicitDriver& driver);
         ~ExplicitResources() override;
 
-        [[nodiscard]] Scope<RenderTarget> CreateRenderTarget(Window& window) override;
+        [[nodiscard]] Scope<RenderTarget> CreateRenderTarget(Tether::Window& window) override;
 
         [[nodiscard]] MaterialID CreateMaterial() override;
         [[nodiscard]] MeshID CreateMesh(std::span<MeshData::Vertex3> vertices, std::span<uint32_t> indices,

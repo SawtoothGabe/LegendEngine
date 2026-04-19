@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string_view>
-#include <LE/Common/Types.hpp>
 #include <LE/Common/Assert.hpp>
+#include <LE/Common/Types.hpp>
 #include <LE/Events/EventBus.hpp>
 
 #include <LE/Graphics/Types.hpp>

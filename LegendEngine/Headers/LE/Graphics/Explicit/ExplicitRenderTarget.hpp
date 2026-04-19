@@ -13,7 +13,7 @@ namespace le
     class ExplicitRenderTarget final : public RenderTarget
     {
     public:
-        explicit ExplicitRenderTarget(ExplicitResources& resources, Format colorFormat, Format depthFormat, Window& window);
+        explicit ExplicitRenderTarget(ExplicitResources& resources, Format colorFormat, Format depthFormat, Tether::Window& window);
         ~ExplicitRenderTarget() override;
 
         void SetClearColor(Color clearColor);
@@ -37,7 +37,6 @@ namespace le
             SemaphoreID imageAvailableSemaphore;
         };
 
-        void CreateSurface();
         void CreateSwapchain(const SurfaceCapabilities& capabilities);
         void CreateDepthImages();
         void CreateSemaphores();
@@ -48,7 +47,6 @@ namespace le
         ExplicitDriver& m_driver;
         DescriptorPoolID m_cameraPool;
         PoolManagerID m_cameraPoolManager;
-        Window& m_window;
 
         std::mutex& m_mutex;
         QueueID m_queue;

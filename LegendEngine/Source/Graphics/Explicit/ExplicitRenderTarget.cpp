@@ -5,11 +5,10 @@
 namespace le
 {
     ExplicitRenderTarget::ExplicitRenderTarget(ExplicitResources& resources, const Format colorFormat,
-        const Format depthFormat, Window& window)
+        const Format depthFormat, Tether::Window& window)
         :
         m_driver(resources.GetDriver()),
         m_cameraPoolManager(resources.GetCameraPoolManager()),
-        m_window(window),
         m_mutex(resources.GetGraphicsMutex()),
         m_queue(resources.GetGraphicsQueue()),
         m_commandPool(resources.GetGraphicsPool()),
@@ -157,11 +156,6 @@ namespace le
     SemaphoreID ExplicitRenderTarget::GetRenderFinishedSemaphore() const
     {
         return m_renderFinishedSemaphores[m_imageIndex];
-    }
-
-    void ExplicitRenderTarget::CreateSurface()
-    {
-        m_surface = m_driver.CreateSurface(m_window);
     }
 
     void ExplicitRenderTarget::CreateSwapchain(const SurfaceCapabilities& capabilities)

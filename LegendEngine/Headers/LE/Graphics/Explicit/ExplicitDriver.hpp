@@ -3,7 +3,10 @@
 #include <LE/Graphics/GraphicsDriver.hpp>
 #include <LE/Graphics/Types.hpp>
 
-#include <LE/TetherBindings.hpp>
+namespace Tether
+{
+    class Window;
+}
 
 namespace le
 {
@@ -28,7 +31,7 @@ namespace le
             std::span<DescriptorSetLayoutID> layouts) = 0;
         [[nodiscard]] virtual SemaphoreID CreateSemaphore() = 0;
         [[nodiscard]] virtual SwapchainID CreateSwapchain(const SwapchainInfo& info) = 0;
-        [[nodiscard]] virtual SurfaceID CreateSurface(Window& window) = 0;
+        [[nodiscard]] virtual SurfaceID CreateSurface(Tether::Window& window) = 0;
         [[nodiscard]] virtual DescriptorSetLayoutID CreateDescriptorSetLayout(std::span<DescriptorSetLayoutBinding> bindings) = 0;
         [[nodiscard]] virtual QueueID GetQueue(QueueFamily family) = 0;
 

@@ -1,8 +1,3 @@
-option(LE_VULKAN_API "Build LegendEngine with Vulkan capabilities" ON)
-option(LE_OPENGL_API "Build LegendEngine with OpenGL capabilities" OFF)
-message(STATUS "LE_VULKAN_API = ${LE_VULKAN_API}")
-message(STATUS "LE_OPENGL_API = ${LE_OPENGL_API}")
-
 define_property(GLOBAL PROPERTY SPV_HEADERS_DIR)
 
 if (NOT LE_HEADLESS)

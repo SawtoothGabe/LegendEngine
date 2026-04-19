@@ -140,7 +140,7 @@ namespace le
         return Texture2DArrayID(new ExplicitTexture2DArray(*this, width, height, channels, textureData));
     }
 
-    Scope<RenderTarget> ExplicitResources::CreateRenderTarget(Window& window)
+    Scope<RenderTarget> ExplicitResources::CreateRenderTarget(Tether::Window& window)
     {
         constexpr auto color = Format::B8G8R8A8_SRGB;
         return std::make_unique<ExplicitRenderTarget>(*this, color, m_depthFormat, window);
