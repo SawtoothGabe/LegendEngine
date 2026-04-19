@@ -11,10 +11,12 @@ namespace le
         return true;
     }
 
+#ifndef LE_HEADLESS
     Tether::Window& DummyWindowManager::GetWindow() const
     {
         throw std::runtime_error("DummyWindowManager::GetWindow() is not implemented");
     }
+#endif
 
     RenderTarget& DummyWindowManager::GetRenderTarget() const
     {

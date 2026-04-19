@@ -11,7 +11,9 @@ namespace le
         void AddResizeCallback(const ResizeCallback& callback) override;
         void SetActiveCamera(UID cameraID) const override;
         bool IsCloseRequested() const override;
+#ifndef LE_HEADLESS
         [[nodiscard]] Tether::Window& GetWindow() const override;
+#endif
         [[nodiscard]] RenderTarget& GetRenderTarget() const override;
     };
 }
