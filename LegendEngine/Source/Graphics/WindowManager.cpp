@@ -1,6 +1,8 @@
 #include <LE/Graphics/WindowManager.hpp>
 
+#ifndef LE_HEADLESS
 #include <LE/Graphics/TetherWindowManager.hpp>
+#endif
 #include <LE/Graphics/Dummy/DummyWindowManager.hpp>
 
 namespace le

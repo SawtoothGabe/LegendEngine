@@ -1,3 +1,4 @@
+#ifndef LE_HEADLESS
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -47,3 +48,5 @@ namespace le
         return *m_renderTarget;
     }
 }
+
+#endif
