@@ -22,4 +22,4 @@ jobs:
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLE_HEADLESS=ON
       - name: Build
         run: |
-          cmake --build build
+          cmake --build build --target LegendEngine
