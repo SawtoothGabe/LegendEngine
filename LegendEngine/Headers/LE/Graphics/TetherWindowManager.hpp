@@ -38,7 +38,7 @@ namespace le
         Scope<Window> m_window;
         Scope<RenderTarget> m_renderTarget;
 
-        ResizeHandler m_ResizeHandler = ResizeHandler(*this);
+        ResizeHandler m_resizeHandler = ResizeHandler(*this);
 
         std::vector<ResizeCallback> m_resizeCallbacks;
     };

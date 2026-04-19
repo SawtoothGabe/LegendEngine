@@ -16,6 +16,8 @@ namespace le
 
         m_window = Window::Create(width, height, wtitle);
         m_renderTarget = resources.CreateRenderTarget(*m_window);
+
+        m_window->AddEventHandler(m_resizeHandler, Tether::Events::EventType::WINDOW_RESIZE);
     }
 
     void TetherWindowManager::SetVisible(const bool visible) const
