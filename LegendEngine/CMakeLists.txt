@@ -23,7 +23,7 @@ endif()
 if (LE_HEADLESS)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC -DLE_HEADLESS)
 else()
-	set(OPTIONAL_LIBS tether compile-shaders)
+	set(OPTIONAL_LIBS tether LEShaders)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "Headers")
