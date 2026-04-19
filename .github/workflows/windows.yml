@@ -22,11 +22,9 @@ jobs:
         with:
           vulkan_version: latest
           cache: true
-      - name: Install MinGW
-        run: choco install mingw
       - name: Configure
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release -DLE_BUILD_TESTS=OFF
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: |
           cmake --build build
