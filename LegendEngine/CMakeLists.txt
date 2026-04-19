@@ -23,10 +23,10 @@ endif()
 if (LE_HEADLESS)
 	target_compile_definitions(${PROJECT_NAME} PUBLIC -DLE_HEADLESS)
 else()
-	set(OPTIONAL_LIBS tether compile-shaders stb)
+	set(OPTIONAL_LIBS tether compile-shaders)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "Headers")
-target_link_libraries(${PROJECT_NAME} PUBLIC ${OPTIONAL_LIBS} ${EXTRA_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC stb ${OPTIONAL_LIBS} ${EXTRA_LIBS})
 
 add_subdirectory(Platform)

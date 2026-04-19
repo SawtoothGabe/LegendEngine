@@ -34,14 +34,14 @@ function(MakeLibsAvailable)
 		FetchContent_MakeAvailable(googletest)
 	endif()
 
+	if (NOT TETHER_BUILD_RENDERING)
+		FetchContent_MakeAvailable(stb)
+		MakeStbInterface()
+	endif()
+
 	if (NOT LE_HEADLESS)
     	if (NOT LE_TETHER_EXTERN)
     	    FetchContent_MakeAvailable(Tether)
-		endif()
-
-		if (NOT TETHER_BUILD_RENDERING)
-			FetchContent_MakeAvailable(stb)
-			MakeStbInterface()
 		endif()
 
 		if (LE_VULKAN_API)
