@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <LE/Common/Assert.hpp>
 #include <LE/Components/Component.hpp>
 #include <LE/Components/ComponentStorage.hpp>
@@ -60,6 +62,7 @@ namespace le
         if (destructor)
         {
             LE_ASSERT(target != nullptr, "Target is nullptr");
+            // ReSharper disable once CppDFANullDereference
             static_cast<Component*>(target)->~Component();
         }
 
