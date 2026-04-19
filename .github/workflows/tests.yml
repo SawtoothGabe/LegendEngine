@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y ninja-build libvulkan-dev vulkan-validationlayers vulkan-tools mesa-vulkan-drivers glslc g++-14
+          sudo apt install -y ninja-build g++-14
 
       - name: Configure
         run: |
-          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release -DLE_BUILD_TESTS=ON -DTETHER_HEADLESS=ON -DLE_HEADLESS=ON
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=g++-14 -DCMAKE_BUILD_TYPE=Release -DLE_BUILD_TESTS=ON -DLE_HEADLESS=ON
 
       - name: Build
         run: |
