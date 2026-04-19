@@ -1,5 +1,7 @@
 #include <LE/World/Archetype.hpp>
 
+#include <cstring>
+
 namespace le
 {
     void Archetype::MoveComponentsFrom(Archetype& otherArchetype, const size_t row)
