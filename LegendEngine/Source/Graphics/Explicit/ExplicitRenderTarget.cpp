@@ -40,7 +40,7 @@ namespace le
         m_driver.DestroySurface(m_surface);
     }
 
-    void ExplicitRenderTarget::SetClearColor(const Color clearColor)
+    void ExplicitRenderTarget::SetClearColor(const Color& clearColor)
     {
         m_clearColor = clearColor;
     }

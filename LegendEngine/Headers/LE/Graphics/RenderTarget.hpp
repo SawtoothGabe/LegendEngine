@@ -1,6 +1,7 @@
 #pragma once
 
 #include <LE/Common/UID.hpp>
+#include <LE/Math/Types.hpp>
 
 namespace le
 {
@@ -11,6 +12,7 @@ namespace le
 
         virtual void SetVSync(bool vsync) = 0;
         virtual void InvalidateSwapchain() = 0;
+        virtual void SetClearColor(const Color& color) = 0;
 
         void SetActiveCameraID(UID cameraID);
         [[nodiscard]] UID GetActiveCameraID() const;

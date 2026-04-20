@@ -16,7 +16,7 @@ namespace le
         explicit ExplicitRenderTarget(ExplicitResources& resources, Format colorFormat, Format depthFormat, Tether::Window& window);
         ~ExplicitRenderTarget() override;
 
-        void SetClearColor(Color clearColor);
+        void SetClearColor(const Color& clearColor);
         void SetVSync(bool vsync) override;
         void InvalidateSwapchain() override;
 
