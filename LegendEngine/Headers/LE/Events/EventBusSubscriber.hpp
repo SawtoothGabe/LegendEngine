@@ -20,7 +20,7 @@ namespace le
 
         // Adds an event handler without subscribing to the event bus
         // Use EventBus::Subscribe(subscriber, func) to also subscribe
-        // To the event bus
+        // To the event bus. Subscribing within an event handler is forbidden.
         template<typename T>
             requires std::is_base_of_v<Event, T>
         void AddEventHandler(const EventFunc<T> func)

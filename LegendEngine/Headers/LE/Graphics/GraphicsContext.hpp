@@ -12,7 +12,7 @@ namespace le
     class GraphicsContext final
     {
     public:
-        explicit GraphicsContext(EventBus& bus, Scope<GraphicsDriver> driver);
+        explicit GraphicsContext(Scope<GraphicsDriver> driver);
         ~GraphicsContext();
         LE_NO_COPY(GraphicsContext);
 

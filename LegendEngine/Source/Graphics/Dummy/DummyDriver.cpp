@@ -14,7 +14,7 @@ namespace le
         return std::make_unique<DummyRenderer>();
     }
 
-    Scope<GraphicsResources> DummyDriver::CreateResources(EventBus&)
+    Scope<GraphicsResources> DummyDriver::CreateResources()
     {
         return std::make_unique<DummyResources>();
     }

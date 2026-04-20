@@ -28,9 +28,9 @@ namespace le
         return std::make_unique<ExplicitRenderer>(static_cast<ExplicitResources&>(resources));
     }
 
-    Scope<GraphicsResources> VulkanDriver::CreateResources(EventBus& bus)
+    Scope<GraphicsResources> VulkanDriver::CreateResources()
     {
-        return std::make_unique<ExplicitResources>(bus, *this);
+        return std::make_unique<ExplicitResources>(*this);
     }
 
     static const std::vector VALIDATION_LAYERS = {
@@ -489,6 +489,9 @@ namespace le
     void VulkanDriver::DestroyBuffer(const BufferID buffer)
     {
 	    const auto vkBuffer = reinterpret_cast<VulkanBuffer*>(buffer.id);
+    	if (!vkBuffer)
+    		return;
+
 	    vmaDestroyBuffer(m_allocator, vkBuffer->buffer, vkBuffer->allocation);
 	    delete vkBuffer;
     }

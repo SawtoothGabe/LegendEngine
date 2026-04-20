@@ -1,13 +1,12 @@
-#include <LE/Events/EventBus.hpp>
 #include <LE/Graphics/GraphicsContext.hpp>
 
 namespace le
 {
-    GraphicsContext::GraphicsContext(EventBus& bus, Scope<GraphicsDriver> driver)
+    GraphicsContext::GraphicsContext(Scope<GraphicsDriver> driver)
         :
         m_driver(std::move(driver))
     {
-        m_resources = m_driver->CreateResources(bus);
+        m_resources = m_driver->CreateResources();
         m_renderer = m_driver->CreateRenderer(*m_resources);
 
         CreateSamplers();

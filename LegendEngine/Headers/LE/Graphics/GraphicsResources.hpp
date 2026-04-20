@@ -49,5 +49,7 @@ namespace le
         virtual ImageViewID GetTexture2DImageView(Texture2DID texture) = 0;
         virtual ImageID GetTexture2DArrayImage(Texture2DArrayID texture) = 0;
         virtual ImageViewID GetTexture2DArrayImageView(Texture2DArrayID texture) = 0;
+
+        virtual void ProcessFrame() {}
     };
 }

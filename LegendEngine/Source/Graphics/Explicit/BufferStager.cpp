@@ -37,6 +37,7 @@ namespace le
 
         SubmitInfo info;
         info.commandBuffer = m_commandBuffer;
+        info.fence = m_fence;
 
         m_driver.ResetFences(1, &m_fence);
         std::scoped_lock lock(m_transferMutex);

@@ -10,7 +10,7 @@ namespace le
     class ExplicitResources : public GraphicsResources
     {
     public:
-        explicit ExplicitResources(EventBus& bus, ExplicitDriver& driver);
+        explicit ExplicitResources(ExplicitDriver& driver);
         ~ExplicitResources() override;
 
         [[nodiscard]] Scope<RenderTarget> CreateRenderTarget(Tether::Window& window) override;
@@ -59,7 +59,7 @@ namespace le
         [[nodiscard]] ExplicitDriver& GetDriver() const;
         [[nodiscard]] PipelineLayoutID GetPipelineLayout() const;
 
-        void ProcessDeletionQueue();
+        void ProcessFrame() override;
         void EnqueueDeletionFunc(const std::function<void()>& func);
     private:
         struct DeletionQueue
@@ -100,7 +100,5 @@ namespace le
         size_t m_currentFrame = 0;
 
         std::deque<DeletionQueue> m_deletionQueues;
-
-        EventBusSubscriber m_sub;
     };
 }

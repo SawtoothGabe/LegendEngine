@@ -1,5 +1,4 @@
 #include <LE/Application.hpp>
-#include <LE/Events/RenderEvent.hpp>
 #include <LE/Graphics/Explicit/ExplicitMaterial.hpp>
 #include <LE/Graphics/Explicit/ExplicitMesh.hpp>
 #include <LE/Graphics/Explicit/ExplicitRenderTarget.hpp>
@@ -10,10 +9,9 @@
 
 namespace le
 {
-    ExplicitResources::ExplicitResources(EventBus& bus, ExplicitDriver& driver)
+    ExplicitResources::ExplicitResources(ExplicitDriver& driver)
         :
-        m_driver(driver),
-        m_sub(bus)
+        m_driver(driver)
     {
         m_deletionQueues.resize(Application::FRAMES_IN_FLIGHT);
 
@@ -22,8 +20,6 @@ namespace le
         CreateQueues();
         CreateDescriptorSetLayouts();
         CreatePipelineLayout();
-
-        m_sub.AddEventHandler<RenderEvent>([this](const RenderEvent&) { ProcessDeletionQueue(); });
     }
 
     ExplicitResources::~ExplicitResources()
@@ -50,7 +46,7 @@ namespace le
             m_driver.DestroyDescriptorSetLayout(layout);
     }
 
-    void ExplicitResources::ProcessDeletionQueue()
+    void ExplicitResources::ProcessFrame()
     {
         m_currentFrame = Application::Get().GetCurrentFrame();
         auto& [mutex, queue] = m_deletionQueues[m_currentFrame];

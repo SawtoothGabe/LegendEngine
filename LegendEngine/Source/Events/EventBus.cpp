@@ -28,6 +28,7 @@ namespace le
     void EventBus::UnsubscribeAll(EventBusSubscriber& subscriber)
     {
         std::shared_lock lock(m_mutex);
+
         for (auto& [subscribersMutex, subscribers] : m_events | std::views::values)
         {
             std::unique_lock subLock(subscribersMutex);

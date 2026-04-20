@@ -16,7 +16,7 @@ namespace le
         const std::string_view applicationName,
         const int width, const int height)
         :
-        m_graphicsContext(m_EventBus, std::move(driver)),
+        m_graphicsContext(std::move(driver)),
         m_GlobalScene(m_graphicsContext.GetResources())
     {
         m_windowManager = WindowManager::Create(m_graphicsContext.GetResources(), applicationName, width, height);
@@ -173,6 +173,7 @@ namespace le
         renderer.EndFrame();
 
         m_EventBus.DispatchEvent<RenderEvent>(RenderEvent(delta));
+        m_graphicsContext.GetResources().ProcessFrame();
 
         m_currentFrame = (m_currentFrame + 1) % FRAMES_IN_FLIGHT;
     }

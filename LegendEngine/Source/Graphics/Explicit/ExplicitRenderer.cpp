@@ -194,18 +194,24 @@ namespace le
         scene.QueryComponents<Mesh, Transform>(
             [&](const Mesh& mesh, const Transform& transform)
             {
-                if (!mesh.enabled)
+                if (!mesh.enabled || !mesh.data)
                     return;
 
-                ExplicitMaterial& mat = *reinterpret_cast<ExplicitMaterial*>(mesh.material->GetHandle().id);
-                mat.UpdateUniforms(m_currentFrame);
-
-                if (mesh.material == nullptr)
-                    UseMaterial(m_defaultMaterial);
+                if (mesh.material)
+                {
+                    ExplicitMaterial& mat = *reinterpret_cast<ExplicitMaterial*>(mesh.material->GetHandle().id);
+                    mat.UpdateUniforms(m_currentFrame);
+                }
 
                 if (mesh.material != lastMaterial)
                 {
-                    UseMaterial(mesh.material);
+                    if (mesh.material)
+                    {
+                        UseMaterial(mesh.material);
+                    }
+                    else
+                        UseMaterial(m_defaultMaterial);
+
                     lastMaterial = mesh.material;
                 }
 
