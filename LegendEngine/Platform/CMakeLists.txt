@@ -22,5 +22,7 @@ if (NOT LE_HEADLESS)
         target_include_directories(LEVulkan PRIVATE "Vulkan" ${Vulkan_INCLUDE_DIR})
         target_compile_definitions(LEVulkan PUBLIC LE_VULKAN_API)
         target_link_libraries(LEVulkan PUBLIC LegendEngine VulkanMemoryAllocator)
+
+        set_property(GLOBAL PROPERTY LE_VULKAN_TARGET LEVulkan)
     endif()
 endif ()

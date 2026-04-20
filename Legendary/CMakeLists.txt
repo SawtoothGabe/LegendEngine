@@ -16,4 +16,5 @@ target_include_directories(${PROJECT_NAME}
 PUBLIC 
     "Headers"
 )
-target_link_libraries(${PROJECT_NAME} LEVulkan LEShaders)
+
+target_link_libraries(${PROJECT_NAME} ${LE_LIBRARIES})
