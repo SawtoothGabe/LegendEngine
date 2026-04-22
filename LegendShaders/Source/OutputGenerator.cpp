@@ -1,5 +1,6 @@
 #include "OutputGenerator.hpp"
 
+#include <print>
 #include <SlangUtils.hpp>
 
 static void WriteBytes(std::string& output, const size_t count, const void* data)
@@ -208,6 +209,9 @@ std::string OutputGenerator::LinkProgramsAndMakeOutput(const Options& options, s
         output += "};\n\n";
         output += std::format("LE_REGISTER_SHADER(LE_SHADER_{}_INFO);\n\n", program.GetFilenameHash());
     }
+
+    if (output.empty())
+        std::println("warn: generated output is empty");
 
     return output;
 }

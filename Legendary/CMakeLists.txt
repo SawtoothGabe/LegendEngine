@@ -17,5 +17,4 @@ PUBLIC
     "Headers"
 )
 
-set(LE_LIBRARIES "LegendEngine LEShaders ${vulkanTarget}" CACHE INTERNAL "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LE_LIBRARIES})

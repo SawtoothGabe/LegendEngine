@@ -21,6 +21,9 @@ le::Features operator|=(le::Features& lhs, const le::Features& rhs)
 
 Program Program::FromJson(ModuleRegistry& registry, const std::string_view path, const std::string_view json, ondemand::parser& parser)
 {
+    if (json.empty())
+        std::println("warn: input JSON is empty");
+
     const std::filesystem::path jsonPath(path);
     const padded_string paddedJson = json;
     le::Features features = {};

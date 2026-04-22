@@ -82,9 +82,11 @@ function (le_add_shaders_target name shaders)
             get_shader_dependencies(includes ${shader})
         endif()
 
+        set(GENERATED_FILE "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
+
         add_custom_command(
             OUTPUT
-                "${BUILD_SHADER_DIR}/${FILENAME}.cpp"
+                ${GENERATED_FILE}
             DEPENDS
                 ${shader}
                 ${modules}
@@ -96,13 +98,13 @@ function (le_add_shaders_target name shaders)
                 ${SPIRV_OPTION}
                 ${WGSL_OPTION}
                 # Output file
-                -o \"${BUILD_SHADER_DIR}/${FILENAME}.cpp\"
+                -o ${GENERATED_FILE}
                 # Source file
-                \"${shader}\"
+                ${shader}
+            VERBATIM
         )
 
-        file(WRITE "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
-        list(APPEND SHADER_CPP_FILES "${BUILD_SHADER_DIR}/${FILENAME}.cpp")
+        list(APPEND SHADER_CPP_FILES ${GENERATED_FILE})
     endforeach ()
 
     add_library(${name} OBJECT ${SHADER_CPP_FILES})
