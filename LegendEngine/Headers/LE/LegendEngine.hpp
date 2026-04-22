@@ -1,7 +1,10 @@
 #pragma once
 
 #include <LE/Application.hpp>
+
+#ifndef LE_HEADLESS
 #include <LE/TetherBindings.hpp>
+#endif
 
 #include <LE/Common/Assert.hpp>
 #include <LE/Common/Defs.hpp>
