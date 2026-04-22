@@ -26,8 +26,9 @@ endif ()
 
 define_property(GLOBAL PROPERTY LE_VULKAN_TARGET)
 
-add_subdirectory(Legendary)
 add_subdirectory(LegendEngine)
 
 get_property(vulkanTarget GLOBAL PROPERTY LE_VULKAN_TARGET)
-set(LE_LIBRARIES CACHE FORCE LegendEngine LEShaders ${vulkanTarget} )
+set(LE_LIBRARIES "LegendEngine LEShaders ${vulkanTarget}" CACHE INTERNAL "")
+
+add_subdirectory(Legendary)

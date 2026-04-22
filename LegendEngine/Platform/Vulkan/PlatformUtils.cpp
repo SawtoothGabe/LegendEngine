@@ -20,7 +20,6 @@
 // I despise the windows api
 #undef ERROR
 
-#include <Tether/Platform/Win32Window.hpp>
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
@@ -61,8 +60,9 @@ namespace le
         auto& windowNative = static_cast<Platform::X11Window&>(window);
         return instance.createXlibSurfaceKHR({{}, app.GetDisplay(), windowNative.GetWindowHandle()});
 #elif defined(LE_PLATFORM_WINDOWS)
-        auto& nativeWindow = static_cast<Tether::Platform::Win32Window&>(window);
-        return instance.createWin32SurfaceKHR({{}, nativeWindow.GetHINSTANCE(), nativeWindow.GetHWND()});
+        auto hInstance = static_cast<HINSTANCE>(Tether::Application::Get().GetHandle());
+        auto hWnd = reinterpret_cast<HWND>(window.GetHandle());
+        return instance.createWin32SurfaceKHR({{}, hInstance, hWnd});
 #endif
     }
 #endif

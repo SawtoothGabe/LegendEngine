@@ -30,7 +30,7 @@ namespace le
         }
 
         void* GetData(size_t index);
-        const void* GetData(size_t index) const;
+        [[nodiscard]] const void* GetData(size_t index) const;
         void* Allocate();
         void SwapAndPop(size_t index, bool destructor = true);
         [[nodiscard]] size_t GetElementSize() const;

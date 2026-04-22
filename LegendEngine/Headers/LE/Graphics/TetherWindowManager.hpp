@@ -15,7 +15,7 @@ namespace le
         void SetActiveCamera(UID cameraID) const override;
         bool IsCloseRequested() const override;
 
-        [[nodiscard]] Window& GetWindow() const override;
+        [[nodiscard]] Window& GetWindow() override;
         [[nodiscard]] RenderTarget& GetRenderTarget() const override;
     private:
         class ResizeHandler : public Tether::Events::EventHandler
@@ -35,7 +35,9 @@ namespace le
             TetherWindowManager& m_impl;
         };
 
-        Scope<Window> m_window;
+        static std::wstring GetWideTitle(std::string_view title);
+
+        Window m_window;
         Scope<RenderTarget> m_renderTarget;
 
         ResizeHandler m_resizeHandler = ResizeHandler(*this);

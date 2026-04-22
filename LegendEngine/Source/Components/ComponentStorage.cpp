@@ -14,10 +14,9 @@ namespace le
     ComponentStorage::ComponentStorage(ComponentStorage&& other) noexcept
         :
         m_componentSize(other.m_componentSize),
-        m_count(other.m_count),
-        m_componentData(std::move(other.m_componentData))
+        m_count(other.m_count)
     {
-        other.m_count = 0;
+        // TODO: initialize component data
     }
 
     ComponentStorage::~ComponentStorage()

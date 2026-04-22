@@ -19,10 +19,10 @@ namespace le
         virtual void AddResizeCallback(const ResizeCallback& callback) = 0;
         virtual void SetActiveCamera(UID cameraID) const = 0;
 
-        virtual bool IsCloseRequested() const = 0;
+        [[nodiscard]] virtual bool IsCloseRequested() const = 0;
 
 #ifndef LE_HEADLESS
-        [[nodiscard]] virtual Tether::Window& GetWindow() const = 0;
+        [[nodiscard]] virtual Tether::Window& GetWindow() = 0;
 #endif
         [[nodiscard]] virtual RenderTarget& GetRenderTarget() const = 0;
 

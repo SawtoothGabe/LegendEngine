@@ -9,20 +9,17 @@ namespace le
 {
     TetherWindowManager::TetherWindowManager(GraphicsResources& resources, const std::string_view title,
         const int width, const int height)
+        :
+        m_window(width, height, GetWideTitle(title))
     {
-        std::wstring wtitle(title.size(), L' ');
-        std::mbstowcs(wtitle.data(), title.data(),
-            wtitle.size());
+        m_renderTarget = resources.CreateRenderTarget(m_window);
 
-        m_window = Window::Create(width, height, wtitle);
-        m_renderTarget = resources.CreateRenderTarget(*m_window);
-
-        m_window->AddEventHandler(m_resizeHandler, Tether::Events::EventType::WINDOW_RESIZE);
+        m_window.AddEventHandler(m_resizeHandler, Tether::Events::EventType::WINDOW_RESIZE);
     }
 
     void TetherWindowManager::SetVisible(const bool visible) const
     {
-        m_window->SetVisible(visible);
+        m_window.SetVisible(visible);
     }
 
     void TetherWindowManager::AddResizeCallback(const ResizeCallback& callback)
@@ -37,17 +34,26 @@ namespace le
 
     bool TetherWindowManager::IsCloseRequested() const
     {
-        return m_window->IsCloseRequested();
+        return m_window.IsCloseRequested();
     }
 
-    Window& TetherWindowManager::GetWindow() const
+    Window& TetherWindowManager::GetWindow()
     {
-        return *m_window;
+        return m_window;
     }
 
     RenderTarget& TetherWindowManager::GetRenderTarget() const
     {
         return *m_renderTarget;
+    }
+
+    std::wstring TetherWindowManager::GetWideTitle(const std::string_view title)
+    {
+        std::wstring wtitle(title.size(), L' ');
+        std::mbstowcs(wtitle.data(), title.data(),
+            wtitle.size());
+
+        return wtitle;
     }
 }
 

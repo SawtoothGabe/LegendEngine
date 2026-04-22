@@ -12,7 +12,7 @@ namespace le
         void SetActiveCamera(UID cameraID) const override;
         bool IsCloseRequested() const override;
 #ifndef LE_HEADLESS
-        [[nodiscard]] Tether::Window& GetWindow() const override;
+        [[nodiscard]] Tether::Window& GetWindow() override;
 #endif
         [[nodiscard]] RenderTarget& GetRenderTarget() const override;
     };
