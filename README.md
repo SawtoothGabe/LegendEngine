@@ -19,7 +19,7 @@ called Legendary, as well as its API in code!
 All window management and input is done from scratch and handled by a library called [Tether](https://github.com/SawtoothGabe/Tether).
 
 Here's a simple scene:
-![demo.png](Assets/demo.png)
+![demo.gif](Assets/demo.gif)
 
 ## How to build
 
