@@ -1,7 +1,8 @@
 #pragma once
 
-#include <LE/Components/Component.hpp>
 #include <LE/Math/Math.hpp>
+
+#include <LE/Components/Component.hpp>
 
 namespace le
 {

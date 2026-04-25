@@ -32,7 +32,7 @@ namespace le
         void CalculateViewMatrix(const Transform& transform);
         void CalculateProjectionMatrix();
 
-        const Vector3f UP = Vector3f(0, 1, 0);
+        inline static const auto UP = Vector3f(0, 1, 0);
     private:
         float m_Fov = 90.0f;
         float m_Aspect = 16.0f / 9.0f;

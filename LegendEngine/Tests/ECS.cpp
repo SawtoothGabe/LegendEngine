@@ -41,7 +41,14 @@ struct SmartPtrComponent : Component
         m_moved = true;
     }
 
-    ~SmartPtrComponent() override
+    SmartPtrComponent& operator=(SmartPtrComponent&& other) noexcept
+    {
+        LE_INFO("Moved SmartPtrComponent");
+        m_moved = true;
+        return *this;
+    }
+
+    ~SmartPtrComponent()
     {
         if (m_moved)
             return;

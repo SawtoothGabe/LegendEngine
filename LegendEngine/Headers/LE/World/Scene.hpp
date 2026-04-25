@@ -41,15 +41,15 @@ namespace le
             requires std::is_base_of_v<Component, T>
         void AddComponent(const UID entity, Args&&... args)
         {
+            const size_t componentID = typeid(T).hash_code();
             ECS::EntityRecord& record = m_entities.at(entity);
 
             if (!m_archetypes.contains(record.archetypeID))
             {
-                AddComponentToEmptyEntity<T>(record, entity, std::forward<Args>(args)...);
+                m_archetypes[ECS::ArchetypeID<T>()].template AddComponentToEmptyEntity<T>(componentID, record, entity,
+                    std::forward<Args>(args)...);
                 return;
             }
-
-            const size_t componentID = typeid(T).hash_code();
 
             Archetype& oldArchetype = m_archetypes[record.archetypeID];
 
@@ -79,7 +79,8 @@ namespace le
                 newArchetype.entityIDs = oldArchetype.entityIDs;
 
                 // Ensure the storage exists for the new component
-                newArchetype.componentData.try_emplace(componentID, sizeof(T));
+                if (!newArchetype.componentData.contains(componentID))
+                    newArchetype.componentData.emplace(componentID, std::make_unique<ComponentStorage<T>>());
             }
 
             // Update the record
@@ -92,7 +93,8 @@ namespace le
             newArchetype.entityIDs.push_back(entity);
 
             // Finally, create the new component
-            newArchetype.componentData.at(componentID).Push<T>(args...);
+            auto& storage = ComponentStorage<T>::Cast(newArchetype.componentData.at(componentID));
+            storage.Push(args...);
 
             ClearCachedArchetypeLookups();
         }
@@ -118,11 +120,12 @@ namespace le
             if (archetype.componentIDs.size() == 1)
             {
                 // Just swap and pop the ID
-                archetype.entityIDs[row] = archetype.entityIDs.back();
+                if (row < archetype.entityIDs.size() - 1)
+                    archetype.entityIDs[row] = archetype.entityIDs.back();
                 archetype.entityIDs.pop_back();
 
                 // ...components
-                archetype.componentData.at(componentID).SwapAndPop(row);
+                archetype.componentData.at(componentID)->Remove(row);
 
                 // ...and reset the record
                 archetypeID = -1;
@@ -164,8 +167,9 @@ namespace le
             auto& [archetypeID, row] = m_entities.at(entity);
             const size_t componentID = typeid(T).hash_code();
             auto& componentData = m_archetypes.at(archetypeID).componentData;
+            auto& storage = ComponentStorage<T>::Cast(componentData.at(componentID));
 
-            return *componentData.at(componentID).Get<T>(row);
+            return storage.Get(row);
         }
 
         // The entity must have the component or this function will fail
@@ -175,8 +179,9 @@ namespace le
             auto& [archetypeID, row] = m_entities.at(entity);
             const size_t componentID = typeid(T).hash_code();
             auto& componentData = m_archetypes.at(archetypeID).componentData;
+            auto& storage = ComponentStorage<T>::Cast(componentData.at(componentID));
 
-            T* pExistingData = componentData.at(componentID).Get<T>(row);
+            T* pExistingData = storage.Get(row);
             pExistingData->~Component();
             *pExistingData = component;
         }
@@ -189,7 +194,8 @@ namespace le
             auto& [archetypeID, row] = m_entities.at(entity);
             Archetype& archetype = m_archetypes.at(archetypeID);
 
-            queryFunc((*archetype.componentData.at(typeid(Ts).hash_code()).Get<Ts>(row))...);
+            queryFunc((ComponentStorage<Ts>::Cast(archetype.componentData.at(typeid(Ts).hash_code()))
+                .Get(row))...);
         }
 
         template <typename... Ts, typename Fn>
@@ -201,7 +207,8 @@ namespace le
                 Archetype& archetype = m_archetypes.at(id);
 
                 for (size_t i = 0; i < archetype.entityIDs.size(); i++)
-                    queryFunc((*archetype.componentData.at(typeid(Ts).hash_code()).Get<Ts>(i))...);
+                    queryFunc((ComponentStorage<Ts>::Cast(archetype.componentData.at(typeid(Ts).hash_code()))
+                        .Get(i))...);
             }
         }
 
@@ -214,7 +221,8 @@ namespace le
                 Archetype& archetype = m_archetypes.at(id);
 
                 for (size_t i = 0; i < archetype.entityIDs.size(); i++)
-                    queryFunc(archetype, i, (*archetype.componentData.at(typeid(Ts).hash_code()).Get<Ts>(i))...);
+                    queryFunc(archetype, i, (ComponentStorage<Ts>::Cast(archetype.componentData.at(
+                        typeid(Ts).hash_code())).Get(i))...);
             }
         }
 
@@ -225,35 +233,6 @@ namespace le
 
         void ProcessEntityChanges();
     private:
-        template<typename T, typename... Args>
-        void AddComponentToEmptyEntity(ECS::EntityRecord& record, const UID entity, Args&&... args)
-        {
-            const size_t componentID = typeid(T).hash_code();
-
-            // Create or find an archetype with just this component.
-            // Since this entity doesn't have any components yet,
-            // the archetype will only have the component being added
-            Archetype& archetype = m_archetypes[ECS::ArchetypeID<T>()];
-
-            // If the archetype doesn't have T (which also would mean it doesn't have any at all)
-            if (!archetype.componentData.contains(componentID))
-            {
-                // Make sure it exists
-                archetype.componentData.emplace(componentID, sizeof(T));
-                archetype.componentIDs.push_back(componentID);
-            }
-
-            // Here, the archetype exists and there is component storage for it.
-            // It may or may not have components in it, so we act like it always does.
-
-            record.row = archetype.entityIDs.size();
-            archetype.entityIDs.push_back(entity);
-            archetype.componentData.at(componentID).Push<T>(args...);
-
-            // Update the record
-            record.archetypeID = ECS::ArchetypeID<T>();
-        }
-
         template <typename... Ts>
         std::vector<size_t> FindArchetypes()
         {

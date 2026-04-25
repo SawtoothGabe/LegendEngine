@@ -2,7 +2,7 @@
 
 namespace le
 {
-    const std::unordered_map<size_t, ComponentStorage>& EntityCreator::GetComponents() const
+    const Archetype::ComponentsType& EntityCreator::GetComponents() const
     {
         return m_components;
     }

@@ -1,8 +1,9 @@
 #pragma once
-#include <typeindex>
+
 #include <unordered_map>
 #include <LE/Common/UID.hpp>
 #include <LE/Components/ComponentStorage.hpp>
+#include <LE/World/Archetype.hpp>
 
 namespace le
 {
@@ -10,7 +11,7 @@ namespace le
     {
     public:
         EntityCreator() = default;
-        EntityCreator(EntityCreator&&) = default;
+        EntityCreator(EntityCreator&&) noexcept = default;
         EntityCreator(const EntityCreator&) = delete;
 
         template <typename T>
@@ -20,14 +21,16 @@ namespace le
             size_t componentID = typeid(T).hash_code();
             LE_ASSERT(!m_components.contains(componentID), "Component added twice");
 
-            m_components.emplace(componentID, ComponentStorage(sizeof(T)));
-            memcpy(m_components.at(componentID).Allocate(), &component, sizeof(T));
+            auto& storageInterface = m_components.emplace(componentID,
+                std::make_unique<ComponentStorage<T>>()).first->second;
+            auto& storage = ComponentStorage<T>::Cast(storageInterface);
+            storage.Push(component);
         }
 
-        const std::unordered_map<size_t, ComponentStorage>& GetComponents() const;
-        UID GetUID() const;
+        [[nodiscard]] const Archetype::ComponentsType& GetComponents() const;
+        [[nodiscard]] UID GetUID() const;
     private:
         UID m_UID;
-        std::unordered_map<size_t, ComponentStorage> m_components;
+        Archetype::ComponentsType m_components;
     };
 }

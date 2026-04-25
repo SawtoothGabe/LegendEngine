@@ -65,8 +65,8 @@ namespace le
         archetype.entityIDs.pop_back();
 
         // Pop all the components
-        for (ComponentStorage& storage : archetype.componentData | std::views::values)
-            storage.SwapAndPop(row);
+        for (const auto& storage : archetype.componentData | std::views::values)
+            storage->Remove(row);
 
         ClearCachedArchetypeLookups();
     }
@@ -144,8 +144,10 @@ namespace le
 
             for (auto& [componentID, data] : creator.GetComponents())
             {
-                archetype.componentData.try_emplace(componentID, ComponentStorage(data.GetElementSize()));
-                memcpy(archetype.componentData.at(componentID).Allocate(), data.GetData(0), data.GetElementSize());
+                if (!archetype.componentData.contains(componentID))
+                    archetype.componentData.emplace(componentID, data->CloneEmpty());
+
+                archetype.componentData.at(componentID)->MoveFrom(0, *data);
             }
 
             m_entities.emplace(entityID, record);
