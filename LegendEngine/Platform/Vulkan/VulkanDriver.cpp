@@ -921,7 +921,8 @@ namespace le
 	    const vk::Viewport viewport(
 		    0, 0,
 		    static_cast<float>(size.width),
-		    static_cast<float>(size.height)
+		    static_cast<float>(size.height),
+		    0.0f, 1.0f
 	    );
 
 	    VULKAN_CAST(CommandBuffer, buffer).setViewport(0, 1,
