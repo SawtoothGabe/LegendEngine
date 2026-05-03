@@ -61,7 +61,16 @@ namespace le
         Archetype& archetype = m_archetypes[archetypeID];
 
         // Swap and pop the entity ID
-        archetype.entityIDs[row] = archetype.entityIDs.back();
+        if (row < archetype.entityIDs.size() - 1)
+        {
+            const UID movedEntity = archetype.entityIDs.back();
+            archetype.entityIDs[row] = movedEntity;
+
+            // If this entity isn't the last element in the archetype entities,
+            // then update the moved entity's row
+            m_entities.at(movedEntity).row = row;
+        }
+
         archetype.entityIDs.pop_back();
 
         // Pop all the components

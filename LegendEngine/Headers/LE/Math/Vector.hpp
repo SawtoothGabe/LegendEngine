@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <limits>
 #include <type_traits>
 
 namespace le
@@ -176,6 +177,17 @@ namespace le
         T Length() const
         {
             return std::sqrt(Dot(*this));
+        }
+
+        T Max() const
+        {
+            T max = std::numeric_limits<T>::lowest();
+            [&]<size_t... Is>(std::index_sequence<Is...>)
+            {
+                ((max = data[Is] > max ? data[Is] : max), ...);
+            }(std::make_index_sequence<N>{});
+
+            return max;
         }
 
         Vector& Normalize()

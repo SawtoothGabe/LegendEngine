@@ -20,8 +20,8 @@ namespace le
     private:
         struct BufferDesc
         {
-            std::atomic<uint64_t> buffer;
-            std::atomic_size_t size;
+            uint64_t buffer = 0;
+            size_t size = 0;
         };
 
         BufferID CreateBuffer(BufferDesc& target, size_t size) const;
