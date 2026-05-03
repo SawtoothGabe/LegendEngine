@@ -74,6 +74,8 @@ namespace le
 
     void BufferStager::RecordCommandBuffer(const BufferID& target, const size_t targetSize) const
     {
+        std::scoped_lock lock(m_transferMutex);
+
         m_driver.ResetCommandBuffer(m_commandBuffer);
         m_driver.BeginCommandBuffer(m_commandBuffer, false);
         {

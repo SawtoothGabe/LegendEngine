@@ -275,9 +275,9 @@ namespace le
         const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
         const ExplicitMesh& explicitMesh = *reinterpret_cast<ExplicitMesh*>(mesh.data->GetHandle().id);
         const BufferID vertex = explicitMesh.GetVertexBuffer().GetDesc(m_currentFrame).buffer;
-        const BufferID index = explicitMesh.GetIndexBuffer().GetDesc(m_currentFrame).buffer;
+        const Buffer::Desc indexDesc = explicitMesh.GetIndexBuffer().GetDesc(m_currentFrame);
 
-        if (!vertex || !index)
+        if (!vertex || !indexDesc.buffer)
             return;
 
         m_driver.CmdPushConstants(buffer, m_resources.GetPipelineLayout(), ShaderStageFlagBits::VERTEX,
@@ -292,10 +292,10 @@ namespace le
 
         BufferID buffers[] = { vertex };
         m_driver.CmdBindVertexBuffers(buffer, 0, buffers);
-        m_driver.CmdBindIndexBuffer(buffer, index, 0);
+        m_driver.CmdBindIndexBuffer(buffer, indexDesc.buffer, 0);
 
         m_driver.CmdDrawIndexed(buffer,
-            static_cast<uint32_t>(explicitMesh.GetIndexCount()),
+            indexDesc.size / sizeof(uint32_t),
             1, 0, 0, 0
         );
     }
