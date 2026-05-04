@@ -178,6 +178,7 @@ namespace le
         BeginScene(scene);
 
         Ref<Material> lastMaterial = nullptr;
+        PrimitiveTopology lastTopology = PrimitiveTopology::TRIANGLE_LIST;
         scene.QueryComponents<Mesh, Transform>(
             [&](const Mesh& mesh, const Transform& transform)
             {
@@ -190,6 +191,7 @@ namespace le
                     mat.UpdateUniforms(m_currentFrame);
                 }
 
+                bool shouldSelectShader = false;
                 if (mesh.material != lastMaterial)
                 {
                     if (mesh.material)
@@ -200,9 +202,18 @@ namespace le
                         UseMaterial(m_defaultMaterial);
 
                     lastMaterial = mesh.material;
+                    shouldSelectShader = true;
                 }
 
-                SelectShader(mesh);
+                if (lastTopology != mesh.data->GetTopology())
+                {
+                    shouldSelectShader = true;
+                    lastTopology = mesh.data->GetTopology();
+                }
+
+                if (shouldSelectShader)
+                    SelectShader(mesh);
+
                 DrawMesh(mesh, transform);
             });
     }
