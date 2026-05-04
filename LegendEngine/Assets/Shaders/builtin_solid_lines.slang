@@ -12,7 +12,9 @@ ParameterBlock<Material> mat;
 [shader("vertex")]
 float4 vertMain(VSInput input) : SV_Position
 {
-    return mul(float4(input.pos, 1), mul(obj.transform, cam.vpMat));
+    float4 outPos = mul(float4(input.pos, 1), mul(obj.transform, cam.vpMat));
+    outPos.z = 0.0;
+    return outPos;
 }
 
 [shader("fragment")]
