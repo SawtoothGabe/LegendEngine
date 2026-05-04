@@ -59,7 +59,9 @@ namespace le
     void ExplicitTexture2DArray::Upload(const std::span<TextureData*>& textureData,
                                         const Extent3D extent, const QueueID& queue, const CommandPoolID& commandPool) const
     {
-        const size_t size = extent.width * extent.height * extent.depth;
+        const size_t size = static_cast<size_t>(extent.width)
+            * static_cast<size_t>(extent.height)
+            * static_cast<size_t>(extent.depth);
 
         const BufferID buffer = m_driver.CreateBuffer(
             BufferUsageFlagBits::TRANSFER_SRC, size, true);
