@@ -22,7 +22,7 @@ namespace le
         void CalculateTransformMatrix();
 
         bool dirty = false;
-        Matrix4x4f transformMat;
+        Matrix4x4f transformMat = Matrix4x4f::MakeIdentity();
     private:
         Vector3f m_position;
         Vector3f m_scale = Vector3f(1.0f);
