@@ -15,6 +15,16 @@ namespace le
         m_resources.DestroyMesh(m_handle);
     }
 
+    void MeshData::SetTopology(PrimitiveTopology topology)
+    {
+        m_topology = topology;
+    }
+
+    PrimitiveTopology MeshData::GetTopology() const
+    {
+        return m_topology;
+    }
+
     void MeshData::Update(std::span<Vertex3> vertices, std::span<uint32_t> indices)
     {
         m_resources.UpdateMesh(m_handle, vertices, indices);

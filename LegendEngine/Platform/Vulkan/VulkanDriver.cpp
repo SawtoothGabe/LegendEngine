@@ -282,8 +282,8 @@ namespace le
 		    static_cast<uint32_t>(attributes.size()), attributes.data()
 	    );
 
-	    constexpr vk::PipelineInputAssemblyStateCreateInfo inputAssembly(
-		    {}, vk::PrimitiveTopology::eTriangleList, false
+	    const vk::PipelineInputAssemblyStateCreateInfo inputAssembly(
+		    {}, VulkanTypes::GetPrimitiveTopology(info.primitiveTopology), false
 	    );
 
 	    constexpr vk::Viewport viewport;
@@ -378,8 +378,6 @@ namespace le
 
 	    return PipelineLayoutID(m_device.createPipelineLayout(createInfo));
     }
-
-
 
     SemaphoreID VulkanDriver::CreateSemaphore()
     {

@@ -28,6 +28,7 @@ namespace le
         void UseMaterial(const Ref<Material>& material);
         void RenderScene(Scene& scene);
         void BeginScene(const Scene& scene);
+        void SelectShader(const Mesh& mesh);
         void DrawMesh(const Mesh& mesh, const Transform& transform);
 
         void UpdateSceneUniforms(Scene& scene) const;

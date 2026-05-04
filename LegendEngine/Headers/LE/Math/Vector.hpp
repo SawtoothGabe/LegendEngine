@@ -179,12 +179,16 @@ namespace le
             return std::sqrt(Dot(*this));
         }
 
+        /**
+         *
+         * @return The value of the highest magnitude component of the vector
+         */
         T Max() const
         {
-            T max = std::numeric_limits<T>::lowest();
+            T max = 0;
             [&]<size_t... Is>(std::index_sequence<Is...>)
             {
-                ((max = data[Is] > max ? data[Is] : max), ...);
+                ((max = std::abs(data[Is]) > std::abs(max) ? data[Is] : max), ...);
             }(std::make_index_sequence<N>{});
 
             return max;

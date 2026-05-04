@@ -49,16 +49,12 @@ namespace le
 
     Ref<Shader> Material::GetShader() const
     {
-        if (m_customShader)
-            return m_customShader;
+        return m_customShader;
+    }
 
-        ShaderRegistry& registry = ShaderRegistry::Get();
-        ShaderManager& manager = Application::Get().GetGraphicsContext().GetShaderManager();
-
-        ShaderInfo* pInfo = registry.FromFeatures(m_shaderFeatures);
-        LE_ASSERT(pInfo, "No shader found with requested features");
-
-        return manager.TryCreate(pInfo);
+    uint64_t Material::GetShaderFeatures() const
+    {
+        return m_shaderFeatures;
     }
 
     MaterialID Material::GetHandle() const

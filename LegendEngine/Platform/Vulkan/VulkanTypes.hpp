@@ -24,6 +24,7 @@ namespace le::VulkanTypes
     vk::CullModeFlags GetCullModeFlags(CullMode cullMode);
     vk::AccessFlags GetAccessFlags(AccessFlags accessFlags);
     vk::ShaderStageFlagBits GetShaderStageFlag(ShaderStage stage);
+    vk::PrimitiveTopology GetPrimitiveTopology(PrimitiveTopology primitiveTopology);
 
     Format ToFormat(vk::Format format);
 }

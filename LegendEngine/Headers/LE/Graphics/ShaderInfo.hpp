@@ -30,8 +30,9 @@ namespace le
 
     enum class Features
     {
-        SOLID_COLOR = 1 << 0,
-        TEXTURED    = 1 << 1,
+        SOLID_COLOR       = 1 << 0,
+        TEXTURED          = 1 << 1,
+        LINES_TOPOLOGY    = 1 << 2,
     };
 
     struct Entrypoint

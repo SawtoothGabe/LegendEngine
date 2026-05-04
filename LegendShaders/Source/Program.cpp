@@ -161,6 +161,8 @@ le::Features Program::GetFeature(const std::string_view feature)
         return le::Features::SOLID_COLOR;
     if (feature == "textured")
         return le::Features::TEXTURED;
+    if (feature == "lines_topology")
+        return le::Features::LINES_TOPOLOGY;
 
     throw std::runtime_error(std::format("Invalid feature \"{}\"", feature));
 }

@@ -16,6 +16,7 @@ namespace le
     {
         DeleteStagingBuffer();
 
+        std::scoped_lock lock(m_transferMutex);
         m_driver.FreeCommandBuffers(m_commandPool, 1, &m_commandBuffer);
     }
 
@@ -69,6 +70,7 @@ namespace le
 
     void BufferStager::CreateCommandBuffer()
     {
+        std::scoped_lock lock(m_transferMutex);
         m_commandBuffer = m_driver.AllocateCommandBuffer(m_commandPool);
     }
 

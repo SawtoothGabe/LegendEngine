@@ -26,7 +26,7 @@ namespace le
 		void SetShader(const Ref<Shader>& toSet);
 
 		[[nodiscard]] Ref<Shader> GetShader() const;
-
+		uint64_t GetShaderFeatures() const;
 		[[nodiscard]] MaterialID GetHandle() const;
 
 		static Ref<Material> Create();

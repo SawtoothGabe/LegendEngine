@@ -1,0 +1,6 @@
+{
+  "features": [ "solid_color", "lines_topology" ],
+  "modules": [
+    "builtin_solid_lines.slang"
+  ]
+}

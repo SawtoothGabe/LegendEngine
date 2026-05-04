@@ -167,22 +167,9 @@ namespace le
 
     void ExplicitRenderer::UseMaterial(const Ref<Material>& material)
     {
-        const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
-
         const auto& explicitMaterial = *reinterpret_cast<ExplicitMaterial*>(material->GetHandle().id);
         m_sets[2] = explicitMaterial.GetSet(m_currentFrame);
         m_haveSetsChanged = true;
-
-        const Ref<Shader> shader = material->GetShader();
-        if (shader == m_currentShader)
-            return;
-
-        const auto pipeline = PipelineID(shader->GetHandle().id);
-
-        m_driver.CmdBindPipeline(buffer, PipelineBindPoint::GRAPHICS, pipeline);
-        m_driver.CmdSetCullMode(buffer, shader->GetCullMode());
-
-        m_currentShader = shader;
     }
 
     void ExplicitRenderer::RenderScene(Scene& scene)
@@ -215,6 +202,7 @@ namespace le
                     lastMaterial = mesh.material;
                 }
 
+                SelectShader(mesh);
                 DrawMesh(mesh, transform);
             });
     }
@@ -225,6 +213,42 @@ namespace le
 
         m_sets[1] = explicitScene.GetSet(m_currentFrame);
         m_haveSetsChanged = true;
+    }
+
+    void ExplicitRenderer::SelectShader(const Mesh& mesh)
+    {
+        // This function will change once batch rendering is implemented, ideally making the whole rendering a lot faster
+
+        ShaderRegistry& registry = ShaderRegistry::Get();
+        ShaderManager& manager = Application::Get().GetGraphicsContext().GetShaderManager();
+
+        Ref<Shader> shader = nullptr;
+        if (!mesh.material)
+            shader = manager.TryCreate(registry.FromFeatures(static_cast<uint64_t>(Features::SOLID_COLOR)));
+        else if (mesh.material->GetShader())
+            shader = mesh.material->GetShader();
+        else
+        {
+            uint64_t features = mesh.material->GetShaderFeatures();
+            if (mesh.data->GetTopology() == PrimitiveTopology::LINE_LIST)
+                features |= static_cast<uint64_t>(Features::LINES_TOPOLOGY);
+
+            const ShaderInfo* pInfo = registry.FromFeatures(features);
+            LE_ASSERT(pInfo, "No shader found with requested features (features = 0b{:b})", features);
+
+            shader = manager.TryCreate(pInfo);
+        }
+
+        if (shader == m_currentShader)
+            return;
+
+        const CommandBufferID buffer = m_commandBuffers[m_currentFrame];
+        const auto pipeline = PipelineID(shader->GetHandle().id);
+
+        m_driver.CmdBindPipeline(buffer, PipelineBindPoint::GRAPHICS, pipeline);
+        m_driver.CmdSetCullMode(buffer, shader->GetCullMode());
+
+        m_currentShader = shader;
     }
 
     void ExplicitRenderer::UpdateSceneUniforms(Scene& scene) const
@@ -295,7 +319,7 @@ namespace le
         m_driver.CmdBindIndexBuffer(buffer, indexDesc.buffer, 0);
 
         m_driver.CmdDrawIndexed(buffer,
-            indexDesc.size / sizeof(uint32_t),
+            static_cast<uint32_t>(indexDesc.size) / sizeof(uint32_t),
             1, 0, 0, 0
         );
     }

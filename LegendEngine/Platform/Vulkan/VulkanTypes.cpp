@@ -220,6 +220,18 @@ namespace le
         return vk::ShaderStageFlagBits::eAll;
     }
 
+    vk::PrimitiveTopology VulkanTypes::GetPrimitiveTopology(PrimitiveTopology primitiveTopology)
+    {
+        switch (primitiveTopology)
+        {
+            case PrimitiveTopology::TRIANGLE_LIST: return vk::PrimitiveTopology::eTriangleList;
+            case PrimitiveTopology::LINE_LIST: return vk::PrimitiveTopology::eLineList;
+        }
+
+        LE_ASSERT(false, "Unknown primitive topology");
+        return vk::PrimitiveTopology::eTriangleList;
+    }
+
     Format VulkanTypes::ToFormat(vk::Format format)
     {
         return static_cast<Format>(format);

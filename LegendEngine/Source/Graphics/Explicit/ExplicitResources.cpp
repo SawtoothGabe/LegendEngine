@@ -121,6 +121,8 @@ namespace le
         info.pShaderInfo = &shaderInfo;
         info.vertexBindings = bindings;
         info.vertexAttributes = attributes;
+        info.primitiveTopology = shaderInfo.features & static_cast<uint64_t>(Features::LINES_TOPOLOGY)
+            ? PrimitiveTopology::LINE_LIST : PrimitiveTopology::TRIANGLE_LIST;
 
         return ShaderID(m_driver.CreatePipeline(info).id);
     }

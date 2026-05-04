@@ -478,6 +478,12 @@ return id != other.id; \
         Format format = Format::R32G32B32_SFLOAT;
     };
 
+    enum class PrimitiveTopology
+    {
+        TRIANGLE_LIST,
+        LINE_LIST,
+    };
+
     struct PipelineInfo
     {
         PipelineLayoutID layout;
@@ -486,6 +492,7 @@ return id != other.id; \
         const ShaderInfo* pShaderInfo;
         std::span<VertexBinding> vertexBindings;
         std::span<VertexAttribute> vertexAttributes;
+        PrimitiveTopology primitiveTopology = PrimitiveTopology::TRIANGLE_LIST;
     };
 
     struct SwapchainInfo

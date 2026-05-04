@@ -5,6 +5,9 @@ namespace le
 {
     Ref<Shader> ShaderManager::TryCreate(const ShaderInfo* pInfo)
     {
+        LE_ASSERT(pInfo, "ShaderInfo was nullptr, likely no shader found with requested features");
+
+        // ReSharper disable once CppDFANullDereference
         if (m_shaders.contains(pInfo->name))
             return m_shaders.at(pInfo->name);
 

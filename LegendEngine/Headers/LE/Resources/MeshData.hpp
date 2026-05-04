@@ -29,6 +29,9 @@ namespace le
         MeshData(GraphicsResources& resources, const MeshID& handle, Passkey);
         ~MeshData() override;
 
+        void SetTopology(PrimitiveTopology topology);
+        PrimitiveTopology GetTopology() const;
+
         void Update(std::span<Vertex3> vertices, std::span<uint32_t> indices);
         void Resize(size_t vertexCount, size_t indexCount) const;
 
@@ -41,5 +44,7 @@ namespace le
     private:
         GraphicsResources& m_resources;
         MeshID m_handle;
+
+        PrimitiveTopology m_topology = PrimitiveTopology::TRIANGLE_LIST;
     };
 }
