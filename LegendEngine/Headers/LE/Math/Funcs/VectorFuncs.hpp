@@ -17,6 +17,12 @@ namespace le::Math
     }
 
     template <typename T, size_t N>
+    T Distance(const Vector<T, N>& v1, const Vector<T, N>& v2)
+    {
+        return v1.Distance(v2);
+    }
+
+    template <typename T, size_t N>
     Vector<T, N> Normalize(const Vector<T, N>& vec)
     {
         return vec.Normalized();

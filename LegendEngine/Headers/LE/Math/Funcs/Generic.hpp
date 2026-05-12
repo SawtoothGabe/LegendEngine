@@ -27,4 +27,10 @@ namespace le::Math
 	{
 		return radians * 180 / PI;
 	}
+
+	template<typename T>
+	T Signum(T val)
+	{
+		return (T(0) < val) - (val < T(0));
+	}
 }

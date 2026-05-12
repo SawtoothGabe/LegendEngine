@@ -211,6 +211,34 @@ namespace le
             return result;
         }
 
+        template<typename Fn>
+            requires std::invocable<Fn, T>
+        Vector Map(Fn func) const
+        {
+            Vector result;
+            [&]<size_t... Is>(std::index_sequence<Is...>)
+            {
+                ((result[Is] = func(data[Is])), ...);
+            }(std::make_index_sequence<N>{});
+
+            return result;
+        }
+
+        Vector Abs() const
+        {
+            return Map([](const T a) { return std::abs(a); });
+        }
+
+        Vector Floored() const
+        {
+            return Map([](const T a) { return std::floor(a); });
+        }
+
+        T Distance(const Vector& b) const
+        {
+            return (b - *this).Length();
+        }
+
         union { std::array<T, N> data{}; struct { T x; T y; T z; T w; }; };
     private:
         template<size_t... dummy_indices>
