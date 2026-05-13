@@ -5,7 +5,8 @@ namespace le
     SimpleBuffer::SimpleBuffer(const ExplicitResources& resources, const BufferUsageFlags usage, const size_t size)
         :
         m_driver(resources.GetDriver()),
-        m_usage(usage)
+        m_usage(usage),
+        m_size(size)
     {
         m_buffer = m_driver.CreateBuffer(usage, size, false);
     }
@@ -39,10 +40,12 @@ namespace le
 
         m_driver.DestroyBuffer(m_buffer);
         m_buffer = m_driver.CreateBuffer(m_usage, newSize, false);
+
+        m_size = newSize;
     }
 
     Buffer::Desc SimpleBuffer::GetDesc(size_t) const
     {
-        return {m_buffer, m_driver.GetBufferSize(m_buffer)};
+        return {m_buffer, m_size};
     }
 }

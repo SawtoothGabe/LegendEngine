@@ -19,6 +19,7 @@ namespace le
         ExplicitDriver& m_driver;
 
         BufferID m_buffer;
+        size_t m_size = 0;
         BufferUsageFlags m_usage;
     };
 }
