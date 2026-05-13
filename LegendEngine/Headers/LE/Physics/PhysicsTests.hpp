@@ -1,10 +1,22 @@
 #pragma once
 
 #include <optional>
-#include <LE/Math/AABB.hpp>
-#include <LE/Math/Ray.hpp>
 
-namespace le::Math
+#include <LE/Math/Ray.hpp>
+#include <LE/Physics/AABB.hpp>
+
+namespace le
+{
+    struct RayAabbIntersection
+    {
+        // The start of the intersection expressed by a multiple of the ray direction
+        float tmin = 0.0f;
+        // The end of the intersection expressed by a multiple of the ray direction
+        float tmax = 0.0f;
+    };
+}
+
+namespace le::PhysicsTests
 {
     /**
      * Tests for the intersection between a ray and an axis-aligned bounding box (AABB).

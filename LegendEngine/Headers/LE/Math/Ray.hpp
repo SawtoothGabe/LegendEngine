@@ -4,14 +4,6 @@
 
 namespace le
 {
-    struct RayAabbIntersection
-    {
-        // The start of the intersection expressed by a multiple of the ray direction
-        float tmin = 0.0f;
-        // The end of the intersection expressed by a multiple of the ray direction
-        float tmax = 0.0f;
-    };
-
     struct Ray
     {
         Ray() = default;
