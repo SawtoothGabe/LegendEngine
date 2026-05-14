@@ -20,4 +20,24 @@ namespace le
 
         return std::nullopt;
     }
+
+    bool PhysicsTests::IntersectsX(const AABB& a, const AABB& b)
+    {
+        return a.min.x < b.max.x && a.max.x > b.min.x;
+    }
+
+    bool PhysicsTests::IntersectsY(const AABB& a, const AABB& b)
+    {
+        return a.min.y < b.max.y && a.max.y > b.min.y;
+    }
+
+    bool PhysicsTests::IntersectsZ(const AABB& a, const AABB& b)
+    {
+        return a.min.z < b.max.z && a.max.z > b.min.z;
+    }
+
+    bool PhysicsTests::Intersects(const AABB& a, const AABB& b)
+    {
+        return IntersectsX(a, b) && IntersectsY(a, b) && IntersectsZ(a, b);
+    }
 }
