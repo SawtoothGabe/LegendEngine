@@ -33,6 +33,9 @@
 
 #include <LE/Math/Math.hpp>
 
+#include <LE/Physics/AABB.hpp>
+#include <LE/Physics/PhysicsTests.hpp>
+
 #include <LE/Resources/Material.hpp>
 #include <LE/Resources/Shader.hpp>
 #include <LE/Resources/Texture2D.hpp>
