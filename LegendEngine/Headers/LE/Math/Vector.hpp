@@ -12,19 +12,19 @@ namespace le
     {
         static_assert(N >= 2, "The vector size must be greater than or equal to 2");
 
-        Vector()
+        constexpr Vector()
             :
             Vector(0.0f)
         {}
 
-        Vector(T value)
+        constexpr Vector(T value)
         {
             Construct(value, std::make_index_sequence<N>{});
         }
 
         template <typename... Ts>
             requires (sizeof...(Ts) == N)
-        Vector(Ts... value)
+        constexpr Vector(Ts... value)
         {
             size_t i = 0;
             ((data[i++] = T(value)), ...);

@@ -20,6 +20,9 @@ namespace le
 
     Scene::~Scene()
     {
+        if (Application::HasConstructed() && Application::Get().GetActiveScene() == this)
+            Application::Get().ClearActiveScene();
+
         m_resources->DestroyScene(m_handle);
     }
 

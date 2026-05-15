@@ -41,6 +41,8 @@ namespace le
             requires std::is_base_of_v<Component, T>
         void AddComponent(const UID entity, Args&&... args)
         {
+            LE_ASSERT(m_entities.contains(entity), "Tried to add a component to a nonexistent entity");
+
             const size_t componentID = typeid(T).hash_code();
             ECS::EntityRecord& record = m_entities.at(entity);
 
@@ -164,8 +166,15 @@ namespace le
         template <typename T>
         T GetComponentData(const UID entity)
         {
+            LE_ASSERT(m_entities.contains(entity), "Tried to get component data for entity with id {}, "
+                "but that entity does not exist", entity.Get());
+
             auto& [archetypeID, row] = m_entities.at(entity);
             const size_t componentID = typeid(T).hash_code();
+
+            LE_ASSERT(m_archetypes.contains(archetypeID), "Tried to get component data but the entity does not have "
+                "the required component");
+
             auto& componentData = m_archetypes.at(archetypeID).componentData;
             auto& storage = ComponentStorage<T>::Cast(componentData.at(componentID));
 
