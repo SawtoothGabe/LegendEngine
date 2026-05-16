@@ -2,7 +2,7 @@
 
 namespace le
 {
-    std::optional<RayAabbIntersection> PhysicsTests::Intersect(const Ray& ray, const AABB& aabb)
+    std::optional<RayAabbIntersection> PhysicsTests::Intersects(const Ray& ray, const AABB& aabb)
     {
         float tmin = 0.0f;
         float tmax = std::numeric_limits<float>::max();

@@ -25,7 +25,7 @@ namespace le::PhysicsTests
      * @param aabb The AABB to intersect with the ray
      * @return An optional that contains the intersection data if there is an intersection, an empty optional otherwise.
      */
-    std::optional<RayAabbIntersection> Intersect(const Ray& ray, const AABB& aabb);
+    std::optional<RayAabbIntersection> Intersects(const Ray& ray, const AABB& aabb);
 
     bool IntersectsX(const AABB& a, const AABB& b);
     bool IntersectsY(const AABB& a, const AABB& b);
